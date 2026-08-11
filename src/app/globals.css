@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-ivory: #faf5e9;
+  --color-ivory-deep: #f1e9d6;
+  --color-paper: #fffdf7;
+  --color-green-950: #1c2e26;
+  --color-green-900: #23392f;
+  --color-green-800: #2d4a3c;
+  --color-green-700: #3a5f4d;
+  --color-green-100: #e3ebe4;
+  --color-coral-500: #e8917c;
+  --color-coral-400: #efa591;
+  --color-coral-100: #fbe4dc;
+  --color-gold-100: #f3e8d2;
+  --color-ink: #2c2620;
+  --color-ink-soft: #6b6255;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-body: var(--font-zen-maru);
+
+  --color-ivory: var(--color-ivory);
+  --color-ivory-deep: var(--color-ivory-deep);
+  --color-paper: var(--color-paper);
+  --color-green-950: var(--color-green-950);
+  --color-green-900: var(--color-green-900);
+  --color-green-800: var(--color-green-800);
+  --color-green-700: var(--color-green-700);
+  --color-green-100: var(--color-green-100);
+  --color-coral-500: var(--color-coral-500);
+  --color-coral-400: var(--color-coral-400);
+  --color-coral-100: var(--color-coral-100);
+  --color-gold-100: var(--color-gold-100);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-ivory);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ivory);
+  color: var(--color-ink);
+}
+
+/* 細かな紙っぽい質感を淡く重ねる */
+.bg-paper-texture {
+  background-image: radial-gradient(
+      circle at 20% 20%,
+      rgba(232, 145, 124, 0.05),
+      transparent 45%
+    ),
+    radial-gradient(circle at 85% 0%, rgba(45, 74, 60, 0.06), transparent 40%);
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-green-100);
+  border-radius: 999px;
 }
