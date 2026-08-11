@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 未体験ゾーン（mitaiken）
 
-## Getting Started
+> まだやったことのないことを見つけて、実際にやってみる。
 
-First, run the development server:
+**未体験ゾーン**は、日常の中に小さな「初めて」を増やすためのプロジェクトです。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+「これ、やったことないな」  
+「ちょっとやってみようかな」
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+そんな小さな未体験を見つけ、気軽に試し、楽しむためのプロダクトを作ります。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+そして、このプロダクトを作ること自体もひとつの「未体験」として楽しみます。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Product Principles
 
-## Learn More
+1. **小さく作る。すぐ触る。面白ければ育てる。**
+2. **楽しさを最優先する。** 収益化のためにプロダクトをつまらなくしない。
+3. **入力を面倒にしない。** 未体験を管理する業務システムにしない。
+4. **義務感を作らない。** 連続記録やノルマより「また開きたい」を大切にする。
+5. **今ほしいものだけ作る。** 「いつか必要かも」はバックログへ。
+6. **技術より体験を優先する。** ただし、セキュリティやデータ保護は雑にしない。
+7. **AIと一緒に作る。** 意思決定は人間、作業はできるだけAI。
 
-To learn more about Next.js, take a look at the following resources:
+## First Experience Loop
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**未体験を見つける → やってみたい → 実際にやる → やった！を残す**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+まずはこの一周が楽しく回ることを目指します。
 
-## Deploy on Vercel
+## Definition of Success
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. 自分が実際に使えるものを公開する
+2. 知らない誰かが使う
+3. 「面白い」「役に立った」という反応が1件くる
+4. 最初の1円を稼ぐ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ここまで来たら、第1フェーズ成功です。
+
+## Development Style
+
+**作る → 触る → 面白いか確認する → 直す → また作る**
+
+迷ったときは、
+
+- 未体験を楽しむことにつながる？
+- 面倒を増やしていない？
+- 今、本当に必要？
+- もっと小さく試せない？
+- 作っている自分も面白い？
+
+で判断します。
+
+## v0.1
+
+最初の目標はシンプルです。
+
+**ブラウザを開くと未体験がひとつ現れて、「やってみたい」と思える。**
+
+まず、そこから始めます。
+
+---
+
+Started on 2026-08-11.  
+このREADMEも完成品ではありません。プロダクトと一緒に育てていきます。
