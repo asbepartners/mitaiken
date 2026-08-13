@@ -7,6 +7,7 @@ import { formatTiming } from "@/lib/timing";
 interface ExperienceCardProps {
   experience: Experience;
   entry?: StatusEntry;
+  variant?: "default" | "featured";
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
@@ -15,15 +16,21 @@ interface ExperienceCardProps {
 export function ExperienceCard({
   experience,
   entry,
+  variant = "default",
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
 }: ExperienceCardProps) {
   const isWishlisted = entry?.status === "wishlist";
   const isTried = entry?.status === "cleared";
+  const isFeatured = variant === "featured";
 
   return (
-    <div className="rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_10px_rgba(44,38,32,0.06)]">
+    <div
+      className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${
+        isFeatured ? "min-h-[390px] p-6" : "p-5"
+      }`}
+    >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
           {CATEGORY_LABELS[experience.category]}
@@ -40,14 +47,26 @@ export function ExperienceCard({
         )}
       </div>
 
-      <h3 className="mt-3 text-lg font-bold leading-snug text-green-950">
+      <h3
+        className={`mt-3 font-bold leading-snug text-green-950 ${
+          isFeatured ? "text-2xl" : "text-lg"
+        }`}
+      >
         {experience.title}
       </h3>
-      <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
+      <p
+        className={`mt-2 text-ink-soft ${
+          isFeatured ? "text-base leading-8" : "text-sm leading-relaxed"
+        }`}
+      >
         {experience.description}
       </p>
 
-      <dl className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
+      <dl
+        className={`mt-5 flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${
+          isFeatured ? "text-sm" : "text-xs"
+        }`}
+      >
         <div className="flex items-center gap-1">
           <dt aria-hidden>⏱</dt>
           <dd>{experience.time}</dd>
@@ -63,7 +82,7 @@ export function ExperienceCard({
       </dl>
 
       {isTried && entry?.status === "cleared" ? (
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className={`${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
           <p className="text-xs text-ink-soft">{formatTiming(entry.timing)}にやってみた</p>
           <button
             type="button"
@@ -74,7 +93,7 @@ export function ExperienceCard({
           </button>
         </div>
       ) : (
-        <div className="mt-4 flex gap-2">
+        <div className={`${isFeatured ? "mt-auto pt-8" : "mt-4"} flex gap-2`}>
           <button
             type="button"
             onClick={() => onToggleWishlist(experience.id)}
