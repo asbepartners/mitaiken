@@ -24,46 +24,81 @@ export function ExperienceCard({
   const isWishlisted = entry?.status === "wishlist";
   const isTried = entry?.status === "cleared";
   const isFeatured = variant === "featured";
+  const hasHero = isFeatured && Boolean(experience.image);
+  const imagePath = `${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}${experience.image}`;
+
+  const badges = (
+    <div className="flex flex-wrap items-center gap-2">
+      <span
+        className={`rounded-full px-3 py-1 text-xs font-medium ${
+          hasHero ? "bg-paper/90 text-green-900" : "bg-green-100 text-green-800"
+        }`}
+      >
+        {CATEGORY_LABELS[experience.category]}
+      </span>
+      {experience.solo && (
+        <span className="rounded-full bg-coral-100/95 px-3 py-1 text-xs font-medium text-coral-500">
+          ひとりOK
+        </span>
+      )}
+      {isTried && (
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            hasHero ? "bg-paper/90 text-green-900" : "bg-green-100 text-green-800"
+          }`}
+        >
+          🎉 やってみた
+        </span>
+      )}
+    </div>
+  );
 
   return (
     <div
       className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${
-        isFeatured ? "min-h-[390px] p-6" : "p-5"
+        hasHero ? "overflow-hidden" : isFeatured ? "min-h-[390px] p-6" : "p-5"
       }`}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-          {CATEGORY_LABELS[experience.category]}
-        </span>
-        {experience.solo && (
-          <span className="rounded-full bg-coral-100 px-3 py-1 text-xs font-medium text-coral-500">
-            ひとりOK
-          </span>
-        )}
-        {isTried && (
-          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-            🎉 やってみた
-          </span>
-        )}
-      </div>
-
-      <h3
-        className={`mt-3 font-bold leading-snug text-green-950 ${
-          isFeatured ? "text-2xl" : "text-lg"
-        }`}
-      >
-        {experience.title}
-      </h3>
-      <p
-        className={`mt-2 text-ink-soft ${
-          isFeatured ? "text-base leading-8" : "text-sm leading-relaxed"
-        }`}
-      >
-        {experience.description}
-      </p>
+      {hasHero ? (
+        <div className="relative h-[360px] overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imagePath}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-green-950/90 via-green-950/20 to-green-950/15" />
+          <div className="absolute inset-0 flex flex-col justify-between p-6">
+            {badges}
+            <div className="text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
+              <h3 className="text-2xl font-bold leading-snug">{experience.title}</h3>
+              <p className="mt-2 text-base font-medium leading-7">{experience.description}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {badges}
+          <h3
+            className={`mt-3 font-bold leading-snug text-green-950 ${
+              isFeatured ? "text-2xl" : "text-lg"
+            }`}
+          >
+            {experience.title}
+          </h3>
+          <p
+            className={`mt-2 text-ink-soft ${
+              isFeatured ? "text-base leading-8" : "text-sm leading-relaxed"
+            }`}
+          >
+            {experience.description}
+          </p>
+        </>
+      )}
 
       <dl
-        className={`mt-5 flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${
+        className={`mt-5 flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-6" : ""} ${
           isFeatured ? "text-sm" : "text-xs"
         }`}
       >
@@ -82,7 +117,7 @@ export function ExperienceCard({
       </dl>
 
       {isTried && entry?.status === "cleared" ? (
-        <div className={`${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
+        <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
           <p className="text-xs text-ink-soft">{formatTiming(entry.timing)}にやってみた</p>
           <button
             type="button"
@@ -93,7 +128,7 @@ export function ExperienceCard({
           </button>
         </div>
       ) : (
-        <div className={`${isFeatured ? "mt-auto pt-8" : "mt-4"} flex gap-2`}>
+        <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex gap-2`}>
           <button
             type="button"
             onClick={() => onToggleWishlist(experience.id)}

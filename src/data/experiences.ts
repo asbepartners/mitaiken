@@ -32,6 +32,7 @@ export const COST_LEVEL_LABELS: Record<CostLevel, string> = {
 
 export interface Experience {
   id: string;
+  image?: string;
   title: string;
   description: string;
   category: Category;
@@ -46,6 +47,7 @@ export interface Experience {
 export const experiences: Experience[] = [
   {
     id: "pottery-bowl",
+    image: "/experiences/pottery-bowl.png",
     title: "陶芸で自分のお茶碗を作る",
     description: "土をこねて、世界にひとつのお茶碗を。焼き上がりを待つ時間もまた楽しい。",
     category: "hobby",
@@ -58,6 +60,7 @@ export const experiences: Experience[] = [
   },
   {
     id: "spice-curry",
+    image: "/experiences/spice-curry.png",
     title: "スパイスからカレーを作る",
     description: "クミン、コリアンダー、ターメリック。香りを重ねていく、いつもと違う台所の時間。",
     category: "home",
@@ -70,6 +73,7 @@ export const experiences: Experience[] = [
   },
   {
     id: "solo-ferry",
+    image: "/experiences/solo-ferry.png",
     title: "一人でフェリーに乗る",
     description: "行き先を決めずに、ただ海を渡る。潮風とエンジン音だけの数時間。",
     category: "outing",
@@ -82,6 +86,7 @@ export const experiences: Experience[] = [
   },
   {
     id: "planetarium",
+    image: "/experiences/planetarium.png",
     title: "プラネタリウムへ行く",
     description: "暗闇に浮かぶ星空を見上げる、静かな1時間。何も考えなくていい贅沢。",
     category: "outing",
