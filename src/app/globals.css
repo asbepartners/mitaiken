@@ -18,7 +18,7 @@
 }
 
 @theme inline {
-  --font-body: var(--font-zen-maru);
+  --font-body: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
 
   --color-ivory: var(--color-ivory);
   --color-ivory-deep: var(--color-ivory-deep);
