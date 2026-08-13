@@ -8,6 +8,7 @@ interface ExperienceCardProps {
   experience: Experience;
   entry?: StatusEntry;
   variant?: "default" | "featured";
+  onNext?: () => void;
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
@@ -17,6 +18,7 @@ export function ExperienceCard({
   experience,
   entry,
   variant = "default",
+  onNext,
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
@@ -116,7 +118,22 @@ export function ExperienceCard({
         </div>
       </dl>
 
-      {isTried && entry?.status === "cleared" ? (
+      {isFeatured ? (
+        <div className={`${hasHero ? "mx-5 mb-5" : ""} mt-auto flex items-start justify-around gap-2 pt-6`}>
+          <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-green-900">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-green-100 bg-green-100 text-3xl shadow-sm transition-transform group-active:scale-90">✓</span>
+            やったことある
+          </button>
+          <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-coral-500">
+            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-20 w-20 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
+            やってみたい
+          </button>
+          <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-ink-soft disabled:opacity-30">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-green-100 bg-paper text-3xl shadow-sm transition-transform group-active:scale-90">→</span>
+            次の未体験
+          </button>
+        </div>
+      ) : isTried && entry?.status === "cleared" ? (
         <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
           <p className="text-xs text-ink-soft">{formatTiming(entry.timing)}にやってみた</p>
           <button
