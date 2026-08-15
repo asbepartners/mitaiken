@@ -6,18 +6,19 @@ import { ExploreView } from "@/components/ExploreView";
 import { TriedTimingSheet } from "@/components/TriedTimingSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
-import { experiences } from "@/data/experiences";
+import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { Timing } from "@/lib/timing";
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>("explore");
   const [pendingId, setPendingId] = useState<string | null>(null);
-  const { statusMap, toggleWishlist, markTried, removeStatus } = useExperienceStatus();
+  const { experiences } = useExperienceCatalog();
+  const { statusMap, toggleWishlist, markTried, undoTried, removeStatus } = useExperienceStatus();
 
   const wishlistItems = useMemo(
     () => experiences.filter((experience) => statusMap[experience.id]?.status === "wishlist"),
-    [statusMap]
+    [experiences, statusMap]
   );
   const triedItems = useMemo(
     () =>
@@ -26,7 +27,7 @@ export default function Home() {
         if (entry?.status !== "cleared") return [];
         return [{ experience, timing: entry.timing }];
       }),
-    [statusMap]
+    [experiences, statusMap]
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
@@ -41,10 +42,11 @@ export default function Home() {
       <main className="mx-auto w-full max-w-2xl flex-1 pb-24">
         {tab === "explore" && (
           <ExploreView
+            items={experiences}
             statusMap={statusMap}
             onToggleWishlist={toggleWishlist}
             onRequestMarkTried={setPendingId}
-            onUndoTried={removeStatus}
+            onUndoTried={undoTried}
           />
         )}
         {tab === "wishlist" && (
@@ -54,7 +56,7 @@ export default function Home() {
             onRemove={removeStatus}
           />
         )}
-        {tab === "tried" && <TriedView items={triedItems} onUndo={removeStatus} />}
+        {tab === "tried" && <TriedView items={triedItems} onUndo={undoTried} />}
       </main>
 
       <BottomNav

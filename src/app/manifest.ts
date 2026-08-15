@@ -4,8 +4,8 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "未体験ゾーン",
-    short_name: "未体験ゾーン",
+    name: "はじめてちょう",
+    short_name: "はじめてちょう",
     description: "まだ知らない「やってみたい」を見つけて、未来の楽しみとして貯めるノート。",
     start_url: "/mitaiken/",
     display: "standalone",

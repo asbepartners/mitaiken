@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { experiences } from "@/data/experiences";
+import type { Experience } from "@/data/experiences";
 import type { StatusEntry } from "@/hooks/useExperienceStatus";
 import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
 import { ExperienceCard } from "./ExperienceCard";
 
 interface ExploreViewProps {
+  items: Experience[];
   statusMap: Record<string, StatusEntry>;
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
@@ -14,6 +15,7 @@ interface ExploreViewProps {
 }
 
 export function ExploreView({
+  items,
   statusMap,
   onToggleWishlist,
   onRequestMarkTried,
@@ -27,12 +29,17 @@ export function ExploreView({
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("ja");
-    return experiences.filter((experience) => {
-      const matchesCategory = category === "all" || experience.category === category;
+    return items.filter((experience) => {
+      if (statusMap[experience.id]) return false;
+      const matchesCategory =
+        category === "all" ||
+        (category === "home"
+          ? experience.place.includes("自宅")
+          : experience.category === category);
       const searchable = `${experience.title} ${experience.description} ${experience.place}`.toLocaleLowerCase("ja");
       return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
     });
-  }, [category, query]);
+  }, [category, items, query, statusMap]);
 
   function handleCategoryChange(nextCategory: CategoryFilterValue) {
     setCategory(nextCategory);
@@ -69,10 +76,10 @@ export function ExploreView({
         <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
           <div>
-            <h1 className="text-3xl font-bold tracking-wide text-green-950">未体験ゾーン</h1>
+            <h1 className="text-3xl font-bold tracking-wide text-green-950">はじめてちょう</h1>
             <p className="mt-1.5 text-sm font-medium text-ink-soft">まだ知らない「やってみたい」を見つけよう。</p>
           </div>
-          <button type="button" onClick={() => setSearchOpen(true)} aria-label="未体験を検索" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
+          <button type="button" onClick={() => setSearchOpen(true)} aria-label="体験を検索" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
             <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-2"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
           </button>
         </div>

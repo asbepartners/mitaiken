@@ -99,11 +99,18 @@ export function useExperienceStatus() {
     writeStatusMap(next);
   }, []);
 
+  const undoTried = useCallback((id: string) => {
+    const current = getSnapshot();
+    if (current[id]?.status !== "cleared") return;
+
+    writeStatusMap({ ...current, [id]: { status: "wishlist" } });
+  }, []);
+
   const removeStatus = useCallback((id: string) => {
     const next = { ...getSnapshot() };
     delete next[id];
     writeStatusMap(next);
   }, []);
 
-  return { statusMap, toggleWishlist, markTried, removeStatus };
+  return { statusMap, toggleWishlist, markTried, undoTried, removeStatus };
 }

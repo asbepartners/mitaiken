@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "未体験ゾーン",
+  title: "はじめてちょう",
   description: "まだ知らない「やってみたい」を見つけて、未来の楽しみとして貯めるノート。",
-  applicationName: "未体験ゾーン",
+  applicationName: "はじめてちょう",
   manifest: "/mitaiken/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "未体験ゾーン",
+    title: "はじめてちょう",
   },
 };
 
