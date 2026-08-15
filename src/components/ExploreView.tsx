@@ -76,7 +76,7 @@ export function ExploreView({
         <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
           <div>
-            <h1 className="text-3xl font-bold tracking-wide text-green-950">はじめてちょう</h1>
+            <h1 className="text-3xl font-bold tracking-wide text-green-950">わたしのはじめて帖</h1>
             <p className="mt-1.5 text-sm font-medium text-ink-soft">まだ知らない「やってみたい」を見つけよう。</p>
           </div>
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="体験を検索" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
