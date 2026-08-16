@@ -44,7 +44,7 @@ export function ExperienceCard({
     }
     if (wishlistPending) return;
     setWishlistPending(true);
-    window.setTimeout(() => onToggleWishlist(experience.id), 720);
+    window.setTimeout(() => onToggleWishlist(experience.id), 1500);
   }
 
   const badges = (
