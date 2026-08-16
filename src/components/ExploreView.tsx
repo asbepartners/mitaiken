@@ -74,14 +74,14 @@ export function ExploreView({
       <header className="relative -mx-4 -mt-6 mb-4 h-48 overflow-hidden border-b border-green-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between px-5 py-4">
-          <div>
-            <h1 className="text-[1.7rem] font-bold tracking-wide text-green-950">わたしのはじめて帖</h1>
-            <p className="mt-1 text-sm font-medium text-ink-soft">まだ知らない「やってみたい」を見つけよう。</p>
-          </div>
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 px-5 py-4">
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="体験を検索" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
             <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-2"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
           </button>
+          <div className="min-w-0 text-right">
+            <h1 className="text-[1.7rem] font-bold tracking-wide text-green-950">わたしのはじめて帖</h1>
+            <p className="mt-1 text-sm font-medium text-ink-soft">まだ知らない「やってみたい」を見つけよう。</p>
+          </div>
         </div>
         {searchOpen && (
           <div className="absolute inset-x-4 top-4 flex items-center gap-2 rounded-full bg-paper p-2 shadow-lg">

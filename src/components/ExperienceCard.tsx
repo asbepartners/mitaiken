@@ -59,12 +59,10 @@ export function ExperienceCard({
 
   return (
     <div
-      className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${
-        hasHero ? "overflow-hidden" : "p-5"
-      }`}
+      className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${hasHero ? "" : "p-5"}`}
     >
       {hasHero ? (
-        <div className="relative h-[390px] overflow-hidden sm:h-[410px]">
+        <div className="relative h-[330px] overflow-hidden rounded-t-3xl sm:h-[350px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imagePath}
@@ -73,25 +71,11 @@ export function ExperienceCard({
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-green-950/95 via-green-950/25 to-green-950/15" />
-          <div className="absolute inset-0 flex flex-col p-5">
+          <div className="absolute inset-0 flex flex-col p-5 pb-12">
             {badges}
             <div className="mt-auto text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
               <h3 className="text-xl font-bold leading-snug sm:text-2xl">{experience.title}</h3>
               <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 sm:text-base">{experience.description}</p>
-            </div>
-            <div className="mt-4 flex items-start justify-around gap-1 text-paper [text-shadow:0_1px_5px_rgba(0,0,0,0.55)]">
-              <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold">
-                <span className="flex h-13 w-13 items-center justify-center rounded-full border border-paper/70 bg-paper/90 text-2xl text-green-900 shadow-md transition-transform group-active:scale-90">✓</span>
-                やったことある
-              </button>
-              <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold">
-                <span key={isWishlisted ? "liked" : "idle"} className={`flex h-15 w-15 items-center justify-center rounded-full border border-coral-400 bg-coral-100/95 text-3xl text-coral-500 shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
-                やってみたい
-              </button>
-              <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold disabled:opacity-30">
-                <span className="flex h-13 w-13 items-center justify-center rounded-full border border-paper/70 bg-paper/90 text-2xl text-green-900 shadow-md transition-transform group-active:scale-90">→</span>
-                次の未体験
-              </button>
             </div>
           </div>
         </div>
@@ -115,8 +99,25 @@ export function ExperienceCard({
         </>
       )}
 
+      {isFeatured && (
+        <div className="relative z-10 -mt-8 flex items-start justify-around gap-1 px-3">
+          <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-green-900">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-green-100 text-2xl shadow-md transition-transform group-active:scale-90">✓</span>
+            やったことある
+          </button>
+          <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
+            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-16 w-16 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-3xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
+            やってみたい
+          </button>
+          <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-ink-soft disabled:opacity-30">
+            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-md transition-transform group-active:scale-90">→</span>
+            次の未体験
+          </button>
+        </div>
+      )}
+
       <dl
-        className={`flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-5 py-3" : "mt-5"} ${
+        className={`flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-5 pb-4 pt-3" : "mt-5"} ${
           isFeatured ? "text-sm" : "text-xs"
         }`}
       >
