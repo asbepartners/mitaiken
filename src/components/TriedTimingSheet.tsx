@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Timing, UNKNOWN_TIMING, todayTiming } from "@/lib/timing";
+import { BookmarkIcon } from "./RecordIcons";
 
 interface TriedTimingSheetProps {
   experienceTitle: string;
@@ -47,7 +48,10 @@ export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: Tried
       />
       <div className="relative w-full max-w-sm animate-[slide-up_0.2s_ease-out] rounded-t-3xl bg-paper px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl sm:pb-6">
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-green-100 sm:hidden" />
-        <p className="text-sm text-ink-soft">🎉 やってみた！</p>
+        <p className="flex items-center gap-1.5 text-sm font-medium text-coral-500">
+          <BookmarkIcon filled className="h-5 w-5" />
+          やってみた！
+        </p>
         <h2 className="mt-0.5 text-lg font-bold text-green-950">{experienceTitle}</h2>
 
         {mode === "select" && (

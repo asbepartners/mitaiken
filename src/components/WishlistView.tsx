@@ -11,6 +11,7 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
+import { BookmarkIcon } from "./RecordIcons";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -136,9 +137,12 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
                   <span
                     key={markingId === experience.id ? "marking" : "idle"}
                     aria-hidden="true"
-                    className={`text-[2rem] font-light leading-none group-hover:text-coral-500 ${markingId === experience.id ? "heart-pop" : ""}`}
+                    className={markingId === experience.id ? "heart-pop" : ""}
                   >
-                    {markingId === experience.id ? "♥" : "♡"}
+                    <BookmarkIcon
+                      filled={markingId === experience.id}
+                      className="h-8 w-8"
+                    />
                   </span>
                   <span className="mt-1 text-[9px] font-bold">やってみた！</span>
                 </button>

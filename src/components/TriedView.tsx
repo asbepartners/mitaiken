@@ -12,6 +12,7 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
+import { BookmarkIcon, NotebookIcon } from "./RecordIcons";
 
 interface TriedItem {
   experience: Experience;
@@ -28,6 +29,7 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const experiences = useMemo(() => items.map((item) => item.experience), [items]);
+  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const filtered = useMemo(
     () =>
       items.filter(({ experience }) => {
@@ -42,21 +44,19 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
   );
 
   return (
-    <div className="px-4 pb-4 pt-6">
-      <header className="mb-5 flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center rounded-full bg-green-100 text-green-800">
-          <span className="text-xl font-bold leading-none">{items.length}</span>
-          <span className="text-[10px] leading-none">個</span>
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-green-950">やってみた！</h1>
-          <p className="mt-1 text-sm text-ink-soft">{items.length}個、やってみました。</p>
-        </div>
+    <div className="px-4 pb-4">
+      <header className="relative -mx-4 mb-4 h-40 overflow-hidden border-b border-green-100">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`${assetBase}/header-tried-v1.png`}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
         <button
           type="button"
           onClick={() => setSearchOpen(true)}
           aria-label="やってみた記録を詳しく検索"
-          className="relative ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper text-green-900 shadow-md"
+          className="absolute left-5 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md"
         >
           <SearchIcon />
           {countExperienceFilters(filters) > 0 && (
@@ -65,11 +65,28 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
             </span>
           )}
         </button>
+        <div className="absolute right-5 top-4 max-w-[75%] text-right [text-shadow:0_1px_0_rgba(255,253,247,0.95)]">
+          <div className="flex items-center justify-end gap-1.5 text-green-950">
+            <h1 className="text-[1.55rem] font-bold tracking-wide">わたしのはじめて帖</h1>
+            <NotebookIcon className="h-7 w-7 shrink-0" />
+          </div>
+          <p className="mt-1 text-sm font-medium text-green-950/80">
+            ひとつずつ、経験がつづられていく。
+          </p>
+        </div>
       </header>
 
       <div className="mb-4">
         <CategoryFilter value={category} onChange={setCategory} />
       </div>
+
+      {items.length > 0 && (
+        <p className="mb-3 text-right text-xs font-medium text-ink-soft">
+          {filtered.length === items.length
+            ? `${items.length}個のはじめて`
+            : `${filtered.length}個を表示`}
+        </p>
+      )}
 
       {items.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center">
@@ -93,8 +110,8 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
               key={experience.id}
               className="flex items-start gap-3 rounded-3xl border border-green-100 bg-paper p-4 shadow-[0_2px_10px_rgba(44,38,32,0.06)]"
             >
-              <span className="mt-0.5 text-lg" aria-hidden>
-                🎉
+              <span className="mt-0.5 text-coral-500" aria-hidden>
+                <BookmarkIcon filled className="h-6 w-6" />
               </span>
               <div className="min-w-0 flex-1">
                 <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-[11px] font-medium text-green-800">
