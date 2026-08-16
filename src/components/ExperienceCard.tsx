@@ -27,13 +27,25 @@ export function ExperienceCard({
   onUndoTried,
 }: ExperienceCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [wishlistPending, setWishlistPending] = useState(false);
   const isWishlisted = entry?.status === "wishlist";
+  const showWishlisted = isWishlisted || wishlistPending;
   const isTried = entry?.status === "cleared";
   const isFeatured = variant === "featured";
   const hasHero = isFeatured;
   const imagePath = `${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}${
     experience.image ?? "/experiences/noimage.svg"
   }`;
+
+  function handleToggleWishlist() {
+    if (!isFeatured || isWishlisted) {
+      onToggleWishlist(experience.id);
+      return;
+    }
+    if (wishlistPending) return;
+    setWishlistPending(true);
+    window.setTimeout(() => onToggleWishlist(experience.id), 340);
+  }
 
   const badges = (
     <div className="flex flex-wrap items-center gap-2">
@@ -137,8 +149,8 @@ export function ExperienceCard({
             <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-green-100 text-2xl shadow-md transition-transform group-active:scale-90">✓</span>
             やったことある
           </button>
-          <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
-            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-18 w-18 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
+          <button type="button" onClick={handleToggleWishlist} aria-pressed={showWishlisted} disabled={wishlistPending} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
+            <span key={showWishlisted ? "liked" : "idle"} className={`flex h-18 w-18 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${showWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{showWishlisted ? "♥" : "♡"}</span>
             やってみたい
           </button>
           <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-ink-soft disabled:opacity-30">
@@ -180,7 +192,7 @@ export function ExperienceCard({
         <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex gap-2`}>
           <button
             type="button"
-            onClick={() => onToggleWishlist(experience.id)}
+            onClick={handleToggleWishlist}
             aria-pressed={isWishlisted}
             className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition-colors ${
               isWishlisted

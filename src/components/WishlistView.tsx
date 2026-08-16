@@ -25,6 +25,7 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
+  const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
   const filtered = useMemo(
@@ -40,6 +41,15 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
       }),
     [category, filters, items]
   );
+
+  function handleRequestMarkTried(id: string) {
+    if (bookmarkPendingId) return;
+    setBookmarkPendingId(id);
+    window.setTimeout(() => {
+      setBookmarkPendingId(null);
+      onRequestMarkTried(id);
+    }, 340);
+  }
 
   return (
     <div className="px-4 pb-4">
@@ -129,18 +139,19 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
               <div className="flex w-[4.6rem] shrink-0 flex-col items-center justify-center gap-1 py-2">
                 <button
                   type="button"
-                  onClick={() => onRequestMarkTried(experience.id)}
-                  aria-pressed={markingId === experience.id}
+                  onClick={() => handleRequestMarkTried(experience.id)}
+                  disabled={bookmarkPendingId !== null}
+                  aria-pressed={markingId === experience.id || bookmarkPendingId === experience.id}
                   className="group flex flex-col items-center text-coral-500 transition active:scale-90"
                   aria-label={`${experience.title}をやってみた`}
                 >
                   <span
-                    key={markingId === experience.id ? "marking" : "idle"}
+                    key={markingId === experience.id || bookmarkPendingId === experience.id ? "marking" : "idle"}
                     aria-hidden="true"
-                    className={markingId === experience.id ? "heart-pop" : ""}
+                    className={markingId === experience.id || bookmarkPendingId === experience.id ? "heart-pop" : ""}
                   >
                     <BookmarkIcon
-                      filled={markingId === experience.id}
+                      filled={markingId === experience.id || bookmarkPendingId === experience.id}
                       className="h-8 w-8"
                     />
                   </span>
