@@ -3,6 +3,14 @@
 import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
 import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
+import {
+  countExperienceFilters,
+  EMPTY_EXPERIENCE_FILTERS,
+  ExperienceFilters,
+  ExperienceSearchScreen,
+  matchesExperienceFilters,
+  SearchIcon,
+} from "./ExperienceSearchScreen";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -14,18 +22,22 @@ interface WishlistViewProps {
 export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
   const filtered = useMemo(
     () =>
-      items.filter((experience) =>
-        category === "all"
-          ? true
-          : category === "home"
-            ? experience.place.includes("自宅")
-            : experience.category === category
-      ),
-    [category, items]
+      items.filter((experience) => {
+        const matchesCategory =
+          category === "all"
+            ? true
+            : category === "home"
+              ? experience.place.includes("自宅")
+              : experience.category === category;
+        return matchesCategory && matchesExperienceFilters(experience, filters);
+      }),
+    [category, filters, items]
   );
 
   return (
@@ -47,6 +59,19 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
             いつかやってみたい未体験たち
           </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          aria-label="やってみたいを詳しく検索"
+          className="absolute right-5 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md"
+        >
+          <SearchIcon />
+          {countExperienceFilters(filters) > 0 && (
+            <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-coral-500 px-1 text-center text-[10px] font-bold leading-5 text-paper">
+              {countExperienceFilters(filters)}
+            </span>
+          )}
+        </button>
       </header>
 
       <div className="mb-3">
@@ -142,6 +167,21 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
             </li>
           ))}
         </ul>
+      )}
+
+      {searchOpen && (
+        <ExperienceSearchScreen
+          title="やってみたいを探す"
+          items={items}
+          value={filters}
+          onClose={() => setSearchOpen(false)}
+          onApply={(nextFilters) => {
+            setFilters(nextFilters);
+            setCategory("all");
+            setOpenMenuId(null);
+            setSearchOpen(false);
+          }}
+        />
       )}
     </div>
   );
