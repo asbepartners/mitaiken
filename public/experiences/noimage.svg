@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">体験のイメージ</title>
+  <desc id="desc">やわらかな丘と草花の風景</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#eee7d5"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9c2a0"/>
+      <stop offset="1" stop-color="#788c70"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#sky)"/>
+  <circle cx="920" cy="160" r="82" fill="#f0dca9" opacity=".55"/>
+  <path d="M0 500C190 390 350 430 520 510c170 80 320 35 470-40 80-40 150-46 210-30v360H0Z" fill="#d8d7bd"/>
+  <path d="M0 585c210-80 370-52 545 34 150 73 365 9 655-99v280H0Z" fill="url(#hill)"/>
+  <g fill="none" stroke="#536b58" stroke-linecap="round">
+    <path d="M170 610v-150m0 42-34-48m34 94 42-55M1040 620V445m0 58-44-55m44 102 48-66" stroke-width="9"/>
+    <path d="M110 665v-76m0 27-22-25m22 47 25-31M270 690v-92m0 34-27-34m27 59 30-38M960 680v-88m0 32-26-31m26 57 29-36" stroke-width="6"/>
+  </g>
+  <g fill="#c4775d" opacity=".9">
+    <circle cx="136" cy="455" r="10"/><circle cx="212" cy="490" r="8"/><circle cx="996" cy="448" r="9"/><circle cx="1088" cy="484" r="8"/>
+  </g>
+  <g fill="#f4e8c8" opacity=".9">
+    <circle cx="88" cy="590" r="8"/><circle cx="135" cy="615" r="7"/><circle cx="243" cy="598" r="8"/><circle cx="927" cy="590" r="7"/><circle cx="1000" cy="610" r="8"/><circle cx="1090" cy="570" r="7"/>
+  </g>
+</svg>

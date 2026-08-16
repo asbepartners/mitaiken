@@ -26,8 +26,10 @@ export function ExperienceCard({
   const isWishlisted = entry?.status === "wishlist";
   const isTried = entry?.status === "cleared";
   const isFeatured = variant === "featured";
-  const hasHero = isFeatured && Boolean(experience.image);
-  const imagePath = `${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}${experience.image}`;
+  const hasHero = isFeatured;
+  const imagePath = `${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}${
+    experience.image ?? "/experiences/noimage.svg"
+  }`;
 
   const badges = (
     <div className="flex flex-wrap items-center gap-2">
@@ -58,11 +60,11 @@ export function ExperienceCard({
   return (
     <div
       className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${
-        hasHero ? "overflow-hidden" : isFeatured ? "min-h-[390px] p-6" : "p-5"
+        hasHero ? "overflow-hidden" : "p-5"
       }`}
     >
       {hasHero ? (
-        <div className="relative h-[360px] overflow-hidden">
+        <div className="relative h-[390px] overflow-hidden sm:h-[410px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imagePath}
@@ -70,12 +72,26 @@ export function ExperienceCard({
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-green-950/90 via-green-950/20 to-green-950/15" />
-          <div className="absolute inset-0 flex flex-col justify-between p-6">
+          <div className="absolute inset-0 bg-gradient-to-t from-green-950/95 via-green-950/25 to-green-950/15" />
+          <div className="absolute inset-0 flex flex-col p-5">
             {badges}
-            <div className="text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
-              <h3 className="text-2xl font-bold leading-snug">{experience.title}</h3>
-              <p className="mt-2 text-base font-medium leading-7">{experience.description}</p>
+            <div className="mt-auto text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
+              <h3 className="text-xl font-bold leading-snug sm:text-2xl">{experience.title}</h3>
+              <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 sm:text-base">{experience.description}</p>
+            </div>
+            <div className="mt-4 flex items-start justify-around gap-1 text-paper [text-shadow:0_1px_5px_rgba(0,0,0,0.55)]">
+              <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold">
+                <span className="flex h-13 w-13 items-center justify-center rounded-full border border-paper/70 bg-paper/90 text-2xl text-green-900 shadow-md transition-transform group-active:scale-90">✓</span>
+                やったことある
+              </button>
+              <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold">
+                <span key={isWishlisted ? "liked" : "idle"} className={`flex h-15 w-15 items-center justify-center rounded-full border border-coral-400 bg-coral-100/95 text-3xl text-coral-500 shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
+                やってみたい
+              </button>
+              <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold disabled:opacity-30">
+                <span className="flex h-13 w-13 items-center justify-center rounded-full border border-paper/70 bg-paper/90 text-2xl text-green-900 shadow-md transition-transform group-active:scale-90">→</span>
+                次の未体験
+              </button>
             </div>
           </div>
         </div>
@@ -100,7 +116,7 @@ export function ExperienceCard({
       )}
 
       <dl
-        className={`mt-5 flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-6" : ""} ${
+        className={`flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-5 py-3" : "mt-5"} ${
           isFeatured ? "text-sm" : "text-xs"
         }`}
       >
@@ -118,22 +134,7 @@ export function ExperienceCard({
         </div>
       </dl>
 
-      {isFeatured ? (
-        <div className={`${hasHero ? "mx-5 mb-5" : ""} mt-auto flex items-start justify-around gap-2 pt-6`}>
-          <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-green-900">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-green-100 bg-green-100 text-3xl shadow-sm transition-transform group-active:scale-90">✓</span>
-            やったことある
-          </button>
-          <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-coral-500">
-            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-20 w-20 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
-            やってみたい
-          </button>
-          <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-2 text-xs font-bold text-ink-soft disabled:opacity-30">
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-green-100 bg-paper text-3xl shadow-sm transition-transform group-active:scale-90">→</span>
-            次の未体験
-          </button>
-        </div>
-      ) : isTried && entry?.status === "cleared" ? (
+      {!isFeatured && (isTried && entry?.status === "cleared" ? (
         <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
           <p className="text-xs text-ink-soft">{formatTiming(entry.timing)}にやってみた</p>
           <button
@@ -168,7 +169,7 @@ export function ExperienceCard({
             やったことある
           </button>
         </div>
-      )}
+      ))}
     </div>
   );
 }
