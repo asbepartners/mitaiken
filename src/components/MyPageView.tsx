@@ -1,0 +1,66 @@
+"use client";
+
+import type { User } from "@supabase/supabase-js";
+
+interface MyPageViewProps {
+  user: User | null;
+  loading: boolean;
+  configured: boolean;
+  onLogin: () => void;
+  onSignOut: () => Promise<{ error: string | null }>;
+}
+
+export function MyPageView({ user, loading, configured, onLogin, onSignOut }: MyPageViewProps) {
+  return (
+    <div className="px-5 pb-8 pt-8">
+      <header>
+        <p className="text-sm font-medium text-green-700">わたしの記録</p>
+        <h1 className="mt-1 text-2xl font-bold text-green-950">マイページ</h1>
+      </header>
+
+      <section className="mt-6 rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_10px_rgba(44,38,32,0.05)]">
+        {loading ? (
+          <p className="text-sm text-ink-soft">ログイン状態を確認しています…</p>
+        ) : user ? (
+          <>
+            <p className="text-xs font-medium text-green-700">ログイン中</p>
+            <p className="mt-1 break-all text-base font-bold text-green-950">{user.email}</p>
+            <p className="mt-4 text-sm leading-6 text-ink-soft">
+              この端末ではログイン状態が保持されます。
+            </p>
+            <button
+              type="button"
+              onClick={() => void onSignOut()}
+              className="mt-5 rounded-full border border-green-100 px-5 py-2.5 text-sm font-medium text-ink-soft"
+            >
+              ログアウト
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-base font-bold text-green-950">記録を別の端末でも使えるように</p>
+            <p className="mt-2 text-sm leading-6 text-ink-soft">
+              メールでログインすると、これから記録をSupabaseへ保存できるようになります。
+            </p>
+            <button
+              type="button"
+              disabled={!configured}
+              onClick={onLogin}
+              className="mt-5 w-full rounded-full bg-green-800 py-3 text-sm font-bold text-paper disabled:opacity-40"
+            >
+              メールでログイン
+            </button>
+            {!configured && <p className="mt-3 text-xs text-coral-500">Supabaseの接続設定が必要です。</p>}
+          </>
+        )}
+      </section>
+
+      <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5">
+        <h2 className="font-bold text-green-950">データについて</h2>
+        <p className="mt-2 text-sm leading-6 text-ink-soft">
+          現在の「やってみたい・やってみた」は、この端末に保存されています。DBへの引き継ぎは次のステップで行います。
+        </p>
+      </section>
+    </div>
+  );
+}

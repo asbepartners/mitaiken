@@ -2,18 +2,23 @@
 
 import { useMemo, useState } from "react";
 import { BottomNav, Tab } from "@/components/BottomNav";
+import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
+import { MyPageView } from "@/components/MyPageView";
 import { TriedTimingSheet } from "@/components/TriedTimingSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
+import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { Timing } from "@/lib/timing";
 
 export default function Home() {
   const [tab, setTab] = useState<Tab>("explore");
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
+  const auth = useAuth();
   const { statusMap, toggleWishlist, markTried, undoTried, removeStatus } = useExperienceStatus();
 
   const wishlistItems = useMemo(
@@ -57,6 +62,15 @@ export default function Home() {
           />
         )}
         {tab === "tried" && <TriedView items={triedItems} onUndo={undoTried} />}
+        {tab === "mypage" && (
+          <MyPageView
+            user={auth.user}
+            loading={auth.loading}
+            configured={auth.configured}
+            onLogin={() => setAuthOpen(true)}
+            onSignOut={auth.signOut}
+          />
+        )}
       </main>
 
       <BottomNav
@@ -71,6 +85,14 @@ export default function Home() {
           experienceTitle={pendingExperience.title}
           onCancel={() => setPendingId(null)}
           onConfirm={handleConfirmTiming}
+        />
+      )}
+
+      {authOpen && (
+        <AuthSheet
+          onClose={() => setAuthOpen(false)}
+          onSendOtp={auth.sendOtp}
+          onVerifyOtp={auth.verifyOtp}
         />
       )}
     </div>

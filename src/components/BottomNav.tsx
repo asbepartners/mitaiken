@@ -1,6 +1,6 @@
 "use client";
 
-export type Tab = "explore" | "wishlist" | "tried";
+export type Tab = "explore" | "wishlist" | "tried" | "mypage";
 
 interface BottomNavProps {
   active: Tab;
@@ -13,12 +13,14 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "explore", label: "探す" },
   { key: "wishlist", label: "リスト" },
   { key: "tried", label: "やってみた！" },
+  { key: "mypage", label: "マイページ" },
 ];
 
 function NavIcon({ tab }: { tab: Tab }) {
   if (tab === "explore") return <svg viewBox="0 0 24 24"><path d="m4 17 5-7 8-4 2 3-8 4-7 4Z"/><path d="m9 14-1 7m4-8 3 8M16 6l-1-2 2-1 1 2"/></svg>;
   if (tab === "wishlist") return <svg viewBox="0 0 24 24"><path d="M20.8 5.7c-1.6-2-4.7-2-6.4-.1L12 8.2 9.6 5.6c-1.7-1.9-4.8-1.9-6.4.1-1.5 1.8-1.2 4.5.4 6.1L12 20l8.4-8.2c1.6-1.6 1.9-4.3.4-6.1Z"/></svg>;
-  return <svg viewBox="0 0 24 24"><path d="M6 21V4m1 1h11l-3 4 3 4H7"/></svg>;
+  if (tab === "tried") return <svg viewBox="0 0 24 24"><path d="M6 21V4m1 1h11l-3 4 3 4H7"/></svg>;
+  return <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 21c.4-4.1 2.6-6.2 6.5-6.2s6.1 2.1 6.5 6.2"/></svg>;
 }
 
 export function BottomNav({ active, onChange, wishlistCount, triedCount }: BottomNavProps) {
@@ -26,6 +28,7 @@ export function BottomNav({ active, onChange, wishlistCount, triedCount }: Botto
     explore: null,
     wishlist: wishlistCount,
     tried: triedCount,
+    mypage: null,
   };
 
   return (
