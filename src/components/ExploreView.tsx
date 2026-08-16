@@ -118,46 +118,51 @@ export function ExploreView({
 
       {filtered.length > 0 && (
         <>
-          <div className="mb-2 grid grid-cols-3 items-center px-1 text-sm font-medium text-ink-soft">
-            <button
-              type="button"
-              onClick={() => scrollToCard(currentIndex - 1)}
-              disabled={currentIndex === 0}
-              className="justify-self-start rounded-full px-3 py-2 text-green-900 transition disabled:invisible"
-              aria-label="前の未体験へ"
-            >
-              ← 前へ
-            </button>
-            <span aria-live="polite" className="justify-self-center">{currentIndex + 1} / {filtered.length}</span>
-            <button
-              type="button"
-              onClick={() => scrollToCard(currentIndex + 1)}
-              disabled={currentIndex === filtered.length - 1}
-              className="justify-self-end rounded-full px-3 py-2 text-green-900 transition disabled:invisible"
-              aria-label="次の未体験へ"
-            >
-              次へ →
-            </button>
+          <div className="mb-2 flex items-center justify-center px-1 text-sm font-medium text-ink-soft">
+            <span aria-live="polite">{currentIndex + 1} / {filtered.length}</span>
           </div>
 
-          <div
-            ref={carouselRef}
-            onScroll={handleScroll}
-            className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {filtered.map((experience) => (
-              <div key={experience.id} className="w-full shrink-0 snap-center">
-                <ExperienceCard
-                  experience={experience}
-                  entry={statusMap[experience.id]}
-                  variant="featured"
-                  onNext={currentIndex < filtered.length - 1 ? () => scrollToCard(currentIndex + 1) : undefined}
-                  onToggleWishlist={onToggleWishlist}
-                  onRequestMarkTried={onRequestMarkTried}
-                  onUndoTried={onUndoTried}
-                />
-              </div>
-            ))}
+          <div className="group/carousel relative">
+            <div
+              ref={carouselRef}
+              onScroll={handleScroll}
+              className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {filtered.map((experience) => (
+                <div key={experience.id} className="w-full shrink-0 snap-center">
+                  <ExperienceCard
+                    experience={experience}
+                    entry={statusMap[experience.id]}
+                    variant="featured"
+                    onNext={currentIndex < filtered.length - 1 ? () => scrollToCard(currentIndex + 1) : undefined}
+                    onToggleWishlist={onToggleWishlist}
+                    onRequestMarkTried={onRequestMarkTried}
+                    onUndoTried={onUndoTried}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {currentIndex > 0 && (
+              <button
+                type="button"
+                onClick={() => scrollToCard(currentIndex - 1)}
+                aria-label="前の未体験へ"
+                className="absolute left-1 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
+              >
+                ‹
+              </button>
+            )}
+            {currentIndex < filtered.length - 1 && (
+              <button
+                type="button"
+                onClick={() => scrollToCard(currentIndex + 1)}
+                aria-label="次の未体験へ"
+                className="absolute right-1 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
+              >
+                ›
+              </button>
+            )}
           </div>
 
           <p className="mt-1 text-center text-xs font-medium text-ink-soft">
