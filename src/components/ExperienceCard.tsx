@@ -120,7 +120,7 @@ export function ExperienceCard({
             やったことある
           </button>
           <button type="button" onClick={() => onToggleWishlist(experience.id)} aria-pressed={isWishlisted} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
-            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-16 w-16 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-3xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
+            <span key={isWishlisted ? "liked" : "idle"} className={`flex h-18 w-18 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${isWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{isWishlisted ? "♥" : "♡"}</span>
             やってみたい
           </button>
           <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-ink-soft disabled:opacity-30">
