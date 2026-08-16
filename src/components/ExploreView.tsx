@@ -73,7 +73,7 @@ export function ExploreView({
     <div className="px-4 pb-4 pt-6">
       <header className="relative -mx-4 -mt-6 mb-4 h-48 overflow-hidden border-b border-green-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore-v2.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore-v3.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 px-5 py-4">
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="体験を検索" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
             <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-2"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
