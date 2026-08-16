@@ -76,6 +76,20 @@ export function ExperienceCard({
             <div className="mt-auto text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
               <h3 className="text-xl font-bold leading-snug sm:text-2xl">{experience.title}</h3>
               <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 sm:text-base">{experience.description}</p>
+              <dl className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium">
+                <div className="flex items-center gap-1">
+                  <dt aria-hidden>⏱</dt>
+                  <dd>{experience.time}</dd>
+                </div>
+                <div className="flex items-center gap-1">
+                  <dt aria-hidden>💰</dt>
+                  <dd>{experience.cost}</dd>
+                </div>
+                <div className="flex items-center gap-1">
+                  <dt aria-hidden>📍</dt>
+                  <dd>{experience.place}</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
@@ -100,7 +114,7 @@ export function ExperienceCard({
       )}
 
       {isFeatured && (
-        <div className="relative z-10 -mt-8 flex items-start justify-around gap-1 px-3">
+        <div className="relative z-10 -mt-8 flex items-start justify-around gap-1 px-3 pb-4">
           <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-green-900">
             <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-green-100 text-2xl shadow-md transition-transform group-active:scale-90">✓</span>
             やったことある
@@ -116,24 +130,22 @@ export function ExperienceCard({
         </div>
       )}
 
-      <dl
-        className={`flex flex-wrap gap-x-4 gap-y-2 text-ink-soft ${hasHero ? "px-5 pb-4 pt-3" : "mt-5"} ${
-          isFeatured ? "text-sm" : "text-xs"
-        }`}
-      >
-        <div className="flex items-center gap-1">
-          <dt aria-hidden>⏱</dt>
-          <dd>{experience.time}</dd>
-        </div>
-        <div className="flex items-center gap-1">
-          <dt aria-hidden>💰</dt>
-          <dd>{experience.cost}</dd>
-        </div>
-        <div className="flex items-center gap-1">
-          <dt aria-hidden>📍</dt>
-          <dd>{experience.place}</dd>
-        </div>
-      </dl>
+      {!isFeatured && (
+        <dl className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-soft">
+          <div className="flex items-center gap-1">
+            <dt aria-hidden>⏱</dt>
+            <dd>{experience.time}</dd>
+          </div>
+          <div className="flex items-center gap-1">
+            <dt aria-hidden>💰</dt>
+            <dd>{experience.cost}</dd>
+          </div>
+          <div className="flex items-center gap-1">
+            <dt aria-hidden>📍</dt>
+            <dd>{experience.place}</dd>
+          </div>
+        </dl>
+      )}
 
       {!isFeatured && (isTried && entry?.status === "cleared" ? (
         <div className={`${hasHero ? "mx-6 mb-6" : ""} ${isFeatured ? "mt-auto pt-8" : "mt-4"} flex items-center justify-between gap-3`}>
