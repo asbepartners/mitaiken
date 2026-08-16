@@ -118,8 +118,26 @@ export function ExploreView({
 
       {filtered.length > 0 && (
         <>
-          <div className="mb-2 flex items-center justify-center px-1 text-sm font-medium text-ink-soft">
-            <span aria-live="polite">{currentIndex + 1} / {filtered.length}</span>
+          <div className="mb-2 grid grid-cols-3 items-center px-1 text-sm font-medium text-ink-soft">
+            <button
+              type="button"
+              onClick={() => scrollToCard(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              className="justify-self-start rounded-full px-3 py-2 text-green-900 transition disabled:invisible"
+              aria-label="前の未体験へ"
+            >
+              ← 前へ
+            </button>
+            <span aria-live="polite" className="justify-self-center">{currentIndex + 1} / {filtered.length}</span>
+            <button
+              type="button"
+              onClick={() => scrollToCard(currentIndex + 1)}
+              disabled={currentIndex === filtered.length - 1}
+              className="justify-self-end rounded-full px-3 py-2 text-green-900 transition disabled:invisible"
+              aria-label="次の未体験へ"
+            >
+              次へ →
+            </button>
           </div>
 
           <div
