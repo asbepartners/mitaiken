@@ -84,10 +84,27 @@ export function ExploreView({
           </div>
         </div>
         {searchOpen && (
-          <div className="absolute inset-x-4 top-4 flex items-center gap-2 rounded-full bg-paper p-2 shadow-lg">
-            <button type="button" onClick={() => { setSearchOpen(false); setQuery(""); }} aria-label="検索を閉じる" className="h-9 w-9 text-xl">←</button>
-            <input autoFocus value={query} onChange={(event) => { setQuery(event.target.value); setCurrentIndex(0); carouselRef.current?.scrollTo({ left: 0 }); }} placeholder="陶芸、プラネタリウム…" className="min-w-0 flex-1 bg-transparent px-1 text-base text-ink outline-none" />
-            {query && <button type="button" onClick={() => setQuery("")} className="h-9 w-9 text-xl" aria-label="検索語を消す">×</button>}
+          <div className="absolute inset-x-4 top-4 flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center rounded-full bg-paper p-2 shadow-lg">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center text-green-900" aria-hidden>
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-2"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+              </span>
+              <input
+                autoFocus
+                type="search"
+                enterKeyHint="search"
+                aria-label="体験を検索"
+                value={query}
+                onChange={(event) => { setQuery(event.target.value); setCurrentIndex(0); carouselRef.current?.scrollTo({ left: 0 }); }}
+                onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
+                placeholder="陶芸、プラネタリウム…"
+                className="min-w-0 flex-1 bg-transparent px-1 text-base text-ink outline-none [&::-webkit-search-cancel-button]:hidden"
+              />
+              {query && <button type="button" onClick={() => setQuery("")} className="h-9 w-9 shrink-0 text-xl" aria-label="検索語を消す">×</button>}
+            </div>
+            <button type="button" onClick={() => { setSearchOpen(false); setQuery(""); }} className="shrink-0 rounded-full bg-paper px-3 py-3 text-sm font-medium text-green-900 shadow-lg">
+              閉じる
+            </button>
           </div>
         )}
       </header>
