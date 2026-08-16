@@ -29,8 +29,8 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
             onClick={() => onChange(option.key)}
             className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               isActive
-                ? "border-green-800 bg-green-800 text-paper"
-                : "border-green-100 bg-paper text-green-800 hover:border-green-700"
+                ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
+                : "border-green-100 bg-paper text-green-800 hover:border-coral-400"
             }`}
           >
             {option.label}

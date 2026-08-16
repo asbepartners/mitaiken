@@ -6,11 +6,12 @@ import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
 
 interface WishlistViewProps {
   items: Experience[];
+  markingId: string | null;
   onRequestMarkTried: (id: string) => void;
   onRemove: (id: string) => void;
 }
 
-export function WishlistView({ items, onRequestMarkTried, onRemove }: WishlistViewProps) {
+export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
@@ -78,12 +79,14 @@ export function WishlistView({ items, onRequestMarkTried, onRemove }: WishlistVi
               key={experience.id}
               className="relative flex min-h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
-                alt=""
-                className="w-28 shrink-0 rounded-l-2xl object-cover"
-              />
+              <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-l-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
 
               <div className="min-w-0 flex-1 px-3 py-2.5 pr-1">
                 <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
@@ -101,10 +104,17 @@ export function WishlistView({ items, onRequestMarkTried, onRemove }: WishlistVi
                 <button
                   type="button"
                   onClick={() => onRequestMarkTried(experience.id)}
-                  className="group flex flex-col items-center text-coral-400 transition active:scale-90"
+                  aria-pressed={markingId === experience.id}
+                  className="group flex flex-col items-center text-coral-500 transition active:scale-90"
                   aria-label={`${experience.title}をやってみた`}
                 >
-                  <span aria-hidden="true" className="text-[2rem] font-light leading-none group-hover:text-coral-500">♡</span>
+                  <span
+                    key={markingId === experience.id ? "marking" : "idle"}
+                    aria-hidden="true"
+                    className={`text-[2rem] font-light leading-none group-hover:text-coral-500 ${markingId === experience.id ? "heart-pop" : ""}`}
+                  >
+                    {markingId === experience.id ? "♥" : "♡"}
+                  </span>
                   <span className="mt-1 text-[9px] font-bold">やってみた！</span>
                 </button>
                 <button
