@@ -59,10 +59,14 @@ export function ExperienceCard({
 
   return (
     <div
-      className={`flex flex-col rounded-3xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.06)] ${hasHero ? "" : "p-5"}`}
+      className={
+        hasHero
+          ? "flex flex-col"
+          : "flex flex-col rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_10px_rgba(44,38,32,0.06)]"
+      }
     >
       {hasHero ? (
-        <div className="relative h-[330px] overflow-hidden rounded-t-3xl sm:h-[350px]">
+        <div className="relative h-[330px] overflow-hidden rounded-3xl border border-green-100 shadow-[0_2px_10px_rgba(44,38,32,0.08)] sm:h-[350px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imagePath}
