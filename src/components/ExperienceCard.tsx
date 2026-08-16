@@ -44,7 +44,7 @@ export function ExperienceCard({
     }
     if (wishlistPending) return;
     setWishlistPending(true);
-    window.setTimeout(() => onToggleWishlist(experience.id), 340);
+    window.setTimeout(() => onToggleWishlist(experience.id), 720);
   }
 
   const badges = (
@@ -151,7 +151,7 @@ export function ExperienceCard({
           </button>
           <button type="button" onClick={handleToggleWishlist} aria-pressed={showWishlisted} disabled={wishlistPending} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
             <span key={showWishlisted ? "liked" : "idle"} className={`flex h-18 w-18 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${showWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{showWishlisted ? "♥" : "♡"}</span>
-            やってみたい
+            {wishlistPending ? "追加しました" : "やってみたい"}
           </button>
           <button type="button" onClick={onNext} disabled={!onNext} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-ink-soft disabled:opacity-30">
             <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-md transition-transform group-active:scale-90">→</span>
