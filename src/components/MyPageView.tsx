@@ -1,6 +1,7 @@
 "use client";
 
 import type { User } from "@supabase/supabase-js";
+import type { Experience } from "@/data/experiences";
 
 interface MyPageViewProps {
   user: User | null;
@@ -8,9 +9,19 @@ interface MyPageViewProps {
   configured: boolean;
   onLogin: () => void;
   onSignOut: () => Promise<{ error: string | null }>;
+  hiddenItems: Experience[];
+  onRestoreHidden: (id: string) => void;
 }
 
-export function MyPageView({ user, loading, configured, onLogin, onSignOut }: MyPageViewProps) {
+export function MyPageView({
+  user,
+  loading,
+  configured,
+  onLogin,
+  onSignOut,
+  hiddenItems,
+  onRestoreHidden,
+}: MyPageViewProps) {
   return (
     <div className="px-5 pb-8 pt-8">
       <header>
@@ -58,8 +69,37 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut }: My
       <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5">
         <h2 className="font-bold text-green-950">データについて</h2>
         <p className="mt-2 text-sm leading-6 text-ink-soft">
-          現在の「やってみたい・やってみた」は、この端末に保存されています。DBへの引き継ぎは次のステップで行います。
+          現在の「やってみたい・やってみた・表示しない設定」は、この端末に保存されています。DBへの引き継ぎは次のステップで行います。
         </p>
+      </section>
+
+      <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5">
+        <h2 className="font-bold text-green-950">表示しない体験</h2>
+        {hiddenItems.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-soft">表示しない設定の体験はありません。</p>
+        ) : (
+          <details className="mt-2">
+            <summary className="cursor-pointer text-sm font-medium text-green-800">
+              {hiddenItems.length}件を確認する
+            </summary>
+            <ul className="mt-3 divide-y divide-green-100">
+              {hiddenItems.map((experience) => (
+                <li key={experience.id} className="flex items-center gap-3 py-3">
+                  <span className="min-w-0 flex-1 text-sm font-medium text-green-950">
+                    {experience.title}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onRestoreHidden(experience.id)}
+                    className="shrink-0 rounded-full border border-green-100 px-3 py-1.5 text-xs font-medium text-green-800"
+                  >
+                    表示に戻す
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </section>
     </div>
   );

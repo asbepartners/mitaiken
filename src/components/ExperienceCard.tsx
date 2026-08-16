@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
 import type { StatusEntry } from "@/hooks/useExperienceStatus";
 import { formatTiming } from "@/lib/timing";
@@ -9,6 +10,7 @@ interface ExperienceCardProps {
   entry?: StatusEntry;
   variant?: "default" | "featured";
   onNext?: () => void;
+  onHide?: (id: string) => void;
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
@@ -19,10 +21,12 @@ export function ExperienceCard({
   entry,
   variant = "default",
   onNext,
+  onHide,
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
 }: ExperienceCardProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const isWishlisted = entry?.status === "wishlist";
   const isTried = entry?.status === "cleared";
   const isFeatured = variant === "featured";
@@ -75,6 +79,16 @@ export function ExperienceCard({
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-green-950/95 via-green-950/25 to-green-950/15" />
+          {onHide && (
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label={`${experience.title}のメニュー`}
+              className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-paper/90 pb-1 text-lg font-bold leading-none text-green-950 shadow-md backdrop-blur"
+            >
+              …
+            </button>
+          )}
           <div className="absolute inset-0 flex flex-col p-5 pb-12">
             {badges}
             <div className="mt-auto text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
@@ -187,6 +201,38 @@ export function ExperienceCard({
           </button>
         </div>
       ))}
+
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center">
+          <button
+            type="button"
+            aria-label="メニューを閉じる"
+            onClick={() => setMenuOpen(false)}
+            className="absolute inset-0 bg-ink/30"
+          />
+          <div className="relative w-full max-w-sm rounded-t-3xl bg-paper px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl sm:pb-6">
+            <p className="text-xs font-medium text-ink-soft">この未体験について</p>
+            <p className="mt-1 font-bold text-green-950">{experience.title}</p>
+            <button
+              type="button"
+              onClick={() => {
+                onHide?.(experience.id);
+                setMenuOpen(false);
+              }}
+              className="mt-5 w-full rounded-full border border-coral-400 bg-coral-100 py-3 text-sm font-bold text-coral-500"
+            >
+              今後は表示しない
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(false)}
+              className="mt-2 w-full py-2 text-sm font-medium text-ink-soft"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

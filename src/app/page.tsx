@@ -11,6 +11,7 @@ import { WishlistView } from "@/components/WishlistView";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
+import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { Timing } from "@/lib/timing";
 
 export default function Home() {
@@ -20,6 +21,7 @@ export default function Home() {
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
   const { statusMap, toggleWishlist, markTried, undoTried, removeStatus } = useExperienceStatus();
+  const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
 
   const wishlistItems = useMemo(
     () => experiences.filter((experience) => statusMap[experience.id]?.status === "wishlist"),
@@ -48,7 +50,9 @@ export default function Home() {
         {tab === "explore" && (
           <ExploreView
             items={experiences}
+            hiddenIds={hiddenIds}
             statusMap={statusMap}
+            onHide={hideExperience}
             onToggleWishlist={toggleWishlist}
             onRequestMarkTried={setPendingId}
             onUndoTried={undoTried}
@@ -70,6 +74,8 @@ export default function Home() {
             configured={auth.configured}
             onLogin={() => setAuthOpen(true)}
             onSignOut={auth.signOut}
+            hiddenItems={experiences.filter((experience) => hiddenIds.includes(experience.id))}
+            onRestoreHidden={restoreExperience}
           />
         )}
       </main>

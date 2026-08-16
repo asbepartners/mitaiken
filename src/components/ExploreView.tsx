@@ -16,7 +16,9 @@ import {
 
 interface ExploreViewProps {
   items: Experience[];
+  hiddenIds: string[];
   statusMap: Record<string, StatusEntry>;
+  onHide: (id: string) => void;
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
@@ -24,7 +26,9 @@ interface ExploreViewProps {
 
 export function ExploreView({
   items,
+  hiddenIds,
   statusMap,
+  onHide,
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
@@ -36,8 +40,8 @@ export function ExploreView({
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const searchableItems = useMemo(
-    () => items.filter((experience) => !statusMap[experience.id]),
-    [items, statusMap]
+    () => items.filter((experience) => !statusMap[experience.id] && !hiddenIds.includes(experience.id)),
+    [hiddenIds, items, statusMap]
   );
 
   const filtered = useMemo(() => {
@@ -77,6 +81,15 @@ export function ExploreView({
         : nearest;
     }, 0);
     setCurrentIndex(nearestIndex);
+  }
+
+  function handleHide(id: string) {
+    const nextIndex = currentIndex === filtered.length - 1
+      ? Math.max(0, currentIndex - 1)
+      : currentIndex;
+    onHide(id);
+    setCurrentIndex(nextIndex);
+    requestAnimationFrame(() => scrollToCard(nextIndex));
   }
 
   return (
@@ -126,6 +139,7 @@ export function ExploreView({
                     entry={statusMap[experience.id]}
                     variant="featured"
                     onNext={currentIndex < filtered.length - 1 ? () => scrollToCard(currentIndex + 1) : undefined}
+                    onHide={handleHide}
                     onToggleWishlist={onToggleWishlist}
                     onRequestMarkTried={onRequestMarkTried}
                     onUndoTried={onUndoTried}
