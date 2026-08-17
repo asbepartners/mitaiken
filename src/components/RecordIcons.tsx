@@ -31,3 +31,16 @@ export function NotebookIcon({ className = "h-7 w-7" }: { className?: string }) 
     </svg>
   );
 }
+
+export function CrownIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={`${className} fill-none stroke-current stroke-[1.7] stroke-linecap-round stroke-linejoin-round`}
+      aria-hidden="true"
+    >
+      <path d="m4 8 4.2 3.2L12 5l3.8 6.2L20 8l-1.5 9h-13L4 8Z" />
+      <path d="M6 20h12" />
+    </svg>
+  );
+}

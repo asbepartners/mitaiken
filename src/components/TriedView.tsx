@@ -11,7 +11,7 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
-import { BookmarkIcon } from "./RecordIcons";
+import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 
 interface TriedItem {
   experience: Experience;
@@ -109,7 +109,7 @@ export function TriedView({
             <h1 className="text-[1.55rem] font-bold tracking-wide">わたしのはじめて帖</h1>
           </div>
           <p className="mt-1 text-sm font-medium text-green-950/80">
-            わたしの人生、なかなか楽しい。
+            「楽しかった」を、ひとつずつ。
           </p>
         </div>
       </header>
@@ -164,21 +164,23 @@ export function TriedView({
 
       {items.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
-          <BookmarkIcon className="mx-auto h-9 w-9 text-coral-500" />
+          <div className="flex items-center justify-center gap-2" aria-hidden="true">
+            <span className="text-xs text-[#d39a2c]">✦</span>
+            <BookmarkIcon className="h-9 w-9 text-coral-500" />
+            <span className="-mt-4 text-xs text-[#d39a2c]">✦</span>
+          </div>
           <h2 className="mt-3 text-lg font-bold text-green-950">
-            {wishlistCount > 0 ? "最初の1ページをつくろう" : "あなただけの一冊を育てよう"}
+            {wishlistCount > 0
+              ? "あなたの「やってみたい」が待っています。"
+              : "まだ知らない「楽しかった」が待っています。"}
           </h2>
           {wishlistCount > 0 ? (
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              「やってみたい」の中に、
-              <br />
-              もう体験したものはありませんか？
+              最初のひとつを、「やってみた」にしませんか？
             </p>
           ) : (
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              小さな「はじめて」を集めると、
-              <br />
-              ここに楽しかった時間がつづられていきます。
+              まずは「やってみたい」を、探しにいきませんか？
             </p>
           )}
           <button
@@ -186,7 +188,7 @@ export function TriedView({
             onClick={wishlistCount > 0 ? onOpenWishlist : onExplore}
             className="mt-5 rounded-full bg-coral-500 px-6 py-3 text-sm font-bold text-paper shadow-sm transition hover:bg-coral-400 active:scale-95"
           >
-            {wishlistCount > 0 ? "やってみたいリストを見る" : "はじめてを探してみる"}
+            {wishlistCount > 0 ? "やってみたいを見にいく" : "はじめてを探しにいく"}
           </button>
         </div>
       ) : filtered.length === 0 ? (
@@ -220,8 +222,9 @@ export function TriedView({
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div className="min-w-0 flex-1 px-3 py-2.5">
-                  <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
+                <div className="relative min-w-0 flex-1 px-3 py-2.5">
+                  <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
+                  <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
                   <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">

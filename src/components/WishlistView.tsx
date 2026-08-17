@@ -15,12 +15,21 @@ import { BookmarkIcon } from "./RecordIcons";
 
 interface WishlistViewProps {
   items: Experience[];
+  triedCount: number;
   markingId: string | null;
+  onExplore: () => void;
   onRequestMarkTried: (id: string) => void;
   onRemove: (id: string) => void;
 }
 
-export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }: WishlistViewProps) {
+export function WishlistView({
+  items,
+  triedCount,
+  markingId,
+  onExplore,
+  onRequestMarkTried,
+  onRemove,
+}: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -96,13 +105,27 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
       )}
 
       {items.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center">
-          <p className="text-2xl" aria-hidden>🔭</p>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            気になる未体験に ♡ をつけると
-            <br />
-            ここに集まっていきます。
+        <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
+          <div className="flex items-center justify-center gap-2" aria-hidden="true">
+            <span className="text-xs text-[#d39a2c]">✦</span>
+            <span className="text-4xl leading-none text-coral-500">♥</span>
+            <span className="-mt-4 text-xs text-[#d39a2c]">✦</span>
+          </div>
+          <h2 className="mt-3 text-lg font-bold text-green-950">
+            まだ知らない「やってみたい」が待っています。
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            {triedCount > 0
+              ? "次の楽しみを、探しにいきませんか？"
+              : "気になる「はじめて」を、探しにいきませんか？"}
           </p>
+          <button
+            type="button"
+            onClick={onExplore}
+            className="mt-5 rounded-full bg-coral-500 px-6 py-3 text-sm font-bold text-paper shadow-sm transition hover:bg-coral-400 active:scale-95"
+          >
+            やってみたいを探しにいく
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center text-sm text-ink-soft">

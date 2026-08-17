@@ -12,7 +12,7 @@ interface BottomNavProps {
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "tried", label: "はじめて帖" },
-  { key: "wishlist", label: "リスト" },
+  { key: "wishlist", label: "やってみたい" },
   { key: "explore", label: "探す" },
   { key: "mypage", label: "マイページ" },
 ];

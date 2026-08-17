@@ -61,7 +61,9 @@ export default function Home() {
         {tab === "wishlist" && (
           <WishlistView
             items={wishlistItems}
+            triedCount={triedItems.length}
             markingId={pendingId}
+            onExplore={() => setTab("explore")}
             onRequestMarkTried={setPendingId}
             onRemove={removeStatus}
           />
