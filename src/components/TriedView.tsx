@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
-import { Timing, formatTiming } from "@/lib/timing";
+import { Timing } from "@/lib/timing";
 import {
   countExperienceFilters,
   EMPTY_EXPERIENCE_FILTERS,
@@ -21,15 +21,28 @@ interface TriedItem {
 
 interface TriedViewProps {
   items: TriedItem[];
-  hasWishlistItems: boolean;
+  wishlistCount: number;
   onExplore: () => void;
   onOpenWishlist: () => void;
   onUndo: (id: string) => void;
 }
 
+function formatTimelineTiming(timing: Timing): string {
+  if (!timing.value || timing.type === "unknown") return "もっと\n以前";
+
+  const [year, month, day] = timing.value.split("-");
+  if (timing.type === "date" && month && day) {
+    return `${year}\n${Number(month)}.${Number(day)}`;
+  }
+  if (timing.type === "month" && month) {
+    return `${year}\n${Number(month)}月`;
+  }
+  return year;
+}
+
 export function TriedView({
   items,
-  hasWishlistItems,
+  wishlistCount,
   onExplore,
   onOpenWishlist,
   onUndo,
@@ -39,6 +52,8 @@ export function TriedView({
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const experiences = useMemo(() => items.map((item) => item.experience), [items]);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
+  const currentYear = String(new Date().getFullYear());
+  const currentYearCount = items.filter(({ timing }) => timing.value?.startsWith(currentYear)).length;
   const years = useMemo(
     () =>
       Array.from(
@@ -99,6 +114,26 @@ export function TriedView({
         </div>
       </header>
 
+      {items.length > 0 && (
+        <section className="mb-4 grid grid-cols-3 overflow-hidden rounded-3xl border border-green-100 bg-paper/80 px-2 py-5 shadow-[0_2px_12px_rgba(44,38,32,0.05)]">
+          <div className="px-1 text-center">
+            <p className="text-[11px] font-bold leading-snug text-ink-soft">これまでの<br />はじめて</p>
+            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{items.length}</p>
+            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+          </div>
+          <div className="border-x border-green-100 px-1 text-center">
+            <p className="text-[11px] font-bold leading-snug text-ink-soft">今年の<br />はじめて</p>
+            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{currentYearCount}</p>
+            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+          </div>
+          <div className="px-1 text-center">
+            <p className="text-[11px] font-bold leading-snug text-ink-soft">これからの<br />楽しみ</p>
+            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{wishlistCount}</p>
+            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+          </div>
+        </section>
+      )}
+
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {["all", ...years, ...(hasUnknownYear ? ["unknown"] : [])].map((year) => {
           const isActive = selectedYear === year;
@@ -131,9 +166,9 @@ export function TriedView({
         <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
           <BookmarkIcon className="mx-auto h-9 w-9 text-coral-500" />
           <h2 className="mt-3 text-lg font-bold text-green-950">
-            {hasWishlistItems ? "最初の1ページをつくろう" : "あなただけの一冊を育てよう"}
+            {wishlistCount > 0 ? "最初の1ページをつくろう" : "あなただけの一冊を育てよう"}
           </h2>
-          {hasWishlistItems ? (
+          {wishlistCount > 0 ? (
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">
               「やってみたい」の中に、
               <br />
@@ -148,10 +183,10 @@ export function TriedView({
           )}
           <button
             type="button"
-            onClick={hasWishlistItems ? onOpenWishlist : onExplore}
+            onClick={wishlistCount > 0 ? onOpenWishlist : onExplore}
             className="mt-5 rounded-full bg-coral-500 px-6 py-3 text-sm font-bold text-paper shadow-sm transition hover:bg-coral-400 active:scale-95"
           >
-            {hasWishlistItems ? "やってみたいリストを見る" : "はじめてを探してみる"}
+            {wishlistCount > 0 ? "やってみたいリストを見る" : "はじめてを探してみる"}
           </button>
         </div>
       ) : filtered.length === 0 ? (
@@ -163,13 +198,20 @@ export function TriedView({
           {filtered.map(({ experience, timing, photoUrl }, index) => (
             <li
               key={experience.id}
-              className="relative pl-6"
+              className="flex gap-3"
             >
-              {index < filtered.length - 1 && (
-                <span className="absolute bottom-[-0.625rem] left-[0.3rem] top-3 w-px bg-green-100" aria-hidden="true" />
-              )}
-              <span className="absolute left-0 top-5 h-2.5 w-2.5 rounded-full border-2 border-coral-400 bg-paper" aria-hidden="true" />
-              <div className="flex h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
+                <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
+                  {formatTimelineTiming(timing)}
+                </p>
+                <span
+                  className={`absolute right-0 w-px bg-green-100 ${
+                    index === 0 ? "top-4" : "top-0"
+                  } ${index === filtered.length - 1 ? "bottom-1/2" : "bottom-[-0.625rem]"}`}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="flex h-28 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
                 <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -179,8 +221,7 @@ export function TriedView({
                   />
                 </div>
                 <div className="min-w-0 flex-1 px-3 py-2.5">
-                  <p className="text-[11px] font-bold text-coral-500">{formatTiming(timing)}</p>
-                  <h2 className="mt-0.5 line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
+                  <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
                   <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
