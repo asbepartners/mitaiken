@@ -12,19 +12,21 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
-import { BookmarkIcon, NotebookIcon } from "./RecordIcons";
+import { BookmarkIcon } from "./RecordIcons";
 
 interface TriedItem {
   experience: Experience;
   timing: Timing;
+  photoUrl?: string;
 }
 
 interface TriedViewProps {
   items: TriedItem[];
+  onExplore: () => void;
   onUndo: (id: string) => void;
 }
 
-export function TriedView({ items, onUndo }: TriedViewProps) {
+export function TriedView({ items, onExplore, onUndo }: TriedViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
@@ -45,7 +47,7 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
 
   return (
     <div className="px-4 pb-4">
-      <header className="relative -mx-4 mb-4 h-40 overflow-hidden border-b border-green-100">
+      <header className="relative -mx-4 mb-4 h-48 overflow-hidden border-b border-green-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`${assetBase}/header-tried-v1.png`}
@@ -67,11 +69,11 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
         </button>
         <div className="absolute right-5 top-4 max-w-[75%] text-right [text-shadow:0_1px_0_rgba(255,253,247,0.95)]">
           <div className="flex items-center justify-end gap-1.5 text-green-950">
+            <BookmarkIcon filled className="h-7 w-7 shrink-0 text-coral-500" />
             <h1 className="text-[1.55rem] font-bold tracking-wide">わたしのはじめて帖</h1>
-            <NotebookIcon className="h-7 w-7 shrink-0" />
           </div>
           <p className="mt-1 text-sm font-medium text-green-950/80">
-            ひとつずつ、経験がつづられていく。
+            わたしの人生、なかなか楽しい。
           </p>
         </div>
       </header>
@@ -89,40 +91,58 @@ export function TriedView({ items, onUndo }: TriedViewProps) {
       )}
 
       {items.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center">
-          <p className="text-2xl" aria-hidden>
-            🎉
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            未体験をやってみたら
+        <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
+          <BookmarkIcon className="mx-auto h-9 w-9 text-coral-500" />
+          <h2 className="mt-3 text-lg font-bold text-green-950">
+            あなただけの一冊を育てよう
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            小さな「はじめて」を集めると、
             <br />
-            ここに冒険の記録が増えていきます。
+            ここに楽しかった時間がつづられていきます。
           </p>
+          <button
+            type="button"
+            onClick={onExplore}
+            className="mt-5 rounded-full bg-coral-500 px-6 py-3 text-sm font-bold text-paper shadow-sm transition hover:bg-coral-400 active:scale-95"
+          >
+            はじめてを探してみる
+          </button>
         </div>
       ) : filtered.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center text-sm text-ink-soft">
           条件に合う「やってみた」が見つかりませんでした。
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {filtered.map(({ experience, timing }) => (
+        <ul className="flex flex-col gap-2.5">
+          {filtered.map(({ experience, timing, photoUrl }) => (
             <li
               key={experience.id}
-              className="flex items-start gap-3 rounded-3xl border border-green-100 bg-paper p-4 shadow-[0_2px_10px_rgba(44,38,32,0.06)]"
+              className="flex min-h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
-              <span className="mt-0.5 text-coral-500" aria-hidden>
-                <BookmarkIcon filled className="h-6 w-6" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-[11px] font-medium text-green-800">
+              <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="min-w-0 flex-1 px-3 py-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
+                    {experience.title}
+                  </h2>
+                  <BookmarkIcon filled className="h-5 w-5 shrink-0 text-coral-500" />
+                </div>
+                <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                   {CATEGORY_LABELS[experience.category]}
                 </span>
-                <h2 className="mt-2 text-base font-bold text-green-950">{experience.title}</h2>
-                <p className="mt-1 text-xs text-ink-soft">{formatTiming(timing)}にやってみた</p>
+                <p className="mt-1 text-xs font-medium text-ink-soft">{formatTiming(timing)}にやってみた</p>
                 <button
                   type="button"
                   onClick={() => onUndo(experience.id)}
-                  className="mt-2 text-xs font-medium text-ink-soft underline decoration-dotted underline-offset-4 hover:text-coral-500"
+                  className="mt-1.5 text-[11px] font-medium text-ink-soft underline decoration-dotted underline-offset-4 hover:text-coral-500"
                 >
                   やってみたことを取り消す
                 </button>

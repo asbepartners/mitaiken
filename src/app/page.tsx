@@ -15,7 +15,7 @@ import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { Timing } from "@/lib/timing";
 
 export default function Home() {
-  const [tab, setTab] = useState<Tab>("explore");
+  const [tab, setTab] = useState<Tab>("tried");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
@@ -32,7 +32,7 @@ export default function Home() {
       experiences.flatMap((experience) => {
         const entry = statusMap[experience.id];
         if (entry?.status !== "cleared") return [];
-        return [{ experience, timing: entry.timing }];
+        return [{ experience, timing: entry.timing, photoUrl: entry.photoUrl }];
       }),
     [experiences, statusMap]
   );
@@ -66,7 +66,13 @@ export default function Home() {
             onRemove={removeStatus}
           />
         )}
-        {tab === "tried" && <TriedView items={triedItems} onUndo={undoTried} />}
+        {tab === "tried" && (
+          <TriedView
+            items={triedItems}
+            onExplore={() => setTab("explore")}
+            onUndo={undoTried}
+          />
+        )}
         {tab === "mypage" && (
           <MyPageView
             user={auth.user}

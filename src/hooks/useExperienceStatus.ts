@@ -5,7 +5,7 @@ import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 
 export type StatusEntry =
   | { status: "wishlist" }
-  | { status: "cleared"; timing: Timing };
+  | { status: "cleared"; timing: Timing; photoUrl?: string };
 
 type StatusMap = Record<string, StatusEntry>;
 
@@ -26,7 +26,8 @@ function normalizeEntry(raw: unknown): StatusEntry | null {
     if (candidate.status === "wishlist") return { status: "wishlist" };
     if (candidate.status === "cleared") {
       const timing = isValidTiming(candidate.timing) ? candidate.timing : UNKNOWN_TIMING;
-      return { status: "cleared", timing };
+      const photoUrl = typeof candidate.photoUrl === "string" ? candidate.photoUrl : undefined;
+      return { status: "cleared", timing, photoUrl };
     }
   }
 
