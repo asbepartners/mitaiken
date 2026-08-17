@@ -8,7 +8,6 @@ interface BottomNavProps {
   active: Tab;
   onChange: (tab: Tab) => void;
   wishlistCount: number;
-  triedCount: number;
 }
 
 const TABS: { key: Tab; label: string }[] = [
@@ -25,11 +24,11 @@ function NavIcon({ tab }: { tab: Tab }) {
   return <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 21c.4-4.1 2.6-6.2 6.5-6.2s6.1 2.1 6.5 6.2"/></svg>;
 }
 
-export function BottomNav({ active, onChange, wishlistCount, triedCount }: BottomNavProps) {
+export function BottomNav({ active, onChange, wishlistCount }: BottomNavProps) {
   const counts: Record<Tab, number | null> = {
     explore: null,
     wishlist: wishlistCount,
-    tried: triedCount,
+    tried: null,
     mypage: null,
   };
 

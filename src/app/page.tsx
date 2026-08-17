@@ -92,7 +92,6 @@ export default function Home() {
         active={tab}
         onChange={setTab}
         wishlistCount={wishlistItems.length}
-        triedCount={triedItems.length}
       />
 
       {pendingExperience && (
