@@ -69,7 +69,9 @@ export default function Home() {
         {tab === "tried" && (
           <TriedView
             items={triedItems}
+            hasWishlistItems={wishlistItems.length > 0}
             onExplore={() => setTab("explore")}
+            onOpenWishlist={() => setTab("wishlist")}
             onUndo={undoTried}
           />
         )}

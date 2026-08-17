@@ -22,11 +22,19 @@ interface TriedItem {
 
 interface TriedViewProps {
   items: TriedItem[];
+  hasWishlistItems: boolean;
   onExplore: () => void;
+  onOpenWishlist: () => void;
   onUndo: (id: string) => void;
 }
 
-export function TriedView({ items, onExplore, onUndo }: TriedViewProps) {
+export function TriedView({
+  items,
+  hasWishlistItems,
+  onExplore,
+  onOpenWishlist,
+  onUndo,
+}: TriedViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
@@ -94,19 +102,27 @@ export function TriedView({ items, onExplore, onUndo }: TriedViewProps) {
         <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
           <BookmarkIcon className="mx-auto h-9 w-9 text-coral-500" />
           <h2 className="mt-3 text-lg font-bold text-green-950">
-            あなただけの一冊を育てよう
+            {hasWishlistItems ? "最初の1ページをつくろう" : "あなただけの一冊を育てよう"}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-            小さな「はじめて」を集めると、
-            <br />
-            ここに楽しかった時間がつづられていきます。
-          </p>
+          {hasWishlistItems ? (
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              「やってみたい」の中に、
+              <br />
+              もう体験したものはありませんか？
+            </p>
+          ) : (
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              小さな「はじめて」を集めると、
+              <br />
+              ここに楽しかった時間がつづられていきます。
+            </p>
+          )}
           <button
             type="button"
-            onClick={onExplore}
+            onClick={hasWishlistItems ? onOpenWishlist : onExplore}
             className="mt-5 rounded-full bg-coral-500 px-6 py-3 text-sm font-bold text-paper shadow-sm transition hover:bg-coral-400 active:scale-95"
           >
-            はじめてを探してみる
+            {hasWishlistItems ? "やってみたいリストを見る" : "はじめてを探してみる"}
           </button>
         </div>
       ) : filtered.length === 0 ? (
@@ -118,7 +134,7 @@ export function TriedView({ items, onExplore, onUndo }: TriedViewProps) {
           {filtered.map(({ experience, timing, photoUrl }) => (
             <li
               key={experience.id}
-              className="flex min-h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
+              className="flex h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

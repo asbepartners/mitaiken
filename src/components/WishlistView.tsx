@@ -113,7 +113,7 @@ export function WishlistView({ items, markingId, onRequestMarkTried, onRemove }:
           {filtered.map((experience) => (
             <li
               key={experience.id}
-              className="relative flex min-h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
+              className="relative flex h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
