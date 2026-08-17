@@ -116,21 +116,24 @@ export function TriedView({
       </header>
 
       {items.length > 0 && (
-        <section className="mb-4 grid grid-cols-3 overflow-hidden rounded-3xl border border-green-100 bg-paper/80 px-2 py-5 shadow-[0_2px_12px_rgba(44,38,32,0.05)]">
+        <section className="mb-4 grid grid-cols-3 overflow-hidden rounded-3xl border border-green-100 bg-paper/80 px-2 py-3 shadow-[0_2px_12px_rgba(44,38,32,0.05)]">
           <div className="px-1 text-center">
-            <p className="text-[11px] font-bold leading-snug text-ink-soft">これまでの<br />はじめて</p>
-            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{items.length}</p>
-            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+            <p className="text-[10px] font-bold leading-snug text-ink-soft">これまでの<br />はじめて</p>
+            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+              {items.length}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+            </p>
           </div>
           <div className="border-x border-green-100 px-1 text-center">
-            <p className="text-[11px] font-bold leading-snug text-ink-soft">今年の<br />はじめて</p>
-            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{currentYearCount}</p>
-            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+            <p className="text-[10px] font-bold leading-snug text-ink-soft">今年の<br />はじめて</p>
+            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+              {currentYearCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+            </p>
           </div>
           <div className="px-1 text-center">
-            <p className="text-[11px] font-bold leading-snug text-ink-soft">これからの<br />楽しみ</p>
-            <p className="mt-1 text-3xl font-bold leading-none text-green-800">{wishlistCount}</p>
-            <p className="mt-1 text-[10px] text-ink-soft">個</p>
+            <p className="text-[10px] font-bold leading-snug text-ink-soft">これからの<br />楽しみ</p>
+            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+              {wishlistCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+            </p>
           </div>
         </section>
       )}
@@ -200,25 +203,25 @@ export function TriedView({
           条件に合う「やってみた」が見つかりませんでした。
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-2.5">
           {filtered.map(({ experience, timing, photoUrl }, index) => (
             <li
               key={experience.id}
               className="flex gap-3"
             >
-              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-3 text-right">
+              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
                   {formatTimelineTiming(timing)}
                 </p>
                 <span
                   className={`absolute right-0 w-px bg-green-100 ${
-                    index === 0 ? "top-3" : "top-0"
+                    index === 0 ? "top-4" : "top-0"
                   } ${index === filtered.length - 1 ? "bottom-1/2" : "bottom-[-0.625rem]"}`}
                   aria-hidden="true"
                 />
               </div>
-              <div className="flex h-24 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
-                <div className="w-24 shrink-0 self-stretch overflow-hidden rounded-2xl">
+              <div className="flex h-28 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+                <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
@@ -226,12 +229,12 @@ export function TriedView({
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div className="relative min-w-0 flex-1 px-3 py-2">
-                  <CrownIcon className="absolute right-2.5 top-2 h-5 w-5 text-[#d39a2c]" />
-                  <h2 className="line-clamp-2 pr-7 text-sm font-bold leading-snug text-green-950">
+                <div className="relative min-w-0 flex-1 px-3 py-2.5">
+                  <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
+                  <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
-                  <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[9px] font-medium text-green-800">
+                  <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                     {CATEGORY_LABELS[experience.category]}
                   </span>
                   <button
