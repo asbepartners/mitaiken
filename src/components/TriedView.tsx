@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
 import { Timing, formatTiming } from "@/lib/timing";
-import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
 import {
   countExperienceFilters,
   EMPTY_EXPERIENCE_FILTERS,
@@ -35,22 +34,36 @@ export function TriedView({
   onOpenWishlist,
   onUndo,
 }: TriedViewProps) {
-  const [category, setCategory] = useState<CategoryFilterValue>("all");
+  const [selectedYear, setSelectedYear] = useState<string>("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const experiences = useMemo(() => items.map((item) => item.experience), [items]);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
+  const years = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          items.flatMap(({ timing }) => {
+            const year = timing.value?.slice(0, 4);
+            return year ? [year] : [];
+          })
+        )
+      ).sort((a, b) => Number(b) - Number(a)),
+    [items]
+  );
+  const hasUnknownYear = items.some(({ timing }) => !timing.value);
   const filtered = useMemo(
     () =>
-      items.filter(({ experience }) => {
-        const matchesCategory =
-          category === "all" ||
-          (category === "home"
-            ? experience.place.includes("自宅")
-            : experience.category === category);
-        return matchesCategory && matchesExperienceFilters(experience, filters);
-      }),
-    [category, filters, items]
+      items
+        .filter(({ experience, timing }) => {
+          const year = timing.value?.slice(0, 4);
+          const matchesYear =
+            selectedYear === "all" ||
+            (selectedYear === "unknown" ? !year : year === selectedYear);
+          return matchesYear && matchesExperienceFilters(experience, filters);
+        })
+        .sort((a, b) => (b.timing.value ?? "").localeCompare(a.timing.value ?? "")),
+    [filters, items, selectedYear]
   );
 
   return (
@@ -86,8 +99,24 @@ export function TriedView({
         </div>
       </header>
 
-      <div className="mb-4">
-        <CategoryFilter value={category} onChange={setCategory} />
+      <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {["all", ...years, ...(hasUnknownYear ? ["unknown"] : [])].map((year) => {
+          const isActive = selectedYear === year;
+          return (
+            <button
+              key={year}
+              type="button"
+              onClick={() => setSelectedYear(year)}
+              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
+                  : "border-green-100 bg-paper text-green-800"
+              }`}
+            >
+              {year === "all" ? "すべて" : year === "unknown" ? "もっと以前" : `${year}年`}
+            </button>
+          );
+        })}
       </div>
 
       {items.length > 0 && (
@@ -131,37 +160,40 @@ export function TriedView({
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">
-          {filtered.map(({ experience, timing, photoUrl }) => (
+          {filtered.map(({ experience, timing, photoUrl }, index) => (
             <li
               key={experience.id}
-              className="flex h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
+              className="relative pl-6"
             >
-              <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1 px-3 py-2.5">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
+              {index < filtered.length - 1 && (
+                <span className="absolute bottom-[-0.625rem] left-[0.3rem] top-3 w-px bg-green-100" aria-hidden="true" />
+              )}
+              <span className="absolute left-0 top-5 h-2.5 w-2.5 rounded-full border-2 border-coral-400 bg-paper" aria-hidden="true" />
+              <div className="flex h-28 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+                <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1 px-3 py-2.5">
+                  <p className="text-[11px] font-bold text-coral-500">{formatTiming(timing)}</p>
+                  <h2 className="mt-0.5 line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
-                  <BookmarkIcon filled className="h-5 w-5 shrink-0 text-coral-500" />
+                  <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
+                    {CATEGORY_LABELS[experience.category]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onUndo(experience.id)}
+                    className="mt-1 text-[10px] font-medium text-ink-soft underline decoration-dotted underline-offset-4 hover:text-coral-500"
+                  >
+                    記録を取り消す
+                  </button>
                 </div>
-                <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                  {CATEGORY_LABELS[experience.category]}
-                </span>
-                <p className="mt-1 text-xs font-medium text-ink-soft">{formatTiming(timing)}にやってみた</p>
-                <button
-                  type="button"
-                  onClick={() => onUndo(experience.id)}
-                  className="mt-1.5 text-[11px] font-medium text-ink-soft underline decoration-dotted underline-offset-4 hover:text-coral-500"
-                >
-                  やってみたことを取り消す
-                </button>
               </div>
             </li>
           ))}
@@ -176,7 +208,7 @@ export function TriedView({
           onClose={() => setSearchOpen(false)}
           onApply={(nextFilters) => {
             setFilters(nextFilters);
-            setCategory("all");
+            setSelectedYear("all");
             setSearchOpen(false);
           }}
         />
