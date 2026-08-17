@@ -48,6 +48,7 @@ export function TriedView({
   onUndo,
 }: TriedViewProps) {
   const [selectedYear, setSelectedYear] = useState<string>("all");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const experiences = useMemo(() => items.map((item) => item.experience), [items]);
@@ -141,7 +142,10 @@ export function TriedView({
             <button
               key={year}
               type="button"
-              onClick={() => setSelectedYear(year)}
+              onClick={() => {
+                setSelectedYear(year);
+                setOpenMenuId(null);
+              }}
               className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
@@ -196,25 +200,25 @@ export function TriedView({
           条件に合う「やってみた」が見つかりませんでした。
         </p>
       ) : (
-        <ul className="flex flex-col gap-2.5">
+        <ul className="flex flex-col gap-2">
           {filtered.map(({ experience, timing, photoUrl }, index) => (
             <li
               key={experience.id}
               className="flex gap-3"
             >
-              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
+              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-3 text-right">
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
                   {formatTimelineTiming(timing)}
                 </p>
                 <span
                   className={`absolute right-0 w-px bg-green-100 ${
-                    index === 0 ? "top-4" : "top-0"
+                    index === 0 ? "top-3" : "top-0"
                   } ${index === filtered.length - 1 ? "bottom-1/2" : "bottom-[-0.625rem]"}`}
                   aria-hidden="true"
                 />
               </div>
-              <div className="flex h-28 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
-                <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+              <div className="flex h-24 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+                <div className="w-24 shrink-0 self-stretch overflow-hidden rounded-2xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
@@ -222,21 +226,37 @@ export function TriedView({
                     className="h-full w-full object-cover"
                   />
                 </div>
-                <div className="relative min-w-0 flex-1 px-3 py-2.5">
-                  <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
-                  <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
+                <div className="relative min-w-0 flex-1 px-3 py-2">
+                  <CrownIcon className="absolute right-2.5 top-2 h-5 w-5 text-[#d39a2c]" />
+                  <h2 className="line-clamp-2 pr-7 text-sm font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
-                  <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
+                  <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[9px] font-medium text-green-800">
                     {CATEGORY_LABELS[experience.category]}
                   </span>
                   <button
                     type="button"
-                    onClick={() => onUndo(experience.id)}
-                    className="mt-1 text-[10px] font-medium text-ink-soft underline decoration-dotted underline-offset-4 hover:text-coral-500"
+                    onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
+                    aria-label={`${experience.title}のメニュー`}
+                    aria-expanded={openMenuId === experience.id}
+                    className="absolute bottom-1.5 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-ivory-deep text-sm font-bold leading-none text-ink-soft"
                   >
-                    記録を取り消す
+                    …
                   </button>
+                  {openMenuId === experience.id && (
+                    <div className="absolute bottom-1.5 right-9 z-10 rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUndo(experience.id);
+                          setOpenMenuId(null);
+                        }}
+                        className="whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] font-medium text-coral-500 hover:bg-coral-100"
+                      >
+                        記録を取り消す
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </li>
@@ -253,6 +273,7 @@ export function TriedView({
           onApply={(nextFilters) => {
             setFilters(nextFilters);
             setSelectedYear("all");
+            setOpenMenuId(null);
             setSearchOpen(false);
           }}
         />
