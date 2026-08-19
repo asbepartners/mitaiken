@@ -43,6 +43,22 @@ export default function Home() {
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
 
   function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    const target = event.target as HTMLElement;
+    let node: HTMLElement | null = target;
+    let isExploreCardGesture = false;
+    if (tab === "explore") {
+      while (node && node !== event.currentTarget) {
+        if (node.classList.contains("h-[330px]")) {
+          isExploreCardGesture = true;
+          break;
+        }
+        node = node.parentElement;
+      }
+    }
+    if (isExploreCardGesture) {
+      touchStart.current = null;
+      return;
+    }
     const touch = event.touches[0];
     touchStart.current = { x: touch.clientX, y: touch.clientY };
   }
