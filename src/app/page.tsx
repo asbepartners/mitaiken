@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { TouchEvent, useMemo, useRef, useState } from "react";
 import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
@@ -14,8 +14,11 @@ import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { Timing } from "@/lib/timing";
 
+const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
+
 export default function Home() {
   const [tab, setTab] = useState<Tab>("tried");
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
@@ -39,6 +42,29 @@ export default function Home() {
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
 
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    const touch = event.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  }
+
+  function handleTouchEnd(event: TouchEvent<HTMLElement>) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || pendingId || authOpen) return;
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+
+    if (Math.abs(dx) < 60 || Math.abs(dx) <= Math.abs(dy) * 1.2) return;
+
+    const currentIndex = TAB_ORDER.indexOf(tab);
+    const nextIndex = dx < 0 ? currentIndex + 1 : currentIndex - 1;
+    if (nextIndex >= 0 && nextIndex < TAB_ORDER.length) {
+      setTab(TAB_ORDER[nextIndex]);
+    }
+  }
+
   function handleConfirmTiming(timing: Timing) {
     if (pendingId) markTried(pendingId, timing);
     setPendingId(null);
@@ -46,7 +72,11 @@ export default function Home() {
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-ivory bg-paper-texture">
-      <main className="mx-auto w-full max-w-2xl flex-1 pb-24">
+      <main
+        className="mx-auto w-full max-w-2xl flex-1 pb-24"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {tab === "explore" && (
           <ExploreView
             items={experiences}

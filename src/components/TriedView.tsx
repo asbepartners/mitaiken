@@ -115,28 +115,26 @@ export function TriedView({
         </div>
       </header>
 
-      {items.length > 0 && (
-        <section className="mb-4 grid grid-cols-3 overflow-hidden rounded-3xl border border-green-100 bg-paper/80 px-2 py-3 shadow-[0_2px_12px_rgba(44,38,32,0.05)]">
-          <div className="px-1 text-center">
-            <p className="text-[10px] font-bold leading-snug text-ink-soft">これまでの<br />はじめて</p>
-            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
-              {items.length}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
-            </p>
-          </div>
-          <div className="border-x border-green-100 px-1 text-center">
-            <p className="text-[10px] font-bold leading-snug text-ink-soft">今年の<br />はじめて</p>
-            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
-              {currentYearCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
-            </p>
-          </div>
-          <div className="px-1 text-center">
-            <p className="text-[10px] font-bold leading-snug text-ink-soft">これからの<br />楽しみ</p>
-            <p className="mt-1 text-2xl font-bold leading-none text-green-800">
-              {wishlistCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
-            </p>
-          </div>
-        </section>
-      )}
+      <section className="mb-4 grid grid-cols-3 overflow-hidden rounded-3xl border border-green-100 bg-paper/80 px-2 py-3 shadow-[0_2px_12px_rgba(44,38,32,0.05)]">
+        <div className="px-1 text-center">
+          <p className="text-[10px] font-bold leading-snug text-ink-soft">これまでの<br />はじめて</p>
+          <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+            {items.length}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+          </p>
+        </div>
+        <div className="border-x border-green-100 px-1 text-center">
+          <p className="text-[10px] font-bold leading-snug text-ink-soft">今年の<br />はじめて</p>
+          <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+            {currentYearCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+          </p>
+        </div>
+        <div className="px-1 text-center">
+          <p className="text-[10px] font-bold leading-snug text-ink-soft">これからの<br />楽しみ</p>
+          <p className="mt-1 text-2xl font-bold leading-none text-green-800">
+            {wishlistCount}<span className="ml-1 text-[10px] font-normal text-ink-soft">個</span>
+          </p>
+        </div>
+      </section>
 
       <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {["all", ...years, ...(hasUnknownYear ? ["unknown"] : [])].map((year) => {
@@ -205,10 +203,7 @@ export function TriedView({
       ) : (
         <ul className="flex flex-col gap-2.5">
           {filtered.map(({ experience, timing, photoUrl }, index) => (
-            <li
-              key={experience.id}
-              className="flex gap-3"
-            >
+            <li key={experience.id} className="flex gap-3">
               <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
                   {formatTimelineTiming(timing)}
