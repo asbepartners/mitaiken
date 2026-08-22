@@ -14,13 +14,8 @@ interface CatalogRow {
   title: string;
   description: string;
   image_path: string | null;
-  place_label: string | null;
-  duration_label: string | null;
-  duration_minutes: number | null;
-  cost_label: string | null;
-  cost_level: number | null;
   category: { slug: string; name: string } | { slug: string; name: string }[];
-  experience_tags: {
+  template_tags: {
     tag: { slug: string; name: string } | { slug: string; name: string }[] | null;
   }[];
 }
@@ -46,7 +41,7 @@ function first<T>(value: T | T[]): T {
 
 function toExperience(row: CatalogRow): Experience {
   const category = first(row.category);
-  const tagSlugs = row.experience_tags.flatMap(({ tag }) => {
+  const tagSlugs = row.template_tags.flatMap(({ tag }) => {
     if (!tag) return [];
     return [first(tag).slug];
   });
@@ -57,11 +52,11 @@ function toExperience(row: CatalogRow): Experience {
     title: row.title,
     description: row.description,
     category: toCategory(category.slug),
-    place: row.place_label ?? "",
-    time: row.duration_label ?? "",
-    timeMinutes: row.duration_minutes ?? 0,
-    cost: row.cost_label ?? "",
-    costLevel: (row.cost_level ?? 0) as CostLevel,
+    place: "",
+    time: "",
+    timeMinutes: 0,
+    cost: "",
+    costLevel: 0 as CostLevel,
     solo: tagSlugs.includes("solo-ok"),
   };
 }
@@ -79,24 +74,26 @@ export function useExperienceCatalog() {
 
     async function loadCatalog() {
       const { data, error } = await catalogClient
-        .from("experiences")
+        .from("templates")
         .select(`
           slug,
           title,
           description,
           image_path,
-          place_label,
-          duration_label,
-          duration_minutes,
-          cost_label,
-          cost_level,
           category:categories!inner(slug, name),
-          experience_tags(tag:tags(slug, name))
+          template_tags(tag:tags(slug, name))
         `)
         .eq("publication_status", "published")
         .order("display_order", { ascending: true });
 
-      if (!active || error || !data) return;
+      if (!active) return;
+
+      if (error) {
+        console.error("Failed to load templates from Supabase:", error);
+        return;
+      }
+
+      if (!data) return;
       setExperiences((data as unknown as CatalogRow[]).map(toExperience));
       setSource("supabase");
     }
