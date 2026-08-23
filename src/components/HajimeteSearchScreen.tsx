@@ -38,12 +38,16 @@ function timingSortKey(record: TriedRecord): string {
 
 function matchesTextAndCategory(
   experience: Experience,
+  records: TriedRecord[],
   query: string,
   selectedCategories: Category[]
 ): boolean {
   const normalizedQuery = query.trim().toLocaleLowerCase("ja");
+  const recordText = records
+    .map((record) => `${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`)
+    .join(" ");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]}`
+    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${recordText}`
       .toLocaleLowerCase("ja");
 
   return (
@@ -85,7 +89,7 @@ export function HajimeteSearchScreen({
   const resultCount = useMemo(() => {
     if (draft.view === "firsts") {
       return items.filter(({ experience, records }) => {
-        if (!matchesTextAndCategory(experience, draft.query, draft.categories)) return false;
+        if (!matchesTextAndCategory(experience, records, draft.query, draft.categories)) return false;
         const first = firstRecord(records);
         if (!first) return false;
         const year = first.timing.value?.slice(0, 4);
@@ -94,7 +98,7 @@ export function HajimeteSearchScreen({
     }
 
     return items.reduce((count, { experience, records }) => {
-      if (!matchesTextAndCategory(experience, draft.query, draft.categories)) return count;
+      if (!matchesTextAndCategory(experience, records, draft.query, draft.categories)) return count;
       return (
         count +
         records.filter((record) => {
@@ -144,7 +148,7 @@ export function HajimeteSearchScreen({
           </button>
           <div>
             <h2 className="text-xl font-bold text-green-950">はじめて帖を探す</h2>
-            <p className="text-xs text-ink-soft">過去のはじめてや記録を振り返れます</p>
+            <p className="text-xs text-ink-soft">いつ・どこで・誰と・何を、まとめて探せます</p>
           </div>
         </header>
 
@@ -157,7 +161,7 @@ export function HajimeteSearchScreen({
               onChange={(event) =>
                 setDraft((current) => ({ ...current, query: event.target.value }))
               }
-              placeholder="陶芸、喫茶店、旅行…"
+              placeholder="体験・場所・一緒にいた人・メモ…"
               className="min-w-0 flex-1 bg-transparent py-1 text-base text-ink outline-none [&::-webkit-search-cancel-button]:hidden"
             />
             {draft.query && (

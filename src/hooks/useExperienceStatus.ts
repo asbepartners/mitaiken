@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
-import type { TriedRecordDraft } from "@/components/TriedTimingSheet";
+import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
 
 export interface TriedRecord {
   id: string;
   timing: Timing;
+  place?: string;
+  companion?: string;
   photoUrl?: string;
   memo?: string;
 }
@@ -77,6 +79,8 @@ function readRecordsStorage(): RecordsMap {
         return [{
           id,
           timing,
+          place: typeof candidate.place === "string" ? candidate.place : undefined,
+          companion: typeof candidate.companion === "string" ? candidate.companion : undefined,
           photoUrl: typeof candidate.photoUrl === "string" ? candidate.photoUrl : undefined,
           memo: typeof candidate.memo === "string" ? candidate.memo : undefined,
         }];
@@ -232,7 +236,7 @@ export function useExperienceStatus() {
     const { data: logs } = ids.length
       ? await supabase
           .from("experience_logs")
-          .select("id, user_experience_id, experienced_year, experienced_month, experienced_day, memo, photo_path, created_at")
+          .select("id, user_experience_id, experienced_year, experienced_month, experienced_day, place, companion, memo, photo_path, created_at")
           .in("user_experience_id", ids)
           .order("created_at", { ascending: true })
       : { data: [] };
@@ -252,6 +256,8 @@ export function useExperienceStatus() {
       const record: TriedRecord = {
         id: log.id,
         timing: dbToTiming(log.experienced_year, log.experienced_month, log.experienced_day),
+        place: log.place ?? undefined,
+        companion: log.companion ?? undefined,
         photoUrl: log.photo_path ?? undefined,
         memo: log.memo ?? undefined,
       };
@@ -335,7 +341,7 @@ export function useExperienceStatus() {
     }
   }, [userId]);
 
-  const markTried = useCallback((slug: string, record: TriedRecordDraft) => {
+  const markTried = useCallback((slug: string, record: MemoryRecordDraft) => {
     const localRecord: TriedRecord = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       ...record,
@@ -366,6 +372,8 @@ export function useExperienceStatus() {
         await supabase.from("experience_logs").insert({
           user_experience_id: id,
           ...timingToDb(record.timing),
+          place: record.place ?? null,
+          companion: record.companion ?? null,
           memo: record.memo ?? null,
           photo_path: record.photoUrl ?? null,
         });
@@ -375,7 +383,7 @@ export function useExperienceStatus() {
     }
   }, [userId, reload, writeRecordsMap]);
 
-  const updateRecord = useCallback((slug: string, recordId: string, record: TriedRecordDraft) => {
+  const updateRecord = useCallback((slug: string, recordId: string, record: MemoryRecordDraft) => {
     const current = readRecordsStorage();
     const nextRecords = (current[slug] ?? []).map((item) =>
       item.id === recordId ? { id: item.id, ...record } : item
@@ -405,6 +413,8 @@ export function useExperienceStatus() {
           .from("experience_logs")
           .update({
             ...timingToDb(record.timing),
+            place: record.place ?? null,
+            companion: record.companion ?? null,
             memo: record.memo ?? null,
             photo_path: record.photoUrl ?? null,
           })

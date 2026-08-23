@@ -5,7 +5,7 @@ import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
 import { MyPageView } from "@/components/MyPageView";
-import { TriedRecordDraft, TriedTimingSheet } from "@/components/TriedTimingSheet";
+import { MemoryRecordDraft, MemoryRecordSheet } from "@/components/MemoryRecordSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
@@ -96,7 +96,7 @@ export default function Home() {
     }
   }
 
-  function handleConfirmRecord(record: TriedRecordDraft) {
+  function handleConfirmRecord(record: MemoryRecordDraft) {
     if (editingId && editingRecordId) {
       updateRecord(editingId, editingRecordId, record);
       setEditingId(null);
@@ -166,7 +166,7 @@ export default function Home() {
       <BottomNav active={tab} onChange={setTab} wishlistCount={wishlistItems.length} />
 
       {(pendingExperience || editingExperience) && (
-        <TriedTimingSheet
+        <MemoryRecordSheet
           key={
             editingExperience
               ? `edit-${editingExperience.id}-${editingRecordId}`
@@ -177,6 +177,8 @@ export default function Home() {
             editingRecord
               ? {
                   timing: editingRecord.timing,
+                  place: editingRecord.place,
+                  companion: editingRecord.companion,
                   memo: editingRecord.memo,
                   photoUrl: editingRecord.photoUrl,
                 }

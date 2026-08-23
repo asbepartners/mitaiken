@@ -48,11 +48,15 @@ function formatTimelineTiming(timing: Timing): string {
 
 function matchesHajimeteSearch(
   experience: Experience,
+  records: TriedRecord[],
   searchValue: HajimeteSearchValue
 ): boolean {
   const query = searchValue.query.trim().toLocaleLowerCase("ja");
+  const recordText = records
+    .map((record) => `${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`)
+    .join(" ");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]}`
+    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${recordText}`
       .toLocaleLowerCase("ja");
 
   return (
@@ -126,7 +130,7 @@ export function TriedView({
         .filter(({ experience, first }) => {
           const year = first.timing.value?.slice(0, 4);
           return (
-            matchesHajimeteSearch(experience, searchValue) &&
+            matchesHajimeteSearch(experience, records, searchValue) &&
             (selectedYear === "all" || year === selectedYear)
           );
         })
@@ -141,8 +145,14 @@ export function TriedView({
       recordItems
         .filter(({ experience, record }) => {
           const year = record.timing.value?.slice(0, 4);
+          const query = searchValue.query.trim().toLocaleLowerCase("ja");
+          const searchable =
+            `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
+              .toLocaleLowerCase("ja");
           return (
-            matchesHajimeteSearch(experience, searchValue) &&
+            (!query || searchable.includes(query)) &&
+            (searchValue.categories.length === 0 ||
+              searchValue.categories.includes(experience.category)) &&
             (!selectedExperienceId || experience.id === selectedExperienceId) &&
             (selectedYear === "all" || year === selectedYear)
           );
@@ -388,8 +398,15 @@ export function TriedView({
                   <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
-                  {record.memo && (
+                  {(record.place || record.companion) && (
                     <p className="mt-1 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                      {[record.place, record.companion ? `with ${record.companion}` : undefined]
+                        .filter(Boolean)
+                        .join(" ・ ")}
+                    </p>
+                  )}
+                  {record.memo && (
+                    <p className="mt-0.5 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
                       {record.memo}
                     </p>
                   )}
