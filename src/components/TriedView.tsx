@@ -127,7 +127,7 @@ export function TriedView({
   const filteredFirstItems = useMemo(
     () =>
       firstItems
-        .filter(({ experience, first }) => {
+        .filter(({ experience, first, records }) => {
           const year = first.timing.value?.slice(0, 4);
           return (
             matchesHajimeteSearch(experience, records, searchValue) &&
