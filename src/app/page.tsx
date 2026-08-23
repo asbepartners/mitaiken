@@ -20,34 +20,42 @@ export default function Home() {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
-  const { statusMap, toggleWishlist, markTried, updateTried, undoTried, removeStatus } = useExperienceStatus();
+  const {
+    statusMap,
+    recordsMap,
+    toggleWishlist,
+    markTried,
+    updateRecord,
+    deleteRecord,
+    undoTried,
+    removeStatus,
+  } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
 
   const wishlistItems = useMemo(
     () => experiences.filter((experience) => statusMap[experience.id]?.status === "wishlist"),
     [experiences, statusMap]
   );
+
   const triedItems = useMemo(
     () =>
       experiences.flatMap((experience) => {
-        const entry = statusMap[experience.id];
-        if (entry?.status !== "cleared") return [];
-        return [{
-          experience,
-          timing: entry.timing,
-          photoUrl: entry.photoUrl,
-          memo: entry.memo,
-        }];
+        const records = recordsMap[experience.id] ?? [];
+        return records.length ? [{ experience, records }] : [];
       }),
-    [experiences, statusMap]
+    [experiences, recordsMap]
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
   const editingExperience = experiences.find((experience) => experience.id === editingId);
-  const editingEntry = editingId ? statusMap[editingId] : undefined;
+  const editingRecord =
+    editingId && editingRecordId
+      ? recordsMap[editingId]?.find((record) => record.id === editingRecordId)
+      : undefined;
 
   function handleTouchStart(event: TouchEvent<HTMLElement>) {
     const target = event.target as HTMLElement;
@@ -89,11 +97,13 @@ export default function Home() {
   }
 
   function handleConfirmRecord(record: TriedRecordDraft) {
-    if (editingId) {
-      updateTried(editingId, record);
+    if (editingId && editingRecordId) {
+      updateRecord(editingId, editingRecordId, record);
       setEditingId(null);
+      setEditingRecordId(null);
       return;
     }
+
     if (pendingId) markTried(pendingId, record);
     setPendingId(null);
   }
@@ -132,8 +142,12 @@ export default function Home() {
             wishlistCount={wishlistItems.length}
             onExplore={() => setTab("explore")}
             onOpenWishlist={() => setTab("wishlist")}
-            onEdit={setEditingId}
-            onUndo={undoTried}
+            onAddRecord={setPendingId}
+            onEditRecord={(experienceId, recordId) => {
+              setEditingId(experienceId);
+              setEditingRecordId(recordId);
+            }}
+            onDeleteRecord={deleteRecord}
           />
         )}
         {tab === "mypage" && (
@@ -153,20 +167,25 @@ export default function Home() {
 
       {(pendingExperience || editingExperience) && (
         <TriedTimingSheet
-          key={editingExperience ? `edit-${editingExperience.id}` : `new-${pendingExperience?.id}`}
+          key={
+            editingExperience
+              ? `edit-${editingExperience.id}-${editingRecordId}`
+              : `new-${pendingExperience?.id}`
+          }
           experienceTitle={(editingExperience ?? pendingExperience)!.title}
           initialRecord={
-            editingEntry?.status === "cleared"
+            editingRecord
               ? {
-                  timing: editingEntry.timing,
-                  memo: editingEntry.memo,
-                  photoUrl: editingEntry.photoUrl,
+                  timing: editingRecord.timing,
+                  memo: editingRecord.memo,
+                  photoUrl: editingRecord.photoUrl,
                 }
               : undefined
           }
           onCancel={() => {
             setPendingId(null);
             setEditingId(null);
+            setEditingRecordId(null);
           }}
           onConfirm={handleConfirmRecord}
         />
