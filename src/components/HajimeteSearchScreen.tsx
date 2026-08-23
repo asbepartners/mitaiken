@@ -211,7 +211,17 @@ export function HajimeteSearchScreen({
         </section>
 
         <section className="mt-6">
-          <h3 className="mb-2 text-sm font-bold text-green-950">カテゴリ</h3>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-bold text-green-950">カテゴリ</h3>
+            <button
+              type="button"
+              onClick={reset}
+              disabled={!hasConditions}
+              className="text-xs font-medium text-green-800 underline underline-offset-4 disabled:cursor-default disabled:text-ink-soft/40 disabled:no-underline"
+            >
+              条件をクリア
+            </button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {categories.map(([category, label]) => {
               const active = draft.categories.includes(category);
