@@ -287,15 +287,6 @@ export function HajimeteSearchScreen({
           </div>
         </section>
 
-        {hasConditions && (
-          <button
-            type="button"
-            onClick={reset}
-            className="mt-7 w-full text-center text-sm font-medium text-ink-soft underline decoration-dotted underline-offset-4"
-          >
-            検索条件をリセット
-          </button>
-        )}
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-green-100 bg-paper/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur">
