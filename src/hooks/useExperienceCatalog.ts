@@ -95,8 +95,11 @@ export function useExperienceCatalog() {
 
       if (!data) return;
       const remoteExperiences = (data as unknown as CatalogRow[]).map(toExperience);
-      const goshuinMock = fallbackExperiences.find(({ id }) => id === "goshuin-collection");
-      setExperiences(goshuinMock ? [...remoteExperiences, goshuinMock] : remoteExperiences);
+      const collectionTemplates = fallbackExperiences.filter(({ exampleTargets }) => exampleTargets);
+      setExperiences([
+        ...remoteExperiences.filter(({ id }) => !collectionTemplates.some((template) => template.id === id)),
+        ...collectionTemplates,
+      ]);
       setSource("supabase");
     }
 

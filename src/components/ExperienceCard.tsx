@@ -106,6 +106,11 @@ export function ExperienceCard({
             <div className="mt-auto text-paper [text-shadow:0_1px_6px_rgba(0,0,0,0.55)]">
               <h3 className="text-xl font-bold leading-snug sm:text-2xl">{experience.title}</h3>
               <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 sm:text-base">{experience.description}</p>
+              {experience.exampleTargets && (
+                <p className="mt-2 rounded-xl bg-paper/90 px-3 py-2 text-xs font-bold text-green-950 [text-shadow:none]">
+                  たとえば：{experience.exampleTargets.join("・")}　＋自分で追加
+                </p>
+              )}
               <dl className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium">
                 <div className="flex items-center gap-1">
                   <dt aria-hidden>⏱</dt>

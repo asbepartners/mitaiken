@@ -43,7 +43,7 @@ export function matchesExperienceFilters(
 ): boolean {
   const query = filters.query.trim().toLocaleLowerCase("ja");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]}`
+    `${experience.title} ${experience.description} ${experience.place} ${experience.exampleTargets?.join(" ") ?? ""} ${CATEGORY_LABELS[experience.category]}`
       .toLocaleLowerCase("ja");
 
   return (

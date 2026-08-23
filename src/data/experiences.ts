@@ -41,7 +41,13 @@ export interface Experience {
   cost: string;
   costLevel: CostLevel;
   solo: boolean;
+  exampleTargets?: string[];
 }
+
+export const DEFAULT_EXPERIENCE_TARGETS: Record<string, string[]> = {
+  "goshuin-collection": ["出雲大社", "伊勢神宮"],
+  "restaurant-collection": ["○○ダイニング", "○○鮨"],
+};
 
 export const experiences: Experience[] = [
   {
@@ -55,6 +61,20 @@ export const experiences: Experience[] = [
     cost: "御朱印代など",
     costLevel: 1,
     solo: true,
+    exampleTargets: DEFAULT_EXPERIENCE_TARGETS["goshuin-collection"],
+  },
+  {
+    id: "restaurant-collection",
+    title: "気になっているレストランに行く",
+    description: "気になるお店を見つけたら、いつか行きたい場所として残しておく。",
+    category: "food",
+    place: "レストラン",
+    time: "1〜2時間",
+    timeMinutes: 90,
+    cost: "お店による",
+    costLevel: 2,
+    solo: true,
+    exampleTargets: DEFAULT_EXPERIENCE_TARGETS["restaurant-collection"],
   },
   {
     id: "pottery-bowl",

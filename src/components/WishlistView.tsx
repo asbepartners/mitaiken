@@ -12,6 +12,8 @@ import {
   SearchIcon,
 } from "./ExperienceSearchScreen";
 import { BookmarkIcon } from "./RecordIcons";
+import type { RecordsMap } from "@/hooks/useExperienceStatus";
+import type { TargetsMap } from "@/hooks/useExperienceTargets";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -20,6 +22,10 @@ interface WishlistViewProps {
   onExplore: () => void;
   onRequestMarkTried: (id: string) => void;
   onRemove: (id: string) => void;
+  targetsMap: TargetsMap;
+  recordsMap: RecordsMap;
+  onRequestTargetRecord: (parentId: string, target: string) => void;
+  onAddTarget: (parentId: string, name: string) => boolean;
 }
 
 export function WishlistView({
@@ -29,12 +35,18 @@ export function WishlistView({
   onExplore,
   onRequestMarkTried,
   onRemove,
+  targetsMap,
+  recordsMap,
+  onRequestTargetRecord,
+  onAddTarget,
 }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
+  const [addingFor, setAddingFor] = useState<string | null>(null);
+  const [targetName, setTargetName] = useState("");
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
   const filtered = useMemo(
@@ -133,10 +145,14 @@ export function WishlistView({
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">
-          {filtered.map((experience) => (
+          {filtered.map((experience) => {
+            const completedPlaces = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
+            const pendingTargets = (targetsMap[experience.id] ?? []).filter((target) => !completedPlaces.has(target));
+            const isCollection = Boolean(experience.exampleTargets);
+            return (
             <li
               key={experience.id}
-              className="relative flex h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
+              className={`relative flex min-h-28 flex-wrap overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)] ${isCollection ? "pb-3" : "h-28"}`}
             >
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -160,7 +176,7 @@ export function WishlistView({
               </div>
 
               <div className="flex w-[4.6rem] shrink-0 flex-col items-center justify-center gap-1 py-2">
-                <button
+                {!isCollection && <button
                   type="button"
                   onClick={() => handleRequestMarkTried(experience.id)}
                   disabled={bookmarkPendingId !== null}
@@ -179,7 +195,7 @@ export function WishlistView({
                     />
                   </span>
                   <span className="mt-1 text-[9px] font-bold">やってみた！</span>
-                </button>
+                </button>}
                 <button
                   type="button"
                   onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
@@ -190,6 +206,16 @@ export function WishlistView({
                   …
                 </button>
               </div>
+
+              {isCollection && (
+                <div className="mx-3 mt-2 w-full border-t border-green-100 pt-3">
+                  <div className="mb-2 flex items-center justify-between"><p className="text-xs font-bold text-green-950">これから {pendingTargets.length}件</p><button type="button" onClick={() => setAddingFor(experience.id)} className="min-h-9 rounded-full bg-coral-100 px-3 text-xs font-bold text-coral-500">＋ 追加</button></div>
+                  <ul className="space-y-2">
+                    {pendingTargets.map((target) => <li key={target} className="flex min-h-11 items-center gap-2 rounded-xl bg-ivory px-3 py-2"><span className="min-w-0 flex-1 text-sm font-bold text-green-950">{target}</span><button type="button" onClick={() => onRequestTargetRecord(experience.id, target)} className="shrink-0 rounded-full bg-green-800 px-3 py-2 text-xs font-bold text-paper">やってみた</button></li>)}
+                  </ul>
+                  {addingFor === experience.id && <div className="mt-2 flex gap-2"><input autoFocus value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="行きたい場所・お店" className="min-w-0 flex-1 rounded-xl border border-green-100 bg-ivory px-3 py-2 text-sm" /><button type="button" onClick={() => { if (onAddTarget(experience.id, targetName)) { setTargetName(""); setAddingFor(null); } }} className="rounded-full bg-coral-500 px-3 text-xs font-bold text-paper">追加</button></div>}
+                </div>
+              )}
 
               {openMenuId === experience.id && (
                 <div className="absolute bottom-2 right-12 z-20 rounded-xl border border-green-100 bg-paper p-1.5 shadow-lg">
@@ -203,7 +229,7 @@ export function WishlistView({
                 </div>
               )}
             </li>
-          ))}
+          );})}
         </ul>
       )}
 

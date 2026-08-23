@@ -12,6 +12,7 @@ import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
+import { useExperienceTargets } from "@/hooks/useExperienceTargets";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -21,7 +22,7 @@ export default function Home() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
-  const [pendingGoshuinPlace, setPendingGoshuinPlace] = useState<string | null>(null);
+  const [pendingTargetPlace, setPendingTargetPlace] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
@@ -37,10 +38,16 @@ export default function Home() {
     removeStatus,
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
+  const { targetsMap, initializeTargets, addTarget, clearTargets } = useExperienceTargets();
 
   const wishlistItems = useMemo(
-    () => experiences.filter((experience) => statusMap[experience.id]?.status === "wishlist"),
-    [experiences, statusMap]
+    () => experiences.filter((experience) => {
+      if (statusMap[experience.id]?.status === "wishlist") return true;
+      if (!experience.exampleTargets || !(targetsMap[experience.id]?.length)) return false;
+      const completed = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
+      return targetsMap[experience.id].some((target) => !completed.has(target));
+    }),
+    [experiences, recordsMap, statusMap, targetsMap]
   );
 
   const triedItems = useMemo(
@@ -108,7 +115,7 @@ export default function Home() {
 
     if (pendingId) markTried(pendingId, record);
     setPendingId(null);
-    setPendingGoshuinPlace(null);
+    setPendingTargetPlace(null);
   }
 
   return (
@@ -124,14 +131,12 @@ export default function Home() {
             hiddenIds={hiddenIds}
             statusMap={statusMap}
             onHide={hideExperience}
-            onToggleWishlist={toggleWishlist}
+            onToggleWishlist={(id) => {
+              if (!statusMap[id]) initializeTargets(id);
+              toggleWishlist(id);
+            }}
             onRequestMarkTried={setPendingId}
             onUndoTried={undoTried}
-            goshuinRecords={recordsMap["goshuin-collection"] ?? []}
-            onRequestGoshuinRecord={(place) => {
-              setPendingGoshuinPlace(place);
-              setPendingId("goshuin-collection");
-            }}
           />
         )}
         {tab === "wishlist" && (
@@ -141,7 +146,17 @@ export default function Home() {
             markingId={pendingId}
             onExplore={() => setTab("explore")}
             onRequestMarkTried={setPendingId}
-            onRemove={removeStatus}
+            onRemove={(id) => {
+              removeStatus(id);
+              clearTargets(id);
+            }}
+            targetsMap={targetsMap}
+            recordsMap={recordsMap}
+            onRequestTargetRecord={(parentId, place) => {
+              setPendingTargetPlace(place);
+              setPendingId(parentId);
+            }}
+            onAddTarget={addTarget}
           />
         )}
         {tab === "tried" && (
@@ -156,6 +171,7 @@ export default function Home() {
               setEditingRecordId(recordId);
             }}
             onDeleteRecord={deleteRecord}
+            onAddTarget={addTarget}
           />
         )}
         {tab === "mypage" && (
@@ -191,10 +207,10 @@ export default function Home() {
                   memo: editingRecord.memo,
                   photoUrl: editingRecord.photoUrl,
                 }
-              : pendingGoshuinPlace
+              : pendingTargetPlace
                 ? {
                     timing: { type: "date", value: new Date().toISOString().slice(0, 10) },
-                    place: pendingGoshuinPlace,
+                    place: pendingTargetPlace,
                   }
                 : undefined
           }
@@ -202,7 +218,7 @@ export default function Home() {
             setPendingId(null);
             setEditingId(null);
             setEditingRecordId(null);
-            setPendingGoshuinPlace(null);
+            setPendingTargetPlace(null);
           }}
           onConfirm={handleConfirmRecord}
         />

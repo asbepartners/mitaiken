@@ -13,8 +13,6 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
-import { CustomListsMock } from "./CustomListsMock";
-import type { TriedRecord } from "@/hooks/useExperienceStatus";
 
 interface ExploreViewProps {
   items: Experience[];
@@ -24,8 +22,6 @@ interface ExploreViewProps {
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
-  goshuinRecords: TriedRecord[];
-  onRequestGoshuinRecord: (place: string) => void;
 }
 
 export function ExploreView({
@@ -36,18 +32,15 @@ export function ExploreView({
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
-  goshuinRecords,
-  onRequestGoshuinRecord,
 }: ExploreViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
-  const [openRecommendedList, setOpenRecommendedList] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const searchableItems = useMemo(
-    () => items.filter((experience) => experience.id !== "goshuin-collection" && !statusMap[experience.id] && !hiddenIds.includes(experience.id)),
+    () => items.filter((experience) => !statusMap[experience.id] && !hiddenIds.includes(experience.id)),
     [hiddenIds, items, statusMap]
   );
 
@@ -99,10 +92,6 @@ export function ExploreView({
     requestAnimationFrame(() => scrollToCard(nextIndex));
   }
 
-  if (openRecommendedList) {
-    return <CustomListsMock completedPlaces={goshuinRecords.flatMap((record) => record.place ? [record.place] : [])} onBack={() => setOpenRecommendedList(false)} onMarkTried={onRequestGoshuinRecord} />;
-  }
-
   return (
     <div className="px-4 pb-4 pt-6">
       <header className="relative -mx-4 -mt-6 mb-4 h-48 overflow-hidden border-b border-green-100">
@@ -126,30 +115,6 @@ export function ExploreView({
           </div>
         </div>
       </header>
-
-      <section className="mb-4 rounded-3xl border border-green-100 bg-paper p-3 shadow-[0_2px_12px_rgba(44,38,32,0.06)]">
-        <div className="flex items-center justify-between gap-3 px-1 pb-2">
-          <div>
-            <p className="text-xs font-medium text-green-700">テーマから楽しむ</p>
-            <h2 className="mt-0.5 text-base font-bold text-green-950">おすすめリスト</h2>
-          </div>
-          <span className="text-xs font-medium text-ink-soft">まずはモックでお試し</span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setOpenRecommendedList(true)}
-          className="flex w-full items-center gap-3 rounded-2xl bg-[#f7ead6] p-3 text-left transition-transform active:scale-[0.99]"
-        >
-          <span className="relative flex h-14 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#d66b62] bg-[#fffaf3] text-[10px] font-bold text-[#b84f49] shadow-sm [writing-mode:vertical-rl]">
-            御朱印
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-bold text-green-950">御朱印を集める</span>
-            <span className="mt-1 block text-xs leading-5 text-ink-soft">行きたい神社やお寺と、お参りの記録をひとつに。</span>
-          </span>
-          <span className="text-2xl text-green-700" aria-hidden="true">›</span>
-        </button>
-      </section>
 
       <div className="mb-4">
         <CategoryFilter value={category} onChange={handleCategoryChange} />

@@ -24,6 +24,7 @@ interface TriedViewProps {
   onAddRecord: (experienceId: string) => void;
   onEditRecord: (experienceId: string, recordId: string) => void;
   onDeleteRecord: (experienceId: string, recordId: string) => void;
+  onAddTarget: (experienceId: string, name: string) => boolean;
 }
 
 type ViewMode = "firsts" | "records";
@@ -74,6 +75,7 @@ export function TriedView({
   onAddRecord,
   onEditRecord,
   onDeleteRecord,
+  onAddTarget,
 }: TriedViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("firsts");
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -87,8 +89,11 @@ export function TriedView({
     view: "firsts",
     year: "all",
   });
+  const [addingTarget, setAddingTarget] = useState(false);
+  const [targetName, setTargetName] = useState("");
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const currentYear = String(new Date().getFullYear());
+  const selectedExperience = items.find(({ experience }) => experience.id === selectedExperienceId)?.experience;
 
   const firstItems = useMemo(
     () =>
@@ -274,14 +279,11 @@ export function TriedView({
                 {items.find(({ experience }) => experience.id === selectedExperienceId)?.experience.title}
               </h2>
             </div>
-            <button
-              type="button"
-              onClick={() => onAddRecord(selectedExperienceId)}
-              className="min-h-9 shrink-0 rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500"
-            >
-              追加
+            <button type="button" onClick={() => selectedExperience?.exampleTargets ? setAddingTarget(true) : onAddRecord(selectedExperienceId)} className="min-h-9 shrink-0 rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500">
+              {selectedExperience?.exampleTargets ? "＋ 行きたいを追加" : "追加"}
             </button>
           </div>
+          {addingTarget && <div className="mt-3 flex gap-2"><input autoFocus value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="行きたい場所・お店" className="min-w-0 flex-1 rounded-xl border border-green-100 bg-ivory px-3 py-2 text-sm" /><button type="button" onClick={() => { if (onAddTarget(selectedExperienceId, targetName)) { setTargetName(""); setAddingTarget(false); } }} className="rounded-full bg-coral-500 px-3 text-xs font-bold text-paper">追加</button></div>}
         </section>
       )}
 
