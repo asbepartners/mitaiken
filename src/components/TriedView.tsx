@@ -462,6 +462,13 @@ export function TriedView({
           items={items}
           value={{ ...searchValue, view: viewMode, year: selectedYear }}
           onClose={() => setSearchOpen(false)}
+          onClear={(nextValue) => {
+            setSearchValue(nextValue);
+            setViewMode(nextValue.view);
+            setSelectedYear("all");
+            setSelectedExperienceId(null);
+            setOpenMenuId(null);
+          }}
           onApply={(nextValue) => {
             setSearchValue(nextValue);
             setViewMode(nextValue.view);

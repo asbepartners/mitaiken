@@ -23,6 +23,7 @@ interface HajimeteSearchScreenProps {
   items: HajimeteSearchItem[];
   value: HajimeteSearchValue;
   onApply: (value: HajimeteSearchValue) => void;
+  onClear: (value: HajimeteSearchValue) => void;
   onClose: () => void;
 }
 
@@ -64,6 +65,7 @@ export function HajimeteSearchScreen({
   items,
   value,
   onApply,
+  onClear,
   onClose,
 }: HajimeteSearchScreenProps) {
   const [draft, setDraft] = useState<HajimeteSearchValue>(value);
@@ -98,12 +100,27 @@ export function HajimeteSearchScreen({
     }
 
     return items.reduce((count, { experience, records }) => {
-      if (!matchesTextAndCategory(experience, records, draft.query, draft.categories)) return count;
+      if (
+        draft.categories.length > 0 &&
+        !draft.categories.includes(experience.category)
+      ) {
+        return count;
+      }
+
+      const normalizedQuery = draft.query.trim().toLocaleLowerCase("ja");
+
       return (
         count +
         records.filter((record) => {
           const year = record.timing.value?.slice(0, 4);
-          return draft.year === "all" || year === draft.year;
+          const searchable =
+            `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
+              .toLocaleLowerCase("ja");
+
+          return (
+            (!normalizedQuery || searchable.includes(normalizedQuery)) &&
+            (draft.year === "all" || year === draft.year)
+          );
         }).length
       );
     }, 0);
@@ -123,12 +140,14 @@ export function HajimeteSearchScreen({
   }
 
   function reset() {
-    setDraft({
+    const cleared: HajimeteSearchValue = {
       query: "",
       categories: [],
       view: draft.view,
       year: "all",
-    });
+    };
+    setDraft(cleared);
+    onClear(cleared);
   }
 
   const hasConditions =
