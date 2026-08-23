@@ -5,14 +5,13 @@ import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
 import { MyPageView } from "@/components/MyPageView";
-import { TriedTimingSheet } from "@/components/TriedTimingSheet";
+import { TriedRecordDraft, TriedTimingSheet } from "@/components/TriedTimingSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
-import { Timing } from "@/lib/timing";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -35,7 +34,12 @@ export default function Home() {
       experiences.flatMap((experience) => {
         const entry = statusMap[experience.id];
         if (entry?.status !== "cleared") return [];
-        return [{ experience, timing: entry.timing, photoUrl: entry.photoUrl }];
+        return [{
+          experience,
+          timing: entry.timing,
+          photoUrl: entry.photoUrl,
+          memo: entry.memo,
+        }];
       }),
     [experiences, statusMap]
   );
@@ -81,8 +85,8 @@ export default function Home() {
     }
   }
 
-  function handleConfirmTiming(timing: Timing) {
-    if (pendingId) markTried(pendingId, timing);
+  function handleConfirmRecord(record: TriedRecordDraft) {
+    if (pendingId) markTried(pendingId, record);
     setPendingId(null);
   }
 
@@ -136,17 +140,13 @@ export default function Home() {
         )}
       </main>
 
-      <BottomNav
-        active={tab}
-        onChange={setTab}
-        wishlistCount={wishlistItems.length}
-      />
+      <BottomNav active={tab} onChange={setTab} wishlistCount={wishlistItems.length} />
 
       {pendingExperience && (
         <TriedTimingSheet
           experienceTitle={pendingExperience.title}
           onCancel={() => setPendingId(null)}
-          onConfirm={handleConfirmTiming}
+          onConfirm={handleConfirmRecord}
         />
       )}
 

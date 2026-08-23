@@ -3,10 +3,11 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
+import type { TriedRecordDraft } from "@/components/TriedTimingSheet";
 
 export type StatusEntry =
   | { status: "wishlist" }
-  | { status: "cleared"; timing: Timing; photoUrl?: string };
+  | { status: "cleared"; timing: Timing; photoUrl?: string; memo?: string };
 
 type StatusMap = Record<string, StatusEntry>;
 
@@ -25,7 +26,8 @@ function normalizeEntry(raw: unknown): StatusEntry | null {
     if (candidate.status === "cleared") {
       const timing = isValidTiming(candidate.timing) ? candidate.timing : UNKNOWN_TIMING;
       const photoUrl = typeof candidate.photoUrl === "string" ? candidate.photoUrl : undefined;
-      return { status: "cleared", timing, photoUrl };
+      const memo = typeof candidate.memo === "string" ? candidate.memo : undefined;
+      return { status: "cleared", timing, photoUrl, memo };
     }
   }
   return null;
@@ -101,13 +103,23 @@ export function useExperienceStatus() {
     const supabase = getSupabaseClient(); if (!supabase) return;
     const { data: rows } = await supabase.from("user_experiences").select("id, source_template_slug, wishlisted_at").eq("user_id", userId).not("source_template_slug", "is", null);
     const ids = (rows ?? []).map((r) => r.id);
-    const { data: logs } = ids.length ? await supabase.from("experience_logs").select("user_experience_id, experienced_year, experienced_month, experienced_day, photo_path, created_at").in("user_experience_id", ids).order("created_at", { ascending: true }) : { data: [] };
+    const { data: logs } = ids.length
+      ? await supabase.from("experience_logs")
+          .select("user_experience_id, experienced_year, experienced_month, experienced_day, memo, photo_path, created_at")
+          .in("user_experience_id", ids)
+          .order("created_at", { ascending: true })
+      : { data: [] };
     const byId = new Map((rows ?? []).map((r) => [r.id, r]));
     const next: StatusMap = {};
     for (const row of rows ?? []) if (row.wishlisted_at) next[row.source_template_slug] = { status: "wishlist" };
     for (const log of logs ?? []) {
       const row = byId.get(log.user_experience_id); if (!row?.source_template_slug) continue;
-      next[row.source_template_slug] = { status: "cleared", timing: dbToTiming(log.experienced_year, log.experienced_month, log.experienced_day), photoUrl: log.photo_path ?? undefined };
+      next[row.source_template_slug] = {
+        status: "cleared",
+        timing: dbToTiming(log.experienced_year, log.experienced_month, log.experienced_day),
+        photoUrl: log.photo_path ?? undefined,
+        memo: log.memo ?? undefined,
+      };
     }
     writeStatusMap(next);
   }, [userId]);
@@ -121,10 +133,18 @@ export function useExperienceStatus() {
         for (const [slug, entry] of Object.entries(local)) {
           const id = await ensureUserExperience(userId, slug); if (!id) continue;
           const supabase = getSupabaseClient(); if (!supabase) continue;
-          if (entry.status === "wishlist") await supabase.from("user_experiences").update({ wishlisted_at: new Date().toISOString() }).eq("id", id);
-          else {
+          if (entry.status === "wishlist") {
+            await supabase.from("user_experiences").update({ wishlisted_at: new Date().toISOString() }).eq("id", id);
+          } else {
             const { count } = await supabase.from("experience_logs").select("id", { count: "exact", head: true }).eq("user_experience_id", id);
-            if (!count) await supabase.from("experience_logs").insert({ user_experience_id: id, ...timingToDb(entry.timing), photo_path: entry.photoUrl ?? null });
+            if (!count) {
+              await supabase.from("experience_logs").insert({
+                user_experience_id: id,
+                ...timingToDb(entry.timing),
+                memo: entry.memo ?? null,
+                photo_path: entry.photoUrl ?? null,
+              });
+            }
           }
         }
         window.localStorage.setItem(marker, "1");
@@ -137,23 +157,58 @@ export function useExperienceStatus() {
     const current = getSnapshot(); if (current[slug]?.status === "cleared") return;
     const adding = current[slug]?.status !== "wishlist";
     const next = { ...current }; if (adding) next[slug] = { status: "wishlist" }; else delete next[slug]; writeStatusMap(next);
-    if (userId) void (async () => { const id = await ensureUserExperience(userId, slug); const s = getSupabaseClient(); if (id && s) await s.from("user_experiences").update({ wishlisted_at: adding ? new Date().toISOString() : null }).eq("id", id); })();
+    if (userId) void (async () => {
+      const id = await ensureUserExperience(userId, slug);
+      const s = getSupabaseClient();
+      if (id && s) await s.from("user_experiences").update({ wishlisted_at: adding ? new Date().toISOString() : null }).eq("id", id);
+    })();
   }, [userId]);
 
-  const markTried = useCallback((slug: string, timing: Timing) => {
-    writeStatusMap({ ...getSnapshot(), [slug]: { status: "cleared", timing } });
-    if (userId) void (async () => { const id = await ensureUserExperience(userId, slug); const s = getSupabaseClient(); if (id && s) { await s.from("experience_logs").insert({ user_experience_id: id, ...timingToDb(timing) }); await s.from("user_experiences").update({ wishlisted_at: null }).eq("id", id); } })();
+  const markTried = useCallback((slug: string, record: TriedRecordDraft) => {
+    writeStatusMap({
+      ...getSnapshot(),
+      [slug]: {
+        status: "cleared",
+        timing: record.timing,
+        memo: record.memo,
+        photoUrl: record.photoUrl,
+      },
+    });
+
+    if (userId) void (async () => {
+      const id = await ensureUserExperience(userId, slug);
+      const s = getSupabaseClient();
+      if (id && s) {
+        await s.from("experience_logs").insert({
+          user_experience_id: id,
+          ...timingToDb(record.timing),
+          memo: record.memo ?? null,
+          photo_path: record.photoUrl ?? null,
+        });
+        await s.from("user_experiences").update({ wishlisted_at: null }).eq("id", id);
+      }
+    })();
   }, [userId]);
 
   const undoTried = useCallback((slug: string) => {
     const current = getSnapshot(); if (current[slug]?.status !== "cleared") return;
     writeStatusMap({ ...current, [slug]: { status: "wishlist" } });
-    if (userId) void (async () => { const id = await ensureUserExperience(userId, slug); const s = getSupabaseClient(); if (id && s) { await s.from("experience_logs").delete().eq("user_experience_id", id); await s.from("user_experiences").update({ wishlisted_at: new Date().toISOString() }).eq("id", id); } })();
+    if (userId) void (async () => {
+      const id = await ensureUserExperience(userId, slug);
+      const s = getSupabaseClient();
+      if (id && s) {
+        await s.from("experience_logs").delete().eq("user_experience_id", id);
+        await s.from("user_experiences").update({ wishlisted_at: new Date().toISOString() }).eq("id", id);
+      }
+    })();
   }, [userId]);
 
   const removeStatus = useCallback((slug: string) => {
     const next = { ...getSnapshot() }; delete next[slug]; writeStatusMap(next);
-    if (userId) void (async () => { const s = getSupabaseClient(); if (s) await s.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId).eq("source_template_slug", slug); })();
+    if (userId) void (async () => {
+      const s = getSupabaseClient();
+      if (s) await s.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId).eq("source_template_slug", slug);
+    })();
   }, [userId]);
 
   return { statusMap, toggleWishlist, markTried, undoTried, removeStatus };
