@@ -45,6 +45,18 @@ export interface Experience {
 
 export const experiences: Experience[] = [
   {
+    id: "goshuin-collection",
+    title: "御朱印を集める",
+    description: "神社やお寺を訪ねて、お参りの記録をひとつずつ残す。",
+    category: "outing",
+    place: "神社・お寺",
+    time: "1時間ほど",
+    timeMinutes: 60,
+    cost: "御朱印代など",
+    costLevel: 1,
+    solo: true,
+  },
+  {
     id: "pottery-bowl",
     image: "/experiences/pottery-bowl.png",
     title: "陶芸で自分のお茶碗を作る",

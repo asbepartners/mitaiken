@@ -21,6 +21,7 @@ export default function Home() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [pendingGoshuinPlace, setPendingGoshuinPlace] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
@@ -107,6 +108,7 @@ export default function Home() {
 
     if (pendingId) markTried(pendingId, record);
     setPendingId(null);
+    setPendingGoshuinPlace(null);
   }
 
   return (
@@ -125,6 +127,11 @@ export default function Home() {
             onToggleWishlist={toggleWishlist}
             onRequestMarkTried={setPendingId}
             onUndoTried={undoTried}
+            goshuinRecords={recordsMap["goshuin-collection"] ?? []}
+            onRequestGoshuinRecord={(place) => {
+              setPendingGoshuinPlace(place);
+              setPendingId("goshuin-collection");
+            }}
           />
         )}
         {tab === "wishlist" && (
@@ -184,12 +191,18 @@ export default function Home() {
                   memo: editingRecord.memo,
                   photoUrl: editingRecord.photoUrl,
                 }
-              : undefined
+              : pendingGoshuinPlace
+                ? {
+                    timing: { type: "date", value: new Date().toISOString().slice(0, 10) },
+                    place: pendingGoshuinPlace,
+                  }
+                : undefined
           }
           onCancel={() => {
             setPendingId(null);
             setEditingId(null);
             setEditingRecordId(null);
+            setPendingGoshuinPlace(null);
           }}
           onConfirm={handleConfirmRecord}
         />

@@ -14,6 +14,7 @@ import {
   SearchIcon,
 } from "./ExperienceSearchScreen";
 import { CustomListsMock } from "./CustomListsMock";
+import type { TriedRecord } from "@/hooks/useExperienceStatus";
 
 interface ExploreViewProps {
   items: Experience[];
@@ -23,6 +24,8 @@ interface ExploreViewProps {
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
+  goshuinRecords: TriedRecord[];
+  onRequestGoshuinRecord: (place: string) => void;
 }
 
 export function ExploreView({
@@ -33,6 +36,8 @@ export function ExploreView({
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
+  goshuinRecords,
+  onRequestGoshuinRecord,
 }: ExploreViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,7 +47,7 @@ export function ExploreView({
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const searchableItems = useMemo(
-    () => items.filter((experience) => !statusMap[experience.id] && !hiddenIds.includes(experience.id)),
+    () => items.filter((experience) => experience.id !== "goshuin-collection" && !statusMap[experience.id] && !hiddenIds.includes(experience.id)),
     [hiddenIds, items, statusMap]
   );
 
@@ -95,7 +100,7 @@ export function ExploreView({
   }
 
   if (openRecommendedList) {
-    return <CustomListsMock onBack={() => setOpenRecommendedList(false)} />;
+    return <CustomListsMock completedPlaces={goshuinRecords.flatMap((record) => record.place ? [record.place] : [])} onBack={() => setOpenRecommendedList(false)} onMarkTried={onRequestGoshuinRecord} />;
   }
 
   return (
