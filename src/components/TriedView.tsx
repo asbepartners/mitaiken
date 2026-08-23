@@ -4,14 +4,11 @@ import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
 import { Timing } from "@/lib/timing";
+import { SearchIcon } from "./ExperienceSearchScreen";
 import {
-  countExperienceFilters,
-  EMPTY_EXPERIENCE_FILTERS,
-  ExperienceFilters,
-  ExperienceSearchScreen,
-  matchesExperienceFilters,
-  SearchIcon,
-} from "./ExperienceSearchScreen";
+  HajimeteSearchScreen,
+  HajimeteSearchValue,
+} from "./HajimeteSearchScreen";
 import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 
 export interface TriedExperience {
@@ -49,6 +46,22 @@ function formatTimelineTiming(timing: Timing): string {
 }
 
 
+function matchesHajimeteSearch(
+  experience: Experience,
+  searchValue: HajimeteSearchValue
+): boolean {
+  const query = searchValue.query.trim().toLocaleLowerCase("ja");
+  const searchable =
+    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]}`
+      .toLocaleLowerCase("ja");
+
+  return (
+    (!query || searchable.includes(query)) &&
+    (searchValue.categories.length === 0 ||
+      searchValue.categories.includes(experience.category))
+  );
+}
+
 export function TriedView({
   items,
   wishlistCount,
@@ -63,7 +76,12 @@ export function TriedView({
   const [selectedExperienceId, setSelectedExperienceId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
+  const [searchValue, setSearchValue] = useState<HajimeteSearchValue>({
+    query: "",
+    categories: [],
+    view: "firsts",
+    year: "all",
+  });
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const currentYear = String(new Date().getFullYear());
 
@@ -108,14 +126,14 @@ export function TriedView({
         .filter(({ experience, first }) => {
           const year = first.timing.value?.slice(0, 4);
           return (
-            matchesExperienceFilters(experience, filters) &&
+            matchesHajimeteSearch(experience, searchValue) &&
             (selectedYear === "all" || year === selectedYear)
           );
         })
         .sort((a, b) =>
           timingSortKey(b.first.timing).localeCompare(timingSortKey(a.first.timing))
         ),
-    [filters, firstItems, selectedYear]
+    [firstItems, searchValue, selectedYear]
   );
 
   const filteredRecordItems = useMemo(
@@ -124,7 +142,7 @@ export function TriedView({
         .filter(({ experience, record }) => {
           const year = record.timing.value?.slice(0, 4);
           return (
-            matchesExperienceFilters(experience, filters) &&
+            matchesHajimeteSearch(experience, searchValue) &&
             (!selectedExperienceId || experience.id === selectedExperienceId) &&
             (selectedYear === "all" || year === selectedYear)
           );
@@ -132,12 +150,13 @@ export function TriedView({
         .sort((a, b) =>
           timingSortKey(b.record.timing).localeCompare(timingSortKey(a.record.timing))
         ),
-    [filters, recordItems, selectedExperienceId, selectedYear]
+    [recordItems, searchValue, selectedExperienceId, selectedYear]
   );
 
   function changeView(next: ViewMode) {
     setViewMode(next);
     setSelectedYear("all");
+    setSearchValue((current) => ({ ...current, view: next, year: "all" }));
     setOpenMenuId(null);
     if (next === "firsts") setSelectedExperienceId(null);
   }
@@ -165,9 +184,13 @@ export function TriedView({
           className="absolute left-5 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md"
         >
           <SearchIcon />
-          {countExperienceFilters(filters) > 0 && (
-            <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-coral-500 px-1 text-center text-[10px] font-bold leading-5 text-paper">
-              {countExperienceFilters(filters)}
+          {(Boolean(searchValue.query.trim()) ||
+            searchValue.categories.length > 0 ||
+            searchValue.year !== "all") && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-coral-500 px-1 text-center text-[10px] font-bold text-paper">
+              {Number(Boolean(searchValue.query.trim())) +
+                searchValue.categories.length +
+                Number(searchValue.year !== "all")}
             </span>
           )}
         </button>
@@ -239,7 +262,10 @@ export function TriedView({
           <button
             key={year}
             type="button"
-            onClick={() => setSelectedYear(year)}
+            onClick={() => {
+              setSelectedYear(year);
+              setSearchValue((current) => ({ ...current, year }));
+            }}
             className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               selectedYear === year
                 ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
@@ -415,14 +441,15 @@ export function TriedView({
       )}
 
       {searchOpen && (
-        <ExperienceSearchScreen
-          title="はじめて帖を探す"
-          items={items.map(({ experience }) => experience)}
-          value={filters}
+        <HajimeteSearchScreen
+          items={items}
+          value={{ ...searchValue, view: viewMode, year: selectedYear }}
           onClose={() => setSearchOpen(false)}
-          onApply={(nextFilters) => {
-            setFilters(nextFilters);
-            setSelectedYear("all");
+          onApply={(nextValue) => {
+            setSearchValue(nextValue);
+            setViewMode(nextValue.view);
+            setSelectedYear(nextValue.year);
+            setSelectedExperienceId(null);
             setOpenMenuId(null);
             setSearchOpen(false);
           }}
