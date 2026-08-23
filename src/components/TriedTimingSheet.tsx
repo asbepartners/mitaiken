@@ -12,6 +12,7 @@ export interface TriedRecordDraft {
 
 interface TriedTimingSheetProps {
   experienceTitle: string;
+  initialRecord?: TriedRecordDraft;
   onCancel: () => void;
   onConfirm: (record: TriedRecordDraft) => void;
 }
@@ -47,16 +48,25 @@ async function compressImage(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.78);
 }
 
-export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: TriedTimingSheetProps) {
+export function TriedTimingSheet({ experienceTitle, initialRecord, onCancel, onConfirm }: TriedTimingSheetProps) {
   const today = todayTiming();
   const currentYear = Number(today.value?.slice(0, 4));
-  const [mode, setMode] = useState<TimingMode>("date");
-  const [dateValue, setDateValue] = useState(today.value ?? "");
-  const [monthValue, setMonthValue] = useState(today.value?.slice(0, 7) ?? "");
-  const [yearValue, setYearValue] = useState(String(currentYear));
-  const [unknown, setUnknown] = useState(false);
-  const [memo, setMemo] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string>();
+  const initialTiming = initialRecord?.timing;
+  const initialMode: TimingMode =
+    initialTiming?.type === "month" ? "month" : initialTiming?.type === "year" ? "year" : "date";
+  const [mode, setMode] = useState<TimingMode>(initialMode);
+  const [dateValue, setDateValue] = useState(
+    initialTiming?.type === "date" ? initialTiming.value ?? "" : today.value ?? ""
+  );
+  const [monthValue, setMonthValue] = useState(
+    initialTiming?.type === "month" ? initialTiming.value ?? "" : today.value?.slice(0, 7) ?? ""
+  );
+  const [yearValue, setYearValue] = useState(
+    initialTiming?.type === "year" ? initialTiming.value ?? "" : String(currentYear)
+  );
+  const [unknown, setUnknown] = useState(initialTiming?.type === "unknown");
+  const [memo, setMemo] = useState(initialRecord?.memo ?? "");
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(initialRecord?.photoUrl);
   const [processingPhoto, setProcessingPhoto] = useState(false);
 
   useEffect(() => {

@@ -19,10 +19,11 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("tried");
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
-  const { statusMap, toggleWishlist, markTried, undoTried, removeStatus } = useExperienceStatus();
+  const { statusMap, toggleWishlist, markTried, updateTried, undoTried, removeStatus } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
 
   const wishlistItems = useMemo(
@@ -45,6 +46,8 @@ export default function Home() {
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
+  const editingExperience = experiences.find((experience) => experience.id === editingId);
+  const editingEntry = editingId ? statusMap[editingId] : undefined;
 
   function handleTouchStart(event: TouchEvent<HTMLElement>) {
     const target = event.target as HTMLElement;
@@ -70,7 +73,7 @@ export default function Home() {
   function handleTouchEnd(event: TouchEvent<HTMLElement>) {
     const start = touchStart.current;
     touchStart.current = null;
-    if (!start || pendingId || authOpen) return;
+    if (!start || pendingId || editingId || authOpen) return;
 
     const touch = event.changedTouches[0];
     const dx = touch.clientX - start.x;
@@ -86,6 +89,11 @@ export default function Home() {
   }
 
   function handleConfirmRecord(record: TriedRecordDraft) {
+    if (editingId) {
+      updateTried(editingId, record);
+      setEditingId(null);
+      return;
+    }
     if (pendingId) markTried(pendingId, record);
     setPendingId(null);
   }
@@ -124,6 +132,7 @@ export default function Home() {
             wishlistCount={wishlistItems.length}
             onExplore={() => setTab("explore")}
             onOpenWishlist={() => setTab("wishlist")}
+            onEdit={setEditingId}
             onUndo={undoTried}
           />
         )}
@@ -142,10 +151,23 @@ export default function Home() {
 
       <BottomNav active={tab} onChange={setTab} wishlistCount={wishlistItems.length} />
 
-      {pendingExperience && (
+      {(pendingExperience || editingExperience) && (
         <TriedTimingSheet
-          experienceTitle={pendingExperience.title}
-          onCancel={() => setPendingId(null)}
+          key={editingExperience ? `edit-${editingExperience.id}` : `new-${pendingExperience?.id}`}
+          experienceTitle={(editingExperience ?? pendingExperience)!.title}
+          initialRecord={
+            editingEntry?.status === "cleared"
+              ? {
+                  timing: editingEntry.timing,
+                  memo: editingEntry.memo,
+                  photoUrl: editingEntry.photoUrl,
+                }
+              : undefined
+          }
+          onCancel={() => {
+            setPendingId(null);
+            setEditingId(null);
+          }}
           onConfirm={handleConfirmRecord}
         />
       )}

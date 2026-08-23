@@ -190,6 +190,46 @@ export function useExperienceStatus() {
     })();
   }, [userId]);
 
+  const updateTried = useCallback((slug: string, record: TriedRecordDraft) => {
+    const current = getSnapshot();
+    if (current[slug]?.status !== "cleared") return;
+
+    writeStatusMap({
+      ...current,
+      [slug]: {
+        status: "cleared",
+        timing: record.timing,
+        memo: record.memo,
+        photoUrl: record.photoUrl,
+      },
+    });
+
+    if (userId) void (async () => {
+      const id = await ensureUserExperience(userId, slug);
+      const s = getSupabaseClient();
+      if (!id || !s) return;
+
+      const { data: latest } = await s
+        .from("experience_logs")
+        .select("id")
+        .eq("user_experience_id", id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (latest?.id) {
+        await s
+          .from("experience_logs")
+          .update({
+            ...timingToDb(record.timing),
+            memo: record.memo ?? null,
+            photo_path: record.photoUrl ?? null,
+          })
+          .eq("id", latest.id);
+      }
+    })();
+  }, [userId]);
+
   const undoTried = useCallback((slug: string) => {
     const current = getSnapshot(); if (current[slug]?.status !== "cleared") return;
     writeStatusMap({ ...current, [slug]: { status: "wishlist" } });
@@ -211,5 +251,5 @@ export function useExperienceStatus() {
     })();
   }, [userId]);
 
-  return { statusMap, toggleWishlist, markTried, undoTried, removeStatus };
+  return { statusMap, toggleWishlist, markTried, updateTried, undoTried, removeStatus };
 }

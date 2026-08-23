@@ -17,6 +17,7 @@ interface TriedItem {
   experience: Experience;
   timing: Timing;
   photoUrl?: string;
+  memo?: string;
 }
 
 interface TriedViewProps {
@@ -24,19 +25,15 @@ interface TriedViewProps {
   wishlistCount: number;
   onExplore: () => void;
   onOpenWishlist: () => void;
+  onEdit: (id: string) => void;
   onUndo: (id: string) => void;
 }
 
 function formatTimelineTiming(timing: Timing): string {
   if (!timing.value || timing.type === "unknown") return "もっと\n以前";
-
   const [year, month, day] = timing.value.split("-");
-  if (timing.type === "date" && month && day) {
-    return `${year}\n${Number(month)}.${Number(day)}`;
-  }
-  if (timing.type === "month" && month) {
-    return `${year}\n${Number(month)}月`;
-  }
+  if (timing.type === "date" && month && day) return `${year}\n${Number(month)}.${Number(day)}`;
+  if (timing.type === "month" && month) return `${year}\n${Number(month)}月`;
   return year;
 }
 
@@ -45,6 +42,7 @@ export function TriedView({
   wishlistCount,
   onExplore,
   onOpenWishlist,
+  onEdit,
   onUndo,
 }: TriedViewProps) {
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -161,9 +159,7 @@ export function TriedView({
 
       {items.length > 0 && (
         <p className="mb-3 text-right text-xs font-medium text-ink-soft">
-          {filtered.length === items.length
-            ? `${items.length}個のはじめて`
-            : `${filtered.length}個を表示`}
+          {filtered.length === items.length ? `${items.length}個のはじめて` : `${filtered.length}個を表示`}
         </p>
       )}
 
@@ -175,19 +171,13 @@ export function TriedView({
             <span className="-mt-4 text-xs text-[#d39a2c]">✦</span>
           </div>
           <h2 className="mt-3 text-lg font-bold text-green-950">
-            {wishlistCount > 0
-              ? "あなたの「やってみたい」が待っています。"
-              : "まだ知らない「楽しかった」が待っています。"}
+            {wishlistCount > 0 ? "あなたの「やってみたい」が待っています。" : "まだ知らない「楽しかった」が待っています。"}
           </h2>
-          {wishlistCount > 0 ? (
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              最初のひとつを、「やってみた」にしませんか？
-            </p>
-          ) : (
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-              まずは「やってみたい」を、探しにいきませんか？
-            </p>
-          )}
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            {wishlistCount > 0
+              ? "最初のひとつを、「やってみた」にしませんか？"
+              : "まずは「やってみたい」を、探しにいきませんか？"}
+          </p>
           <button
             type="button"
             onClick={wishlistCount > 0 ? onOpenWishlist : onExplore}
@@ -202,7 +192,7 @@ export function TriedView({
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">
-          {filtered.map(({ experience, timing, photoUrl }, index) => (
+          {filtered.map(({ experience, timing, photoUrl, memo }, index) => (
             <li key={experience.id} className="flex gap-3">
               <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
@@ -215,7 +205,7 @@ export function TriedView({
                   aria-hidden="true"
                 />
               </div>
-              <div className="flex h-28 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+              <div className="flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
                 <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -229,6 +219,11 @@ export function TriedView({
                   <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
+                  {memo && (
+                    <p className="mt-1 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                      {memo}
+                    </p>
+                  )}
                   <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                     {CATEGORY_LABELS[experience.category]}
                   </span>
@@ -242,7 +237,17 @@ export function TriedView({
                     …
                   </button>
                   {openMenuId === experience.id && (
-                    <div className="absolute bottom-1.5 right-9 z-10 rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
+                    <div className="absolute bottom-1.5 right-9 z-10 flex overflow-hidden rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onEdit(experience.id);
+                          setOpenMenuId(null);
+                        }}
+                        className="whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] font-medium text-green-800 hover:bg-green-100"
+                      >
+                        編集
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
