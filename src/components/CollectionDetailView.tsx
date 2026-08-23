@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { Experience } from "@/data/experiences";
 import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import { formatTiming } from "@/lib/timing";
-import { CrownIcon } from "./RecordIcons";
+import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 
 interface Props {
   experience: Experience;
@@ -18,11 +18,21 @@ interface Props {
 export function CollectionDetailView({ experience, targets, records, onBack, onMarkTried, onAddTarget }: Props) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
+  const [markingTarget, setMarkingTarget] = useState<string | null>(null);
   const completed = useMemo(() => new Set(records.flatMap((record) => record.place ? [record.place] : [])), [records]);
   const pending = targets.filter((target) => !completed.has(target));
 
   function submit() {
     if (onAddTarget(name)) { setName(""); setAdding(false); }
+  }
+
+  function markTried(target: string) {
+    if (markingTarget) return;
+    setMarkingTarget(target);
+    window.setTimeout(() => {
+      setMarkingTarget(null);
+      onMarkTried(target);
+    }, 340);
   }
 
   return (
@@ -38,7 +48,7 @@ export function CollectionDetailView({ experience, targets, records, onBack, onM
       <section className="mt-5">
         <div className="flex items-center justify-between gap-3 px-1"><h2 className="text-lg font-bold text-green-950">これから</h2><button type="button" onClick={() => setAdding(true)} className="min-h-10 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">＋ 行きたいを追加</button></div>
         {adding && <div className="mt-3 flex gap-2 rounded-2xl border border-green-100 bg-paper p-3"><input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="行きたい場所・お店" className="min-w-0 flex-1 rounded-xl bg-ivory px-3 py-2 text-base outline-none" /><button type="button" onClick={submit} className="rounded-full bg-coral-500 px-4 text-sm font-bold text-paper">追加</button></div>}
-        {pending.length ? <ul className="mt-3 space-y-2.5">{pending.map((target) => <li key={target} className="flex min-h-16 items-center gap-3 rounded-2xl border border-green-100 bg-paper px-4 py-3 shadow-sm"><span className="min-w-0 flex-1 font-bold text-green-950">{target}</span><button type="button" onClick={() => onMarkTried(target)} className="shrink-0 rounded-full bg-green-800 px-4 py-2.5 text-sm font-bold text-paper">やってみた</button></li>)}</ul> : <p className="mt-3 rounded-2xl border border-dashed border-green-100 bg-paper px-4 py-5 text-center text-sm text-ink-soft">今のところ、すべて記録済みです。</p>}
+        {pending.length ? <ul className="mt-3 space-y-2.5">{pending.map((target) => <li key={target} className="flex min-h-20 items-center gap-3 rounded-2xl border border-green-100 bg-paper py-2 pl-4 pr-3 shadow-sm"><span className="min-w-0 flex-1 font-bold text-green-950">{target}</span><button type="button" onClick={() => markTried(target)} disabled={markingTarget !== null} className="group flex w-[4.6rem] shrink-0 flex-col items-center justify-center text-coral-500 transition active:scale-90" aria-label={`${target}をやってみた`}><span key={markingTarget === target ? "marking" : "idle"} className={markingTarget === target ? "heart-pop" : ""} aria-hidden="true"><BookmarkIcon filled={markingTarget === target} className="h-8 w-8" /></span><span className="mt-1 text-[9px] font-bold">やってみた！</span></button></li>)}</ul> : <p className="mt-3 rounded-2xl border border-dashed border-green-100 bg-paper px-4 py-5 text-center text-sm text-ink-soft">今のところ、すべて記録済みです。</p>}
       </section>
 
       {records.length > 0 && <section className="mt-6"><h2 className="px-1 text-lg font-bold text-green-950">やってみた記録</h2><ul className="mt-3 space-y-2.5">{records.map((record) => <li key={record.id} className="flex items-center gap-3 rounded-2xl border border-green-100 bg-paper px-4 py-3"><CrownIcon className="h-6 w-6 shrink-0 text-[#d39a2c]" /><div className="min-w-0 flex-1"><p className="font-bold text-green-950">{record.place ?? experience.title}</p><p className="mt-0.5 text-xs text-ink-soft">{formatTiming(record.timing)}{record.memo ? ` ・ ${record.memo}` : ""}</p></div></li>)}</ul></section>}
