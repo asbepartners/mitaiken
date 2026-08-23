@@ -236,7 +236,7 @@ export function HajimeteSearchScreen({
               type="button"
               onClick={reset}
               disabled={!hasConditions}
-              className="text-xs font-medium text-green-800 underline underline-offset-4 disabled:cursor-default disabled:text-ink-soft/40 disabled:no-underline"
+              className="min-h-10 rounded-full border border-green-100 bg-paper px-3 py-2 text-sm font-bold text-green-800 shadow-sm disabled:cursor-default disabled:bg-ivory disabled:text-ink-soft/40 disabled:shadow-none"
             >
               条件をクリア
             </button>

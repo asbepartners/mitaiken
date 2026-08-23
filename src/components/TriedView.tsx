@@ -258,8 +258,15 @@ export function TriedView({
           </span>
           <button
             type="button"
+            onClick={() => onAddRecord(selectedExperienceId)}
+            className="shrink-0 rounded-full bg-paper px-3 py-2 text-sm font-bold text-coral-500 shadow-sm"
+          >
+            ＋ 記録する
+          </button>
+          <button
+            type="button"
             onClick={() => setSelectedExperienceId(null)}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-paper text-sm"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper text-lg"
             aria-label="体験の絞り込みを解除"
           >
             ×
@@ -353,9 +360,9 @@ export function TriedView({
                 <button
                   type="button"
                   onClick={() => onAddRecord(experience.id)}
-                  className="absolute bottom-2 right-3 whitespace-nowrap text-[11px] font-bold text-coral-500"
+                  className="absolute bottom-2 right-2 flex min-h-9 items-center rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500 shadow-sm"
                 >
-                  ＋ 記録
+                  ＋ 記録する
                 </button>
               </div>
             </li>
@@ -414,39 +421,41 @@ export function TriedView({
                     {CATEGORY_LABELS[experience.category]}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenMenuId((current) => (current === record.id ? null : record.id))
-                    }
-                    aria-label={`${experience.title}の記録メニュー`}
-                    aria-expanded={openMenuId === record.id}
-                    className="absolute bottom-1.5 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-ivory-deep text-sm font-bold leading-none text-ink-soft"
-                  >
-                    …
-                  </button>
+                  <div className="absolute bottom-1.5 right-2 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEditRecord(experience.id, record.id);
+                        setOpenMenuId(null);
+                      }}
+                      className="flex min-h-9 items-center rounded-full bg-green-100 px-3 text-sm font-bold text-green-800"
+                    >
+                      編集
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenMenuId((current) => (current === record.id ? null : record.id))
+                      }
+                      aria-label={`${experience.title}のその他の操作`}
+                      aria-expanded={openMenuId === record.id}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-ivory-deep text-lg font-bold leading-none text-ink-soft"
+                    >
+                      …
+                    </button>
+                  </div>
 
                   {openMenuId === record.id && (
-                    <div className="absolute bottom-1.5 right-9 z-10 flex overflow-hidden rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onEditRecord(experience.id, record.id);
-                          setOpenMenuId(null);
-                        }}
-                        className="whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] font-medium text-green-800 hover:bg-green-100"
-                      >
-                        編集
-                      </button>
+                    <div className="absolute bottom-11 right-2 z-10 overflow-hidden rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
                       <button
                         type="button"
                         onClick={() => {
                           onDeleteRecord(experience.id, record.id);
                           setOpenMenuId(null);
                         }}
-                        className="whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] font-medium text-coral-500 hover:bg-coral-100"
+                        className="min-h-10 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold text-coral-500 hover:bg-coral-100"
                       >
-                        削除
+                        記録を削除
                       </button>
                     </div>
                   )}
