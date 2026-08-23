@@ -383,9 +383,9 @@ export function TriedView({
                     <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                       {experience.title}
                     </h2>
-                    {records.length > 1 && (
+                    {(records.length > 1 || experience.exampleTargets) && (
                       <p className="mt-1 pr-16 text-[11px] leading-snug text-ink-soft">
-                        {records.length}回の記録
+                        {records.length}{experience.exampleTargets ? "件" : "回"}の記録
                       </p>
                     )}
                     <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
