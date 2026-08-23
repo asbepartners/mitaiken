@@ -14,6 +14,7 @@ export interface MemoryRecordDraft {
 
 interface MemoryRecordSheetProps {
   experienceTitle: string;
+  relatedUrl?: string;
   initialRecord?: MemoryRecordDraft;
   onCancel: () => void;
   onConfirm: (record: MemoryRecordDraft) => void;
@@ -49,6 +50,7 @@ async function compressImage(file: File): Promise<string> {
 
 export function MemoryRecordSheet({
   experienceTitle,
+  relatedUrl,
   initialRecord,
   onCancel,
   onConfirm,
@@ -113,6 +115,16 @@ export function MemoryRecordSheet({
               <BookmarkIcon filled className="h-5 w-5" />やってみた！
             </p>
             <h2 className="mt-1 line-clamp-2 text-xl font-bold leading-snug text-green-950">{experienceTitle}</h2>
+            {relatedUrl && (
+              <a
+                href={relatedUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-green-800 underline decoration-dotted underline-offset-4"
+              >
+                関連リンクを見る <span aria-hidden="true">↗</span>
+              </a>
+            )}
           </div>
           <button type="button" onClick={onCancel} aria-label="閉じる" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ivory-deep text-xl text-green-950">×</button>
         </div>
@@ -122,7 +134,7 @@ export function MemoryRecordSheet({
           <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-green-100 bg-ivory">
             {([["date","年月日"],["month","年月だけ"],["year","年だけ"]] as const).map(([value,label]) => (
               <button key={value} type="button" onClick={() => chooseMode(value)}
-                className={`py-2.5 text-sm font-bold ${!unknown && mode===value ? "border border-coral-400 bg-coral-100 text-green-950" : "text-green-900"}`}>
+                className={`py-2.5 text-sm font-bold ${!unknown && mode===value ? "bg-coral-100 text-green-950 ring-1 ring-inset ring-coral-400" : "text-green-900"}`}>
                 {label}
               </button>
             ))}
@@ -139,6 +151,16 @@ export function MemoryRecordSheet({
           </div>
         </div>
 
+        <div className="mt-4">
+          <label htmlFor="memory-memo" className="text-sm font-bold text-green-950">ひとことメモ <span className="font-normal text-ink-soft">（任意）</span></label>
+          <div className="relative mt-1.5">
+            <textarea id="memory-memo" value={memo} maxLength={100} rows={3} onChange={e=>setMemo(e.target.value)}
+              placeholder="心に残ったことを一言残しましょう。"
+              className="w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 pb-6 text-sm leading-relaxed text-ink placeholder:text-ink-soft/60 focus:border-green-700 focus:outline-none"/>
+            <span className="absolute bottom-2 right-3 text-[10px] text-ink-soft">{memo.length}/100</span>
+          </div>
+        </div>
+
         <div className="mt-4 grid gap-3">
           <label>
             <span className="text-sm font-bold text-green-950">どこで？ <span className="font-normal text-ink-soft">（任意）</span></span>
@@ -146,18 +168,8 @@ export function MemoryRecordSheet({
           </label>
           <label>
             <span className="text-sm font-bold text-green-950">誰と？ <span className="font-normal text-ink-soft">（任意）</span></span>
-            <input type="text" value={companion} maxLength={80} onChange={e=>setCompanion(e.target.value)} placeholder="Aちゃん、姉、ひとり…" className={`${inputClass} mt-1.5`}/>
+            <input type="text" value={companion} maxLength={80} onChange={e=>setCompanion(e.target.value)} placeholder="○○さん、ひとり…など" className={`${inputClass} mt-1.5`}/>
           </label>
-        </div>
-
-        <div className="mt-4">
-          <label htmlFor="memory-memo" className="text-sm font-bold text-green-950">ひとことメモ <span className="font-normal text-ink-soft">（任意）</span></label>
-          <div className="relative mt-1.5">
-            <textarea id="memory-memo" value={memo} maxLength={100} rows={3} onChange={e=>setMemo(e.target.value)}
-              placeholder="どんな体験だったか、自由にメモできます"
-              className="w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 pb-6 text-sm leading-relaxed text-ink placeholder:text-ink-soft/60 focus:border-green-700 focus:outline-none"/>
-            <span className="absolute bottom-2 right-3 text-[10px] text-ink-soft">{memo.length}/100</span>
-          </div>
         </div>
 
         <div className="mt-4">

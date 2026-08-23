@@ -27,6 +27,7 @@ export default function Home() {
   const {
     statusMap,
     recordsMap,
+    relatedUrlMap,
     toggleWishlist,
     markTried,
     updateRecord,
@@ -173,6 +174,7 @@ export default function Home() {
               : `new-${pendingExperience?.id}`
           }
           experienceTitle={(editingExperience ?? pendingExperience)!.title}
+          relatedUrl={relatedUrlMap[(editingExperience ?? pendingExperience)!.id]}
           initialRecord={
             editingRecord
               ? {

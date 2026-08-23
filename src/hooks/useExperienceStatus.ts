@@ -181,6 +181,7 @@ async function ensureUserExperience(userId: string, slug: string) {
 export function useExperienceStatus() {
   const [userId, setUserId] = useState<string | undefined>();
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
+  const [relatedUrlMap, setRelatedUrlMap] = useState<Record<string, string>>({});
   const statusMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const writeRecordsMap = useCallback((next: RecordsMap) => {
@@ -228,7 +229,7 @@ export function useExperienceStatus() {
 
     const { data: rows } = await supabase
       .from("user_experiences")
-      .select("id, source_template_slug, wishlisted_at")
+      .select("id, source_template_slug, wishlisted_at, related_url")
       .eq("user_id", userId)
       .not("source_template_slug", "is", null);
 
@@ -244,8 +245,10 @@ export function useExperienceStatus() {
     const byId = new Map((rows ?? []).map((row) => [row.id, row]));
     const nextStatus: StatusMap = {};
     const nextRecords: RecordsMap = {};
+    const nextRelatedUrls: Record<string, string> = {};
 
     for (const row of rows ?? []) {
+      if (row.related_url) nextRelatedUrls[row.source_template_slug] = row.related_url;
       if (row.wishlisted_at) nextStatus[row.source_template_slug] = { status: "wishlist" };
     }
 
@@ -275,6 +278,7 @@ export function useExperienceStatus() {
     }
 
     writeRecordsMap(nextRecords);
+    setRelatedUrlMap(nextRelatedUrls);
     writeStatusMap(nextStatus);
   }, [userId, writeRecordsMap]);
 
@@ -511,6 +515,7 @@ export function useExperienceStatus() {
   return {
     statusMap,
     recordsMap,
+    relatedUrlMap,
     toggleWishlist,
     markTried,
     updateRecord,
