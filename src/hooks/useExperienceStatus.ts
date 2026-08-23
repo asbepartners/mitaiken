@@ -12,6 +12,7 @@ export interface TriedRecord {
   companion?: string;
   photoUrl?: string;
   memo?: string;
+  targetId?: string;
 }
 
 export type RecordsMap = Record<string, TriedRecord[]>;
@@ -83,6 +84,7 @@ function readRecordsStorage(): RecordsMap {
           companion: typeof candidate.companion === "string" ? candidate.companion : undefined,
           photoUrl: typeof candidate.photoUrl === "string" ? candidate.photoUrl : undefined,
           memo: typeof candidate.memo === "string" ? candidate.memo : undefined,
+          targetId: typeof candidate.targetId === "string" ? candidate.targetId : undefined,
         }];
       });
       if (records.length) next[slug] = records;
@@ -194,6 +196,8 @@ export function useExperienceStatus() {
   useEffect(() => {
     const stored = readRecordsStorage();
     if (Object.keys(stored).length > 0) {
+      // Initial hydration from the browser's persisted records.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecordsMapState(stored);
       return;
     }

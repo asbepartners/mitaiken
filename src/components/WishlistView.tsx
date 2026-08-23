@@ -13,7 +13,7 @@ import {
 } from "./ExperienceSearchScreen";
 import { BookmarkIcon } from "./RecordIcons";
 import type { RecordsMap } from "@/hooks/useExperienceStatus";
-import type { TargetsMap } from "@/hooks/useExperienceTargets";
+import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 import { CollectionDetailView } from "./CollectionDetailView";
 
 interface WishlistViewProps {
@@ -25,8 +25,12 @@ interface WishlistViewProps {
   onRemove: (id: string) => void;
   targetsMap: TargetsMap;
   recordsMap: RecordsMap;
-  onRequestTargetRecord: (parentId: string, target: string) => void;
-  onAddTarget: (parentId: string, name: string) => boolean;
+  onRequestTargetRecord: (parentId: string, target: ExperienceTarget) => void;
+  onAddTarget: (parentId: string, draft: ExperienceTargetDraft) => boolean;
+  onUpdateTarget: (parentId: string, id: string, draft: ExperienceTargetDraft) => boolean;
+  onRemoveTarget: (parentId: string, id: string) => void;
+  onEditRecord: (parentId: string, recordId: string) => void;
+  onDeleteRecord: (parentId: string, recordId: string) => void;
 }
 
 export function WishlistView({
@@ -40,6 +44,10 @@ export function WishlistView({
   recordsMap,
   onRequestTargetRecord,
   onAddTarget,
+  onUpdateTarget,
+  onRemoveTarget,
+  onEditRecord,
+  onDeleteRecord,
 }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -74,7 +82,7 @@ export function WishlistView({
 
   const selectedCollection = items.find((item) => item.id === selectedCollectionId);
   if (selectedCollection) {
-    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(name) => onAddTarget(selectedCollection.id, name)} />;
+    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
   }
 
   return (
@@ -152,7 +160,7 @@ export function WishlistView({
         <ul className="flex flex-col gap-2.5">
           {filtered.map((experience) => {
             const completedPlaces = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
-            const pendingTargets = (targetsMap[experience.id] ?? []).filter((target) => !completedPlaces.has(target));
+            const pendingTargets = (targetsMap[experience.id] ?? []).filter((target) => !(recordsMap[experience.id] ?? []).some((record) => record.targetId === target.id || (!record.targetId && completedPlaces.has(target.title))));
             const isCollection = Boolean(experience.exampleTargets);
             return (
             <li

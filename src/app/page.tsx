@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { useExperienceTargets } from "@/hooks/useExperienceTargets";
+import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -22,7 +23,7 @@ export default function Home() {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
-  const [pendingTargetPlace, setPendingTargetPlace] = useState<string | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences } = useExperienceCatalog();
   const auth = useAuth();
@@ -38,14 +39,14 @@ export default function Home() {
     removeStatus,
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
-  const { targetsMap, initializeTargets, addTarget, clearTargets } = useExperienceTargets();
+  const { targetsMap, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
 
   const wishlistItems = useMemo(
     () => experiences.filter((experience) => {
       if (statusMap[experience.id]?.status === "wishlist") return true;
       if (!experience.exampleTargets || !(targetsMap[experience.id]?.length)) return false;
       const completed = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
-      return targetsMap[experience.id].some((target) => !completed.has(target));
+      return targetsMap[experience.id].some((target) => !(recordsMap[experience.id] ?? []).some((record) => record.targetId === target.id || (!record.targetId && completed.has(target.title))));
     }),
     [experiences, recordsMap, statusMap, targetsMap]
   );
@@ -115,7 +116,7 @@ export default function Home() {
 
     if (pendingId) markTried(pendingId, record);
     setPendingId(null);
-    setPendingTargetPlace(null);
+    setPendingTarget(null);
   }
 
   return (
@@ -152,11 +153,18 @@ export default function Home() {
             }}
             targetsMap={targetsMap}
             recordsMap={recordsMap}
-            onRequestTargetRecord={(parentId, place) => {
-              setPendingTargetPlace(place);
+            onRequestTargetRecord={(parentId, target) => {
+              setPendingTarget(target);
               setPendingId(parentId);
             }}
             onAddTarget={addTarget}
+            onUpdateTarget={updateTarget}
+            onRemoveTarget={removeTarget}
+            onEditRecord={(experienceId, recordId) => {
+              setEditingId(experienceId);
+              setEditingRecordId(recordId);
+            }}
+            onDeleteRecord={deleteRecord}
           />
         )}
         {tab === "tried" && (
@@ -172,9 +180,11 @@ export default function Home() {
             }}
             onDeleteRecord={deleteRecord}
             onAddTarget={addTarget}
+            onUpdateTarget={updateTarget}
+            onRemoveTarget={removeTarget}
             targetsMap={targetsMap}
-            onRequestTargetRecord={(parentId, place) => {
-              setPendingTargetPlace(place);
+            onRequestTargetRecord={(parentId, target) => {
+              setPendingTarget(target);
               setPendingId(parentId);
             }}
           />
@@ -211,11 +221,12 @@ export default function Home() {
                   companion: editingRecord.companion,
                   memo: editingRecord.memo,
                   photoUrl: editingRecord.photoUrl,
+                  targetId: editingRecord.targetId,
                 }
-              : pendingTargetPlace
+              : pendingTarget
                 ? {
                     timing: { type: "date", value: new Date().toISOString().slice(0, 10) },
-                    place: pendingTargetPlace,
+                    targetId: pendingTarget.id,
                   }
                 : undefined
           }
@@ -223,7 +234,7 @@ export default function Home() {
             setPendingId(null);
             setEditingId(null);
             setEditingRecordId(null);
-            setPendingTargetPlace(null);
+            setPendingTarget(null);
           }}
           onConfirm={handleConfirmRecord}
         />

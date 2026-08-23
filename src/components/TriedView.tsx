@@ -11,7 +11,7 @@ import {
 } from "./HajimeteSearchScreen";
 import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 import { CollectionDetailView } from "./CollectionDetailView";
-import type { TargetsMap } from "@/hooks/useExperienceTargets";
+import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 
 export interface TriedExperience {
   experience: Experience;
@@ -26,9 +26,11 @@ interface TriedViewProps {
   onAddRecord: (experienceId: string) => void;
   onEditRecord: (experienceId: string, recordId: string) => void;
   onDeleteRecord: (experienceId: string, recordId: string) => void;
-  onAddTarget: (experienceId: string, name: string) => boolean;
+  onAddTarget: (experienceId: string, draft: ExperienceTargetDraft) => boolean;
+  onUpdateTarget: (experienceId: string, id: string, draft: ExperienceTargetDraft) => boolean;
+  onRemoveTarget: (experienceId: string, id: string) => void;
   targetsMap: TargetsMap;
-  onRequestTargetRecord: (experienceId: string, target: string) => void;
+  onRequestTargetRecord: (experienceId: string, target: ExperienceTarget) => void;
 }
 
 type ViewMode = "firsts" | "records";
@@ -82,6 +84,8 @@ export function TriedView({
   onAddTarget,
   targetsMap,
   onRequestTargetRecord,
+  onUpdateTarget,
+  onRemoveTarget,
 }: TriedViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("firsts");
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -198,7 +202,13 @@ export function TriedView({
 
   if (selectedExperience?.exampleTargets && selectedExperienceId) {
     const selectedRecords = items.find(({ experience }) => experience.id === selectedExperienceId)?.records ?? [];
-    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(name) => onAddTarget(selectedExperienceId, name)} />;
+    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} />;
+  }
+
+  function targetTitleFor(experienceId: string, record: TriedRecord) {
+    return record.targetId
+      ? targetsMap[experienceId]?.find((target) => target.id === record.targetId)?.title
+      : undefined;
   }
 
   return (
@@ -294,7 +304,7 @@ export function TriedView({
               {selectedExperience?.exampleTargets ? "＋ 行きたいを追加" : "追加"}
             </button>
           </div>
-          {addingTarget && <div className="mt-3 flex gap-2"><input autoFocus value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="行きたい場所・お店" className="min-w-0 flex-1 rounded-xl border border-green-100 bg-ivory px-3 py-2 text-sm" /><button type="button" onClick={() => { if (onAddTarget(selectedExperienceId, targetName)) { setTargetName(""); setAddingTarget(false); } }} className="rounded-full bg-coral-500 px-3 text-xs font-bold text-paper">追加</button></div>}
+          {addingTarget && <div className="mt-3 flex gap-2"><input autoFocus value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="やってみたいこと" className="min-w-0 flex-1 rounded-xl border border-green-100 bg-ivory px-3 py-2 text-sm" /><button type="button" onClick={() => { if (onAddTarget(selectedExperienceId, { title: targetName })) { setTargetName(""); setAddingTarget(false); } }} className="rounded-full bg-coral-500 px-3 text-xs font-bold text-paper">追加</button></div>}
         </section>
       )}
 
@@ -424,9 +434,9 @@ export function TriedView({
                   <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
-                  {(record.place || record.companion) && (
+                  {(record.targetId || record.place || record.companion) && (
                     <p className="mt-1 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
-                      {[record.place, record.companion ? `with ${record.companion}` : undefined]
+                      {[targetTitleFor(experience.id, record), record.place, record.companion ? `with ${record.companion}` : undefined]
                         .filter(Boolean)
                         .join(" ・ ")}
                     </p>

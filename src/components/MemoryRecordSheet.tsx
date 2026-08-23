@@ -10,6 +10,7 @@ export interface MemoryRecordDraft {
   companion?: string;
   memo?: string;
   photoUrl?: string;
+  targetId?: string;
 }
 
 interface MemoryRecordSheetProps {
@@ -194,7 +195,7 @@ export function MemoryRecordSheet({
         <div className="mt-5 flex gap-2">
           <button type="button" onClick={onCancel} className="flex-1 rounded-full border border-green-100 bg-paper py-3 text-sm font-medium text-ink-soft">戻る</button>
           <button type="button" disabled={!canConfirm || processingPhoto}
-            onClick={()=>onConfirm({timing,place:place.trim()||undefined,companion:companion.trim()||undefined,memo:memo.trim()||undefined,photoUrl})}
+            onClick={()=>onConfirm({timing,place:place.trim()||undefined,companion:companion.trim()||undefined,memo:memo.trim()||undefined,photoUrl,targetId:initialRecord?.targetId})}
             className="flex-1 rounded-full bg-green-800 py-3 text-sm font-bold text-paper disabled:opacity-40">決定</button>
         </div>
       </div>
