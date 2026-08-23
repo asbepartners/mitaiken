@@ -2,8 +2,6 @@
 
 import type { User } from "@supabase/supabase-js";
 import type { Experience } from "@/data/experiences";
-import { useState } from "react";
-import { CustomListsMock } from "./CustomListsMock";
 
 interface MyPageViewProps {
   user: User | null;
@@ -24,12 +22,6 @@ export function MyPageView({
   hiddenItems,
   onRestoreHidden,
 }: MyPageViewProps) {
-  const [openList, setOpenList] = useState<"goshuin" | null>(null);
-
-  if (openList === "goshuin") {
-    return <CustomListsMock onBack={() => setOpenList(null)} />;
-  }
-
   return (
     <div className="px-5 pb-8 pt-8">
       <header>
@@ -72,32 +64,6 @@ export function MyPageView({
             {!configured && <p className="mt-3 text-xs text-coral-500">Supabaseの接続設定が必要です。</p>}
           </>
         )}
-      </section>
-
-      <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_10px_rgba(44,38,32,0.05)]">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium text-green-700">好きなテーマで残す</p>
-            <h2 className="mt-1 font-bold text-green-950">わたしのリスト</h2>
-          </div>
-          <button type="button" className="min-h-10 rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500">
-            ＋ 作る
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => setOpenList("goshuin")}
-          className="mt-4 flex w-full items-center gap-3 rounded-2xl border border-green-100 bg-ivory/60 p-3 text-left"
-        >
-          <span className="relative flex h-14 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-[#d66b62] bg-[#fffaf3] text-[10px] font-bold text-[#b84f49] shadow-sm [writing-mode:vertical-rl]">
-            御朱印
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block font-bold text-green-950">御朱印を集める</span>
-            <span className="mt-1 block text-xs text-ink-soft">2か所お参りした・3か所これから</span>
-          </span>
-          <span className="text-xl text-green-700" aria-hidden="true">›</span>
-        </button>
       </section>
 
       <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5">

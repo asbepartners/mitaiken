@@ -132,7 +132,7 @@ export function CustomListsMock({ onBack }: { onBack: () => void }) {
         <div className="relative z-10 mt-3 flex items-center gap-4">
           <GoshuinIcon />
           <div className="min-w-0">
-            <p className="text-xs font-bold text-[#a75852]">わたしのリスト</p>
+            <p className="text-xs font-bold text-[#a75852]">おすすめリスト</p>
             <h1 className="mt-1 text-[1.55rem] font-bold tracking-wide text-green-950">
               御朱印を集める
             </h1>
