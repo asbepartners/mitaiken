@@ -212,8 +212,7 @@ export function TriedView({
           )}
         </button>
         <div className="absolute right-5 top-4 max-w-[75%] text-right [text-shadow:0_1px_0_rgba(255,253,247,0.95)]">
-          <div className="flex items-center justify-end gap-1.5 text-green-950">
-            <BookmarkIcon filled className="h-7 w-7 shrink-0 text-coral-500" />
+          <div className="text-green-950">
             <h1 className="text-[1.55rem] font-bold tracking-wide">わたしのはじめて帖</h1>
           </div>
           <p className="mt-1 text-sm font-medium text-green-950/80">
@@ -278,7 +277,7 @@ export function TriedView({
             <button
               type="button"
               onClick={() => onAddRecord(selectedExperienceId)}
-              className="min-h-9 shrink-0 rounded-full bg-green-100 px-3 text-sm font-bold text-green-800"
+              className="min-h-9 shrink-0 rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500"
             >
               追加
             </button>
