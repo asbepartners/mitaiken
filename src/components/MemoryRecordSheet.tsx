@@ -131,10 +131,10 @@ export function MemoryRecordSheet({
 
         <div className="mt-4">
           <p className="mb-2 text-sm font-bold text-green-950">いつやった？</p>
-          <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-green-100 bg-ivory">
+          <div className="grid grid-cols-3 gap-px rounded-xl border border-green-100 bg-ivory p-px">
             {([["date","年月日"],["month","年月だけ"],["year","年だけ"]] as const).map(([value,label]) => (
               <button key={value} type="button" onClick={() => chooseMode(value)}
-                className={`py-2.5 text-sm font-bold ${!unknown && mode===value ? "bg-coral-100 text-green-950 ring-1 ring-inset ring-coral-400" : "text-green-900"}`}>
+                className={`rounded-[10px] py-2.5 text-sm font-bold ${!unknown && mode===value ? "border border-coral-400 bg-coral-100 text-green-950" : "border border-transparent text-green-900"}`}>
                 {label}
               </button>
             ))}
