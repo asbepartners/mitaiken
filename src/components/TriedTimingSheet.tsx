@@ -15,7 +15,7 @@ type Mode = "select" | "date" | "month" | "year";
 const optionButtonClass =
   "rounded-2xl border border-green-100 bg-paper px-4 py-3 text-left text-sm font-medium text-green-900 transition-colors hover:border-green-700 hover:bg-green-100";
 const inputClass =
-  "w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-sm text-ink focus:border-green-700 focus:outline-none";
+  "min-w-0 max-w-full w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-sm text-ink focus:border-green-700 focus:outline-none";
 const secondaryButtonClass =
   "flex-1 rounded-full border border-green-100 py-2.5 text-sm font-medium text-ink-soft";
 const primaryButtonClass =
@@ -46,7 +46,7 @@ export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: Tried
         onClick={onCancel}
         className="absolute inset-0 bg-ink/30"
       />
-      <div className="relative w-full max-w-sm animate-[slide-up_0.2s_ease-out] rounded-t-3xl bg-paper px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl sm:pb-6">
+      <div className="relative min-w-0 w-full max-w-sm overflow-hidden animate-[slide-up_0.2s_ease-out] rounded-t-3xl bg-paper px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl sm:pb-6">
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-green-100 sm:hidden" />
         <p className="flex items-center gap-1.5 text-sm font-medium text-coral-500">
           <BookmarkIcon filled className="h-5 w-5" />
@@ -87,7 +87,7 @@ export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: Tried
         )}
 
         {mode === "date" && (
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 min-w-0 flex flex-col gap-3">
             <input
               type="date"
               value={dateValue}
@@ -112,7 +112,7 @@ export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: Tried
         )}
 
         {mode === "month" && (
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 min-w-0 flex flex-col gap-3">
             <input
               type="month"
               value={monthValue}
@@ -137,7 +137,7 @@ export function TriedTimingSheet({ experienceTitle, onCancel, onConfirm }: Tried
         )}
 
         {mode === "year" && (
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-4 min-w-0 flex flex-col gap-3">
             <input
               type="number"
               inputMode="numeric"
