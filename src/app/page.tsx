@@ -172,6 +172,11 @@ export default function Home() {
             }}
             onDeleteRecord={deleteRecord}
             onAddTarget={addTarget}
+            targetsMap={targetsMap}
+            onRequestTargetRecord={(parentId, place) => {
+              setPendingTargetPlace(place);
+              setPendingId(parentId);
+            }}
           />
         )}
         {tab === "mypage" && (

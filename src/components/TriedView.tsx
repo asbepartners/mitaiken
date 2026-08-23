@@ -10,6 +10,8 @@ import {
   HajimeteSearchValue,
 } from "./HajimeteSearchScreen";
 import { BookmarkIcon, CrownIcon } from "./RecordIcons";
+import { CollectionDetailView } from "./CollectionDetailView";
+import type { TargetsMap } from "@/hooks/useExperienceTargets";
 
 export interface TriedExperience {
   experience: Experience;
@@ -25,6 +27,8 @@ interface TriedViewProps {
   onEditRecord: (experienceId: string, recordId: string) => void;
   onDeleteRecord: (experienceId: string, recordId: string) => void;
   onAddTarget: (experienceId: string, name: string) => boolean;
+  targetsMap: TargetsMap;
+  onRequestTargetRecord: (experienceId: string, target: string) => void;
 }
 
 type ViewMode = "firsts" | "records";
@@ -76,6 +80,8 @@ export function TriedView({
   onEditRecord,
   onDeleteRecord,
   onAddTarget,
+  targetsMap,
+  onRequestTargetRecord,
 }: TriedViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("firsts");
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -188,6 +194,11 @@ export function TriedView({
     setSelectedExperienceId(null);
     setViewMode(detailReturnView);
     setOpenMenuId(null);
+  }
+
+  if (selectedExperience?.exampleTargets && selectedExperienceId) {
+    const selectedRecords = items.find(({ experience }) => experience.id === selectedExperienceId)?.records ?? [];
+    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(name) => onAddTarget(selectedExperienceId, name)} />;
   }
 
   return (
