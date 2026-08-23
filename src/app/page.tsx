@@ -87,9 +87,9 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-ivory bg-paper-texture">
+    <div className="flex min-h-full min-w-0 flex-1 flex-col overflow-x-hidden bg-ivory bg-paper-texture">
       <main
-        className="mx-auto w-full max-w-2xl flex-1 pb-24"
+        className="mx-auto min-w-0 w-full max-w-2xl flex-1 pb-24"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
