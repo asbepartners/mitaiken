@@ -48,11 +48,6 @@ function formatTimelineTiming(timing: Timing): string {
   return year;
 }
 
-function formatCompactTiming(timing: Timing): string {
-  if (!timing.value || timing.type === "unknown") return "もっと以前";
-  if (timing.type === "year") return `${timing.value}年`;
-  return timing.value.replaceAll("-", ".");
-}
 
 export function TriedView({
   items,
@@ -109,13 +104,17 @@ export function TriedView({
 
   const filteredFirstItems = useMemo(
     () =>
-      firstItems.filter(({ experience, first }) => {
-        const year = first.timing.value?.slice(0, 4);
-        return (
-          matchesExperienceFilters(experience, filters) &&
-          (selectedYear === "all" || year === selectedYear)
-        );
-      }),
+      firstItems
+        .filter(({ experience, first }) => {
+          const year = first.timing.value?.slice(0, 4);
+          return (
+            matchesExperienceFilters(experience, filters) &&
+            (selectedYear === "all" || year === selectedYear)
+          );
+        })
+        .sort((a, b) =>
+          timingSortKey(b.first.timing).localeCompare(timingSortKey(a.first.timing))
+        ),
     [filters, firstItems, selectedYear]
   );
 
@@ -268,9 +267,25 @@ export function TriedView({
         />
       ) : viewMode === "firsts" ? (
         <ul className="flex flex-col gap-2.5">
-          {filteredFirstItems.map(({ experience, first, records }) => (
-            <li key={experience.id}>
-              <div className="flex min-h-28 min-w-0 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+          {filteredFirstItems.map(({ experience, first, records }, index) => (
+            <li key={experience.id} className="flex gap-3">
+              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
+                <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
+                  {formatTimelineTiming(first.timing)}
+                </p>
+                <span
+                  className={`absolute right-0 w-px bg-green-100 ${
+                    index === 0 ? "top-4" : "top-0"
+                  } ${
+                    index === filteredFirstItems.length - 1
+                      ? "bottom-1/2"
+                      : "bottom-[-0.625rem]"
+                  }`}
+                  aria-hidden="true"
+                />
+              </div>
+
+              <div className="relative flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
                 <button
                   type="button"
                   onClick={() => openExperience(experience.id)}
@@ -284,26 +299,25 @@ export function TriedView({
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div className="min-w-0 flex-1 px-3 py-2.5">
-                    <div className="flex gap-2">
-                      <h2 className="line-clamp-2 flex-1 text-[15px] font-bold leading-snug text-green-950">
-                        {experience.title}
-                      </h2>
-                      <CrownIcon className="h-6 w-6 shrink-0 text-[#d39a2c]" />
-                    </div>
+                  <div className="relative min-w-0 flex-1 px-3 py-2.5">
+                    <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
+                    <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
+                      {experience.title}
+                    </h2>
+                    {records.length > 1 && (
+                      <p className="mt-1 pr-16 text-[11px] leading-snug text-ink-soft">
+                        {records.length}回の記録
+                      </p>
+                    )}
                     <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                       {CATEGORY_LABELS[experience.category]}
                     </span>
-                    <p className="mt-1 text-[11px] leading-snug text-ink-soft">
-                      はじめて {formatCompactTiming(first.timing)}
-                      {records.length > 1 ? ` ・ ${records.length}回の記録` : ""}
-                    </p>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => onAddRecord(experience.id)}
-                  className="mr-2 self-end whitespace-nowrap pb-2 text-[11px] font-bold text-coral-500"
+                  className="absolute bottom-2 right-3 whitespace-nowrap text-[11px] font-bold text-coral-500"
                 >
                   ＋ 記録
                 </button>
