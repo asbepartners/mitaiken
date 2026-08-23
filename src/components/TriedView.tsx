@@ -78,6 +78,7 @@ export function TriedView({
   const [viewMode, setViewMode] = useState<ViewMode>("firsts");
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [selectedExperienceId, setSelectedExperienceId] = useState<string | null>(null);
+  const [detailReturnView, setDetailReturnView] = useState<ViewMode>("firsts");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState<HajimeteSearchValue>({
@@ -154,7 +155,7 @@ export function TriedView({
             (searchValue.categories.length === 0 ||
               searchValue.categories.includes(experience.category)) &&
             (!selectedExperienceId || experience.id === selectedExperienceId) &&
-            (selectedYear === "all" || year === selectedYear)
+            (selectedExperienceId || selectedYear === "all" || year === selectedYear)
           );
         })
         .sort((a, b) =>
@@ -172,9 +173,15 @@ export function TriedView({
   }
 
   function openExperience(experienceId: string) {
+    setDetailReturnView(viewMode);
     setSelectedExperienceId(experienceId);
     setViewMode("records");
-    setSelectedYear("all");
+    setOpenMenuId(null);
+  }
+
+  function closeExperienceDetail() {
+    setSelectedExperienceId(null);
+    setViewMode(detailReturnView);
     setOpenMenuId(null);
   }
 
@@ -225,6 +232,7 @@ export function TriedView({
         <SummaryCell label={<>これからの<br />楽しみ</>} value={wishlistCount} />
       </section>
 
+      {!selectedExperienceId && (
       <div className="mb-3 grid grid-cols-2 rounded-2xl border border-green-100 bg-paper p-1 shadow-[0_1px_6px_rgba(44,38,32,0.04)]">
         <button
           type="button"
@@ -249,31 +257,36 @@ export function TriedView({
           記録
         </button>
       </div>
-
-      {viewMode === "records" && selectedExperienceId && (
-        <div className="mb-3 flex items-center gap-2 rounded-xl bg-green-100 px-3 py-2 text-xs font-medium text-green-900">
-          <span className="min-w-0 flex-1 truncate">
-            {items.find(({ experience }) => experience.id === selectedExperienceId)?.experience.title}
-            の記録
-          </span>
-          <button
-            type="button"
-            onClick={() => onAddRecord(selectedExperienceId)}
-            className="shrink-0 rounded-full bg-paper px-3 py-2 text-sm font-bold text-coral-500 shadow-sm"
-          >
-            ＋ 記録する
-          </button>
-          <button
-            type="button"
-            onClick={() => setSelectedExperienceId(null)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-paper text-lg"
-            aria-label="体験の絞り込みを解除"
-          >
-            ×
-          </button>
-        </div>
       )}
 
+      {viewMode === "records" && selectedExperienceId && (
+        <section className="mb-3 rounded-2xl border border-green-100 bg-paper px-3 py-3 shadow-sm">
+          <button
+            type="button"
+            onClick={closeExperienceDetail}
+            className="mb-2 inline-flex min-h-10 items-center gap-1 rounded-full px-2 text-sm font-bold text-green-800"
+          >
+            ← 戻る
+          </button>
+          <div className="flex items-end gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-ink-soft">はじめての詳細</p>
+              <h2 className="mt-0.5 text-base font-bold leading-snug text-green-950">
+                {items.find(({ experience }) => experience.id === selectedExperienceId)?.experience.title}
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => onAddRecord(selectedExperienceId)}
+              className="min-h-9 shrink-0 rounded-full bg-green-100 px-3 text-sm font-bold text-green-800"
+            >
+              追加
+            </button>
+          </div>
+        </section>
+      )}
+
+      {!selectedExperienceId && (
       <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {["all", ...years].map((year) => (
           <button
@@ -293,8 +306,9 @@ export function TriedView({
           </button>
         ))}
       </div>
+      )}
 
-      {firstItems.length > 0 && (
+      {firstItems.length > 0 && !selectedExperienceId && (
         <p className="mb-3 text-right text-xs font-medium text-ink-soft">
           {viewMode === "firsts"
             ? `${filteredFirstItems.length}個のはじめて`
@@ -356,13 +370,6 @@ export function TriedView({
                       {CATEGORY_LABELS[experience.category]}
                     </span>
                   </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onAddRecord(experience.id)}
-                  className="absolute bottom-2 right-2 flex min-h-9 items-center rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500 shadow-sm"
-                >
-                  ＋ 記録する
                 </button>
               </div>
             </li>
