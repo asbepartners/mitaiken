@@ -156,7 +156,7 @@ async function ensureUserExperience(userId: string, slug: string) {
 
   const { data: template } = await supabase
     .from("templates")
-    .select("title, category_id, image_path")
+    .select("id, title, category_id, image_path")
     .eq("slug", slug)
     .single();
 
@@ -168,6 +168,7 @@ async function ensureUserExperience(userId: string, slug: string) {
       {
         user_id: userId,
         source_template_slug: slug,
+        source_template_id: template.id,
         title: template.title,
         category_id: template.category_id,
         image_path: template.image_path,
@@ -179,6 +180,28 @@ async function ensureUserExperience(userId: string, slug: string) {
 
   if (error) return null;
   return data.id as string;
+}
+
+async function ensurePrimaryItem(userExperienceId: string, title: string) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
+  const id = `primary-${userExperienceId}`;
+  const { data, error } = await supabase
+    .from("user_experience_items")
+    .upsert(
+      { id, user_experience_id: userExperienceId, title, is_primary: true, sort_order: 0 },
+      { onConflict: "id" }
+    )
+    .select("id")
+    .maybeSingle();
+  if (!error && data?.id) return data.id as string;
+  const { data: existing } = await supabase
+    .from("user_experience_items")
+    .select("id")
+    .eq("user_experience_id", userExperienceId)
+    .eq("is_primary", true)
+    .maybeSingle();
+  return existing?.id as string | undefined ?? null;
 }
 
 export function useExperienceStatus() {
@@ -379,13 +402,18 @@ export function useExperienceStatus() {
         const supabase = getSupabaseClient();
         if (!id || !supabase) return;
 
-        if (record.targetId) {
-          await ensureStoredTargetInDatabase(userId, slug, record.targetId);
-        }
+        const storedTargetId = record.targetId
+          ? await ensureStoredTargetInDatabase(userId, slug, record.targetId)
+          : null;
 
+        const experience = await supabase.from("user_experiences").select("title").eq("id", id).single();
+        const itemId = record.targetId
+          ? storedTargetId
+          : await ensurePrimaryItem(id, experience.data?.title ?? slug);
+        if (!itemId) return;
         await supabase.from("experience_logs").insert({
           user_experience_id: id,
-          user_experience_item_id: record.targetId ?? null,
+          user_experience_item_id: itemId,
           ...timingToDb(record.timing),
           place: record.place ?? null,
           companion: record.companion ?? null,
@@ -424,6 +452,11 @@ export function useExperienceStatus() {
       void (async () => {
         const supabase = getSupabaseClient();
         if (!supabase) return;
+        const userExperienceId = await ensureUserExperience(userId, slug);
+        if (!userExperienceId) return;
+        const experience = await supabase.from("user_experiences").select("title").eq("id", userExperienceId).single();
+        const itemId = record.targetId ?? await ensurePrimaryItem(userExperienceId, experience.data?.title ?? slug);
+        if (!itemId) return;
         await supabase
           .from("experience_logs")
           .update({
@@ -432,7 +465,7 @@ export function useExperienceStatus() {
             companion: record.companion ?? null,
             memo: record.memo ?? null,
             photo_path: record.photoUrl ?? null,
-            user_experience_item_id: record.targetId ?? null,
+            user_experience_item_id: itemId,
           })
           .eq("id", recordId);
         await reload();

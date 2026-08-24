@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DEFAULT_EXPERIENCE_TARGETS } from "@/data/experiences";
 import { getSupabaseClient } from "@/lib/supabase";
 
-export interface ExperienceTarget { id: string; title: string; memo?: string; relatedUrl?: string; }
+export interface ExperienceTarget { id: string; title: string; memo?: string; relatedUrl?: string; sourceTemplateItemId?: string; }
 export interface ExperienceTargetDraft { title: string; memo?: string; relatedUrl?: string; }
 export type TargetsMap = Record<string, ExperienceTarget[]>;
 
@@ -20,7 +20,7 @@ export function readStoredTargets(): TargetsMap {
       if (!item || typeof item !== "object") return [];
       const value = item as Record<string, unknown>;
       if (typeof value.title !== "string") return [];
-      return [{ id: typeof value.id === "string" ? value.id : newId(), title: value.title, memo: typeof value.memo === "string" ? value.memo : undefined, relatedUrl: typeof value.relatedUrl === "string" ? value.relatedUrl : undefined }];
+      return [{ id: typeof value.id === "string" ? value.id : newId(), title: value.title, memo: typeof value.memo === "string" ? value.memo : undefined, relatedUrl: typeof value.relatedUrl === "string" ? value.relatedUrl : undefined, sourceTemplateItemId: typeof value.sourceTemplateItemId === "string" ? value.sourceTemplateItemId : undefined }];
     }) : []]));
   } catch { return {}; }
 }
@@ -30,23 +30,26 @@ async function ensureUserExperience(userId: string, slug: string) {
   if (!supabase) return null;
   const { data: existing } = await supabase.from("user_experiences").select("id").eq("user_id", userId).eq("source_template_slug", slug).maybeSingle();
   if (existing) return existing.id as string;
-  const { data: template } = await supabase.from("templates").select("title, category_id, image_path").eq("slug", slug).single();
+  const { data: template } = await supabase.from("templates").select("id, title, category_id, image_path").eq("slug", slug).single();
   if (!template) return null;
-  const { data } = await supabase.from("user_experiences").upsert({ user_id: userId, source_template_slug: slug, title: template.title, category_id: template.category_id, image_path: template.image_path }, { onConflict: "user_id,source_template_slug" }).select("id").single();
+  const { data } = await supabase.from("user_experiences").upsert({ user_id: userId, source_template_slug: slug, source_template_id: template.id, title: template.title, category_id: template.category_id, image_path: template.image_path }, { onConflict: "user_id,source_template_slug" }).select("id").single();
   return data?.id as string | undefined ?? null;
 }
 
 async function saveTarget(userId: string, parentId: string, target: ExperienceTarget, sortOrder: number) {
   const supabase = getSupabaseClient();
   const userExperienceId = await ensureUserExperience(userId, parentId);
-  if (!supabase || !userExperienceId) return;
-  await supabase.from("user_experience_items").upsert({ id: target.id, user_experience_id: userExperienceId, title: target.title, memo: target.memo ?? null, related_url: target.relatedUrl ?? null, sort_order: sortOrder });
+  if (!supabase || !userExperienceId) return null;
+  const payload = { id: target.id, user_experience_id: userExperienceId, source_template_item_id: target.sourceTemplateItemId ?? null, title: target.title, memo: target.memo ?? null, related_url: target.relatedUrl ?? null, sort_order: sortOrder };
+  const { data } = await supabase.from("user_experience_items").upsert(payload, target.sourceTemplateItemId ? { onConflict: "user_experience_id,source_template_item_id" } : undefined).select("id").single();
+  return data?.id as string | undefined ?? null;
 }
 
 export async function ensureStoredTargetInDatabase(userId: string, parentId: string, targetId: string) {
   const targets = readStoredTargets()[parentId] ?? [];
   const index = targets.findIndex((target) => target.id === targetId);
-  if (index >= 0) await saveTarget(userId, parentId, targets[index], index);
+  if (index >= 0) return saveTarget(userId, parentId, targets[index], index);
+  return null;
 }
 
 export function useExperienceTargets() {
@@ -70,30 +73,57 @@ export function useExperienceTargets() {
     let active = true;
     void (async () => {
       const local = readStoredTargets();
-      for (const [parentId, targets] of Object.entries(local)) await Promise.all(targets.map((target, index) => saveTarget(userId, parentId, target, index)));
-      const { data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null);
-      const parentIds = (parents ?? []).map((parent) => parent.id);
-      if (!parentIds.length) return;
-      const { data: rows } = await supabase.from("user_experience_items").select("id, user_experience_id, title, memo, related_url, sort_order").in("user_experience_id", parentIds).order("sort_order", { ascending: true });
+      let { data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null);
+      let parentIds = (parents ?? []).map((parent) => parent.id);
+      let rows = parentIds.length
+        ? (await supabase.from("user_experience_items").select("id, user_experience_id, source_template_item_id, title, memo, related_url, sort_order, is_primary").in("user_experience_id", parentIds).eq("is_primary", false).order("sort_order", { ascending: true })).data
+        : [];
+      const parentDbIdBySlug = new Map((parents ?? []).map((parent) => [parent.source_template_slug as string, parent.id as string]));
+      for (const [parentId, targets] of Object.entries(local)) {
+        const parentDbId = parentDbIdBySlug.get(parentId);
+        const existing = (rows ?? []).filter((row) => row.user_experience_id === parentDbId);
+        await Promise.all(targets.map((target, index) => {
+          const alreadyStored = existing.some((row) =>
+            (target.sourceTemplateItemId && row.source_template_item_id === target.sourceTemplateItemId) ||
+            (!target.sourceTemplateItemId && row.title.trim().toLocaleLowerCase("ja") === target.title.trim().toLocaleLowerCase("ja"))
+          );
+          return alreadyStored ? Promise.resolve(null) : saveTarget(userId, parentId, target, index);
+        }));
+      }
+      ({ data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null));
+      parentIds = (parents ?? []).map((parent) => parent.id);
+      rows = parentIds.length
+        ? (await supabase.from("user_experience_items").select("id, user_experience_id, source_template_item_id, title, memo, related_url, sort_order, is_primary").in("user_experience_id", parentIds).eq("is_primary", false).order("sort_order", { ascending: true })).data
+        : [];
       if (!active || !rows) return;
       const slugById = new Map((parents ?? []).map((parent) => [parent.id, parent.source_template_slug as string]));
       const remote: TargetsMap = {};
       for (const row of rows) {
         const slug = slugById.get(row.user_experience_id);
         if (!slug) continue;
-        remote[slug] = [...(remote[slug] ?? []), { id: row.id, title: row.title, memo: row.memo ?? undefined, relatedUrl: row.related_url ?? undefined }];
+        remote[slug] = [...(remote[slug] ?? []), { id: row.id, title: row.title, memo: row.memo ?? undefined, relatedUrl: row.related_url ?? undefined, sourceTemplateItemId: row.source_template_item_id ?? undefined }];
       }
       write({ ...local, ...remote });
     })();
     return () => { active = false; };
   }, [userId]);
 
-  function initializeTargets(parentId: string) {
+  async function initializeTargets(parentId: string) {
     const current = readStoredTargets();
     if (current[parentId]?.length) return;
-    const targets = (DEFAULT_EXPERIENCE_TARGETS[parentId] ?? []).map((title) => ({ id: newId(), title }));
+    const supabase = getSupabaseClient();
+    const { data: template } = supabase ? await supabase.from("templates").select("template_items(id,title,display_order)").eq("slug", parentId).single() : { data: null };
+    const templateItems = (template?.template_items ?? []) as { id: string; title: string; display_order: number }[];
+    const targets = templateItems.length
+      ? [...templateItems].sort((a, b) => a.display_order - b.display_order).map((item) => ({ id: newId(), title: item.title, sourceTemplateItemId: item.id }))
+      : (DEFAULT_EXPERIENCE_TARGETS[parentId] ?? []).map((title) => ({ id: newId(), title }));
     write({ ...current, [parentId]: targets });
-    if (userId) void Promise.all(targets.map((target, index) => saveTarget(userId, parentId, target, index)));
+    if (userId) {
+      const storedIds = await Promise.all(targets.map((target, index) => saveTarget(userId, parentId, target, index)));
+      const storedTargets = targets.map((target, index) => storedIds[index] ? { ...target, id: storedIds[index] as string } : target);
+      const latest = readStoredTargets();
+      write({ ...latest, [parentId]: storedTargets });
+    }
   }
   function addTarget(parentId: string, draft: ExperienceTargetDraft) {
     const title = draft.title.trim();

@@ -138,7 +138,7 @@ export default function Home() {
             statusMap={statusMap}
             onHide={hideExperience}
             onToggleWishlist={(id) => {
-              if (!statusMap[id]) initializeTargets(id);
+              if (!statusMap[id]) void initializeTargets(id);
               toggleWishlist(id);
             }}
             onRequestMarkTried={setPendingId}
