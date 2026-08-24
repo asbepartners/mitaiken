@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Timing, UNKNOWN_TIMING, todayTiming } from "@/lib/timing";
 import { BookmarkIcon } from "./RecordIcons";
 
@@ -79,6 +79,22 @@ export function MemoryRecordSheet({
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(initialRecord?.photoUrl);
   const [processingPhoto, setProcessingPhoto] = useState(false);
 
+  useEffect(() => {
+    const body = document.body;
+    const root = document.documentElement;
+    const previousBodyOverflow = body.style.overflow;
+    const previousRootOverflow = root.style.overflow;
+    const previousOverscroll = root.style.overscrollBehavior;
+    body.style.overflow = "hidden";
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    return () => {
+      body.style.overflow = previousBodyOverflow;
+      root.style.overflow = previousRootOverflow;
+      root.style.overscrollBehavior = previousOverscroll;
+    };
+  }, []);
+
   const timing = useMemo<Timing>(() => {
     if (unknown) return UNKNOWN_TIMING;
     if (mode === "date") return { type: "date", value: dateValue };
@@ -106,9 +122,9 @@ export function MemoryRecordSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-30 flex max-w-full items-end justify-center overflow-x-hidden sm:items-center">
+    <div className="fixed inset-0 z-30 flex max-w-full items-end justify-center overflow-hidden overscroll-none sm:items-center">
       <button type="button" aria-label="閉じる" onClick={onCancel} className="absolute inset-0 bg-ink/30" />
-      <div className="relative box-border max-h-[92dvh] min-w-0 w-full max-w-sm overflow-x-hidden overflow-y-auto rounded-t-3xl bg-paper px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl">
+      <div className="relative box-border max-h-[92dvh] min-w-0 w-full max-w-sm touch-pan-y overflow-x-clip overflow-y-auto overscroll-y-contain rounded-t-3xl bg-paper px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl">
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-green-100 sm:hidden" />
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
