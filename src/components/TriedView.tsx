@@ -388,6 +388,11 @@ export function TriedView({
                         {records.length}{experience.exampleTargets ? "件" : "回"}の記録
                       </p>
                     )}
+                    {first.memo && (
+                      <p className="mt-0.5 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                        {first.memo}
+                      </p>
+                    )}
                     <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                       {CATEGORY_LABELS[experience.category]}
                     </span>
