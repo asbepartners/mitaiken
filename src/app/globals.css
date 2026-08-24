@@ -38,11 +38,25 @@
 
 html {
   background: var(--color-ivory);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--color-ivory);
   color: var(--color-ink);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+input[type="date"],
+input[type="month"] {
+  min-width: 0;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* 細かな紙っぽい質感を淡く重ねる */
