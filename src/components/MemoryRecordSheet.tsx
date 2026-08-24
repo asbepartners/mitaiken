@@ -106,9 +106,9 @@ export function MemoryRecordSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-30 flex max-w-full items-end justify-center overflow-x-hidden sm:items-center">
       <button type="button" aria-label="閉じる" onClick={onCancel} className="absolute inset-0 bg-ink/30" />
-      <div className="relative max-h-[92dvh] min-w-0 w-full max-w-sm overflow-y-auto rounded-t-3xl bg-paper px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl">
+      <div className="relative box-border max-h-[92dvh] min-w-0 w-full max-w-sm overflow-x-hidden overflow-y-auto rounded-t-3xl bg-paper px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl">
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-green-100 sm:hidden" />
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -157,7 +157,7 @@ export function MemoryRecordSheet({
           <div className="relative mt-1.5">
             <textarea id="memory-memo" value={memo} maxLength={100} rows={3} onChange={e=>setMemo(e.target.value)}
               placeholder="心に残ったことを一言残しましょう。"
-              className="w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 pb-6 text-sm leading-relaxed text-ink placeholder:text-ink-soft/60 focus:border-green-700 focus:outline-none"/>
+              className="min-w-0 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 pb-6 text-base leading-relaxed text-ink placeholder:text-ink-soft/60 focus:border-green-700 focus:outline-none"/>
             <span className="absolute bottom-2 right-3 text-[10px] text-ink-soft">{memo.length}/100</span>
           </div>
         </div>
