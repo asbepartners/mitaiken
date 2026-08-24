@@ -54,10 +54,15 @@ export default function Home() {
   const triedItems = useMemo(
     () =>
       experiences.flatMap((experience) => {
-        const records = recordsMap[experience.id] ?? [];
+        const records = experience.exampleTargets
+          ? (recordsMap[experience.id] ?? []).filter((record) =>
+              Boolean(record.targetId) &&
+              (targetsMap[experience.id] ?? []).some((target) => target.id === record.targetId)
+            )
+          : recordsMap[experience.id] ?? [];
         return records.length ? [{ experience, records }] : [];
       }),
-    [experiences, recordsMap]
+    [experiences, recordsMap, targetsMap]
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);

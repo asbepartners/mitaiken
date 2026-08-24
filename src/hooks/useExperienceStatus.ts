@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
+import { ensureStoredTargetInDatabase } from "@/hooks/useExperienceTargets";
 
 export interface TriedRecord {
   id: string;
@@ -241,7 +242,7 @@ export function useExperienceStatus() {
     const { data: logs } = ids.length
       ? await supabase
           .from("experience_logs")
-          .select("id, user_experience_id, experienced_year, experienced_month, experienced_day, place, companion, memo, photo_path, created_at")
+          .select("id, user_experience_id, user_experience_item_id, experienced_year, experienced_month, experienced_day, place, companion, memo, photo_path, created_at")
           .in("user_experience_id", ids)
           .order("created_at", { ascending: true })
       : { data: [] };
@@ -267,6 +268,7 @@ export function useExperienceStatus() {
         companion: log.companion ?? undefined,
         photoUrl: log.photo_path ?? undefined,
         memo: log.memo ?? undefined,
+        targetId: log.user_experience_item_id ?? undefined,
       };
 
       nextRecords[row.source_template_slug] = [
@@ -377,8 +379,13 @@ export function useExperienceStatus() {
         const supabase = getSupabaseClient();
         if (!id || !supabase) return;
 
+        if (record.targetId) {
+          await ensureStoredTargetInDatabase(userId, slug, record.targetId);
+        }
+
         await supabase.from("experience_logs").insert({
           user_experience_id: id,
+          user_experience_item_id: record.targetId ?? null,
           ...timingToDb(record.timing),
           place: record.place ?? null,
           companion: record.companion ?? null,
@@ -425,6 +432,7 @@ export function useExperienceStatus() {
             companion: record.companion ?? null,
             memo: record.memo ?? null,
             photo_path: record.photoUrl ?? null,
+            user_experience_item_id: record.targetId ?? null,
           })
           .eq("id", recordId);
         await reload();

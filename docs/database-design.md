@@ -12,6 +12,10 @@
 
 これにより、ステータスと履歴件数の不整合を防ぐ。
 
+複数の「やってみたい」を含む体験では、個々の項目を`user_experience_items`に保存し、
+完了記録を`experience_logs.user_experience_item_id`で項目へ紐づける。
+項目に未完了の記録がなければ「これから」、紐づく記録があれば「やってみた」と判定する。
+
 ## ER図
 
 ```mermaid
@@ -22,6 +26,8 @@ erDiagram
     EXPERIENCES ||--o{ EXPERIENCE_TAGS : has
     TAGS ||--o{ EXPERIENCE_TAGS : assigned
     USER_EXPERIENCES ||--o{ EXPERIENCE_LOGS : records
+    USER_EXPERIENCES ||--o{ USER_EXPERIENCE_ITEMS : contains
+    USER_EXPERIENCE_ITEMS ||--o{ EXPERIENCE_LOGS : completed_by
 ```
 
 ## 主な運用ルール
