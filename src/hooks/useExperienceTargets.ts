@@ -72,7 +72,26 @@ export function useExperienceTargets() {
     if (!supabase) return;
     let active = true;
     void (async () => {
-      const local = readStoredTargets();
+      const storedLocal = readStoredTargets();
+      const local: TargetsMap = {};
+      for (const [parentId, targets] of Object.entries(storedLocal)) {
+        const { data: template } = await supabase
+          .from("templates")
+          .select("template_items(id,title)")
+          .eq("slug", parentId)
+          .maybeSingle();
+        const templateItems = (template?.template_items ?? []) as { id: string; title: string }[];
+        const sourceIdByTitle = new Map(templateItems.map((item) => [item.title.trim().toLocaleLowerCase("ja"), item.id]));
+        const seen = new Set<string>();
+        local[parentId] = targets.flatMap((target) => {
+          const sourceTemplateItemId = target.sourceTemplateItemId ?? sourceIdByTitle.get(target.title.trim().toLocaleLowerCase("ja"));
+          const key = sourceTemplateItemId ? `source:${sourceTemplateItemId}` : `item:${target.id}`;
+          if (seen.has(key)) return [];
+          seen.add(key);
+          return [{ ...target, sourceTemplateItemId }];
+        });
+      }
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
       let { data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null);
       let parentIds = (parents ?? []).map((parent) => parent.id);
       let rows = parentIds.length
