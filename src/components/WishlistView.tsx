@@ -198,7 +198,7 @@ export function WishlistView({
                   {experience.title}
                 </h2>
                 <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">{experienceCategoryLabel(experience)}</span>
-                <ExperienceConditions experience={experience} className="mt-1 text-[10px] font-medium text-green-800" />
+                <ExperienceConditions experience={experience} compact className="mt-1 text-[10px] font-medium text-green-800" />
                 <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-ink-soft">
                   {isCollection ? `これから${pendingTargets.length}件・タップして詳細を見る` : experience.description}
                 </p>

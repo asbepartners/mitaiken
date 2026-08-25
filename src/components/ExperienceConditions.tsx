@@ -3,6 +3,7 @@ import type { Experience } from "@/data/experiences";
 interface Props {
   experience: Experience;
   className?: string;
+  compact?: boolean;
 }
 
 function peopleLabel(experience: Experience) {
@@ -14,15 +15,17 @@ function peopleLabel(experience: Experience) {
   return `${experience.minPeople}〜${experience.maxPeople}人`;
 }
 
-export function ExperienceConditions({ experience, className = "" }: Props) {
+export function ExperienceConditions({ experience, className = "", compact = false }: Props) {
   const location = experience.categoryCode === "outing" && experience.locationCode === "outing"
     ? undefined
     : experience.locationLabel || experience.place || undefined;
   const items = [
     { icon: "⏱", label: experience.durationLabel || experience.time || undefined },
     { icon: "💰", label: experience.budgetLabel || experience.cost || undefined },
-    { icon: "📍", label: location },
-    { icon: "👤", label: peopleLabel(experience) },
+    ...compact ? [] : [
+      { icon: "📍", label: location },
+      { icon: "👤", label: peopleLabel(experience) },
+    ],
   ].filter((item): item is { icon: string; label: string } => Boolean(item.label));
 
   if (!items.length) return null;
