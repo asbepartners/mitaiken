@@ -66,23 +66,6 @@ export function experienceCategoryLabel(experience: Experience) {
   return experience.categoryLabel ?? CATEGORY_LABELS[experience.category];
 }
 
-export function experienceConditionLabels(experience: Experience) {
-  const people = experience.minPeople === undefined
-    ? undefined
-    : experience.maxPeople === experience.minPeople
-      ? `${experience.minPeople}人`
-      : experience.minPeople === 1
-        ? "ひとりでできる"
-        : experience.minPeople === 2 && experience.maxPeople === undefined
-          ? "誰かと楽しむ"
-          : experience.maxPeople === undefined
-            ? `${experience.minPeople}人以上`
-            : `${experience.minPeople}〜${experience.maxPeople}人`;
-
-  return [experience.locationLabel, experience.durationLabel, experience.budgetLabel, people]
-    .filter((label): label is string => Boolean(label));
-}
-
 export function categoryFromCode(code: string): Category {
   if (code === "food") return "food";
   if (code === "outing") return "outing";

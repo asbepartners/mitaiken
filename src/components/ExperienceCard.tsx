@@ -5,6 +5,7 @@ import { experienceCategoryLabel, Experience } from "@/data/experiences";
 import type { StatusEntry } from "@/hooks/useExperienceStatus";
 import { formatTiming } from "@/lib/timing";
 import { imageSource } from "@/lib/imageSource";
+import { ExperienceConditions } from "./ExperienceConditions";
 
 interface ExperienceCardProps {
   experience: Experience;
@@ -113,20 +114,7 @@ export function ExperienceCard({
                   たとえば：{experience.exampleTargets.join("・")}　＋自分で追加
                 </p>
               )}
-              <dl className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium">
-                <div className="flex items-center gap-1">
-                  <dt aria-hidden>⏱</dt>
-                  <dd>{experience.time}</dd>
-                </div>
-                <div className="flex items-center gap-1">
-                  <dt aria-hidden>💰</dt>
-                  <dd>{experience.cost}</dd>
-                </div>
-                <div className="flex items-center gap-1">
-                  <dt aria-hidden>📍</dt>
-                  <dd>{experience.place}</dd>
-                </div>
-              </dl>
+              <ExperienceConditions experience={experience} className="mt-2 text-xs font-medium" />
             </div>
           </div>
         </div>
@@ -168,20 +156,7 @@ export function ExperienceCard({
       )}
 
       {!isFeatured && (
-        <dl className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-soft">
-          <div className="flex items-center gap-1">
-            <dt aria-hidden>⏱</dt>
-            <dd>{experience.time}</dd>
-          </div>
-          <div className="flex items-center gap-1">
-            <dt aria-hidden>💰</dt>
-            <dd>{experience.cost}</dd>
-          </div>
-          <div className="flex items-center gap-1">
-            <dt aria-hidden>📍</dt>
-            <dd>{experience.place}</dd>
-          </div>
-        </dl>
+        <ExperienceConditions experience={experience} className="mt-5 gap-x-4 gap-y-2 text-xs text-ink-soft" />
       )}
 
       {!isFeatured && (isTried && entry?.status === "cleared" ? (
