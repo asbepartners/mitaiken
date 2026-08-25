@@ -25,6 +25,7 @@ async function resizeImage(file: File) {
 }
 
 export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Props) {
+  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const [step, setStep] = useState<"experience" | "targets">("experience");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -59,7 +60,7 @@ export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Pr
         <div className="mt-6 overflow-hidden rounded-3xl border border-green-100 bg-paper shadow-sm">
           <div className="relative flex h-36 items-center justify-center bg-green-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {image ? <img src={image} alt="選択した見出し" className="h-full w-full object-cover" /> : <span className="text-sm font-medium text-green-800">画像を選ばない場合は共通画像になります</span>}
+            <img src={image ?? `${assetBase}/experiences/noimage.svg`} alt={image ? "選択した見出し" : "共通の見出しイラスト"} className="h-full w-full object-cover" />
             <label className="absolute bottom-3 right-3 cursor-pointer rounded-full bg-paper px-4 py-2 text-sm font-bold text-green-800 shadow"><input type="file" accept="image/*" className="sr-only" onChange={chooseImage} />{image ? "画像を変更" : "写真を選ぶ"}</label>
           </div>
           <div className="space-y-5 p-5">
