@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { experienceCategoryLabel, Experience } from "@/data/experiences";
+import { experienceCategoryLabel, experienceConditionLabels, Experience } from "@/data/experiences";
 import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
 import {
   countExperienceFilters,
@@ -140,7 +140,7 @@ export function WishlistView({
       </div>
 
       <div className="mb-2 flex min-h-10 items-center justify-between gap-3">
-        <button type="button" onClick={() => setCreatingOriginal(true)} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルを作る</button>
+        <button type="button" onClick={() => setCreatingOriginal(true)} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルのはじめてを追加</button>
         {items.length > 0 && <p className="text-right text-xs font-medium text-ink-soft">{category === "all" ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}</p>}
       </div>
 
@@ -177,10 +177,11 @@ export function WishlistView({
             const completedPlaces = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
             const pendingTargets = (targetsMap[experience.id] ?? []).filter((target) => !(recordsMap[experience.id] ?? []).some((record) => record.targetId === target.id || (!record.targetId && completedPlaces.has(target.title))));
             const isCollection = Boolean(experience.exampleTargets);
+            const conditionLabels = experienceConditionLabels(experience);
             return (
             <li
               key={experience.id}
-              className="relative flex h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
+              className="relative flex min-h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
               <button type="button" onClick={() => isCollection && setSelectedCollectionId(experience.id)} className="flex min-w-0 flex-1 text-left">
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
@@ -196,9 +197,10 @@ export function WishlistView({
                 <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                   {experience.title}
                 </h2>
-                <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                  {experienceCategoryLabel(experience)}
-                </span>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  <span className="inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">{experienceCategoryLabel(experience)}</span>
+                  {conditionLabels.map((label) => <span key={label} className="inline-block rounded-md bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-800">{label}</span>)}
+                </div>
                 <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-ink-soft">
                   {isCollection ? `これから${pendingTargets.length}件・タップして詳細を見る` : experience.description}
                 </p>

@@ -54,7 +54,6 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
         : "fixed";
   const [peopleMode, setPeopleMode] = useState<"unset" | "solo" | "group" | "fixed">(initialPeopleMode);
   const [fixedPeople, setFixedPeople] = useState(initialPeopleMode === "fixed" ? initialExperience?.minPeople ?? 4 : 4);
-  const [conditionsOpen, setConditionsOpen] = useState(Boolean(initialExperience?.locationOptionId || initialExperience?.durationOptionId || initialExperience?.budgetOptionId || initialPeopleMode !== "unset"));
   const [withTargets, setWithTargets] = useState(false);
   const [targets, setTargets] = useState<ExperienceTargetDraft[]>([emptyTarget()]);
   const [saving, setSaving] = useState(false);
@@ -65,6 +64,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
   const duplicate = existingTitles.some((value) => value.trim().toLocaleLowerCase("ja") === title.trim().toLocaleLowerCase("ja"));
   const validTargets = targets.filter((target) => target.title.trim());
   const targetDuplicate = new Set(validTargets.map((target) => target.title.trim().toLocaleLowerCase("ja"))).size !== validTargets.length;
+  const conditionCount = [locationOptionId, durationOptionId, budgetOptionId, peopleMode !== "unset"].filter(Boolean).length;
 
   async function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -129,8 +129,8 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
             {mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">選択肢を読み込めませんでした。通信状態を確認して開き直してください。</p>}
           </div>
         </div>
-        <details className="mt-5 rounded-3xl border border-green-100 bg-paper p-5 shadow-sm" open={conditionsOpen} onToggle={(event) => setConditionsOpen(event.currentTarget.open)}>
-          <summary className="cursor-pointer font-bold text-green-950">検索しやすくするための条件 <span className="text-sm font-normal text-ink-soft">（任意）</span></summary>
+        <details className="mt-5 rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
+          <summary className="cursor-pointer font-bold text-green-950">場所・時間などを追加 <span className="text-sm font-normal text-ink-soft">（任意）{conditionCount > 0 && ` ${conditionCount}件入力済み`}</span></summary>
           <div className="mt-5 space-y-5">
             <label className="block text-sm font-bold text-green-950">場所<select value={locationOptionId} onChange={(e) => setLocationOptionId(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"><option value="">未設定</option>{masters.locations.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
             <label className="block text-sm font-bold text-green-950">所要時間<select value={durationOptionId} onChange={(e) => setDurationOptionId(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"><option value="">未設定</option>{masters.durations.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
