@@ -91,7 +91,7 @@ export function WishlistView({
 
   const selectedCollection = items.find((item) => item.id === selectedCollectionId);
   if (selectedCollection) {
-    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
+    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} onEditExperience={selectedCollection.id.startsWith("custom-") ? () => { setSelectedCollectionId(null); setEditingOriginalId(selectedCollection.id); } : undefined} />;
   }
 
   return (
@@ -198,7 +198,7 @@ export function WishlistView({
               </div>
               </button>
 
-              <div className="flex w-[4.6rem] shrink-0 flex-col items-center justify-center gap-1 py-2">
+              <div className="flex w-[5.5rem] shrink-0 flex-col items-center justify-center gap-1 py-2">
                 {isCollection && <button type="button" onClick={() => setSelectedCollectionId(experience.id)} aria-label={`${experience.title}の詳細`} className="flex h-10 w-10 items-center justify-center rounded-full bg-coral-100 text-2xl text-coral-500">›</button>}
                 {!isCollection && <button
                   type="button"
@@ -220,33 +220,22 @@ export function WishlistView({
                   </span>
                   <span className="mt-1 text-[9px] font-bold">やってみた！</span>
                 </button>}
-                <button
-                  type="button"
-                  onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
-                  aria-label={`${experience.title}のメニュー`}
-                  aria-expanded={openMenuId === experience.id}
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-ivory-deep text-base font-bold leading-none text-ink-soft"
-                >
-                  …
-                </button>
+                <div className="flex items-center gap-1">
+                  {experience.id.startsWith("custom-") && <button type="button" onClick={() => setEditingOriginalId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button>}
+                  <button
+                    type="button"
+                    onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
+                    aria-label={`${experience.title}のメニュー`}
+                    aria-expanded={openMenuId === experience.id}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-ivory-deep text-base font-bold leading-none text-ink-soft"
+                  >
+                    …
+                  </button>
+                </div>
               </div>
 
               {openMenuId === experience.id && (
                 <div className="absolute bottom-2 right-12 z-20 rounded-xl border border-green-100 bg-paper p-1.5 shadow-lg">
-                  {experience.id.startsWith("custom-") && <button
-                    type="button"
-                    onClick={() => { setEditingOriginalId(experience.id); setOpenMenuId(null); }}
-                    className="block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-xs font-bold text-green-800 hover:bg-green-100"
-                  >
-                    体験を編集
-                  </button>}
-                  {isCollection && <button
-                    type="button"
-                    onClick={() => { setSelectedCollectionId(experience.id); setOpenMenuId(null); }}
-                    className="block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-xs font-bold text-green-800 hover:bg-green-100"
-                  >
-                    場所や項目を管理
-                  </button>}
                   <button
                     type="button"
                     onClick={() => { onRemove(experience.id); setOpenMenuId(null); }}

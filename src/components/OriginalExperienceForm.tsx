@@ -57,7 +57,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, allo
     <main className="mx-auto min-h-full w-full max-w-2xl px-5 pb-10 pt-5">
       <button type="button" onClick={step === "targets" ? () => setStep("experience") : onClose} className="flex min-h-12 items-center gap-2 text-sm font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-sm">←</span><span>{step === "targets" ? "体験の入力に戻る" : "やってみたいリストに戻る"}</span></button>
       <p className="mt-3 text-xs font-bold tracking-widest text-coral-500">オリジナル</p>
-      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? (editing ? "体験を編集" : "体験を作る") : "場所や項目を追加"}</h1>
+      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? (editing ? (allowAddingTargets ? "体験を編集" : "リストを編集") : "体験を作る") : "場所や項目を追加"}</h1>
 
       {step === "experience" ? <>
         <div className="mt-6 overflow-hidden rounded-3xl border border-green-100 bg-paper shadow-sm">
