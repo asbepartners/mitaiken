@@ -19,7 +19,7 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
   ];
 
   return (
-    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex flex-wrap gap-2 pb-1">
       {options.map((option) => {
         const isActive = value === option.key;
         return (
@@ -27,7 +27,7 @@ export function CategoryFilter({ value, onChange }: CategoryFilterProps) {
             key={option.key}
             type="button"
             onClick={() => onChange(option.key)}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
               isActive
                 ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
                 : "border-green-100 bg-paper text-green-800 hover:border-coral-400"

@@ -33,7 +33,7 @@ export function BottomNav({ active, onChange, wishlistCount }: BottomNavProps) {
   };
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-green-100 bg-paper/95 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-green-100 bg-paper/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
       <div className="mx-auto flex max-w-2xl items-stretch">
         {TABS.map((tab) => {
           const isActive = active === tab.key;
