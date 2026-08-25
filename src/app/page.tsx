@@ -71,6 +71,10 @@ export default function Home() {
     editingId && editingRecordId
       ? recordsMap[editingId]?.find((record) => record.id === editingRecordId)
       : undefined;
+  const editingTarget =
+    editingId && editingRecord?.targetId
+      ? targetsMap[editingId]?.find((target) => target.id === editingRecord.targetId)
+      : undefined;
 
   function handleTouchStart(event: TouchEvent<HTMLElement>) {
     const target = event.target as HTMLElement;
@@ -216,8 +220,8 @@ export default function Home() {
               ? `edit-${editingExperience.id}-${editingRecordId}`
               : `new-${pendingExperience?.id}`
           }
-          experienceTitle={(editingExperience ?? pendingExperience)!.title}
-          relatedUrl={relatedUrlMap[(editingExperience ?? pendingExperience)!.id]}
+          experienceTitle={pendingTarget?.title ?? editingTarget?.title ?? (editingExperience ?? pendingExperience)!.title}
+          relatedUrl={pendingTarget?.relatedUrl ?? editingTarget?.relatedUrl ?? relatedUrlMap[(editingExperience ?? pendingExperience)!.id]}
           initialRecord={
             editingRecord
               ? {

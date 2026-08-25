@@ -99,8 +99,6 @@ export function TriedView({
     view: "firsts",
     year: "all",
   });
-  const [addingTarget, setAddingTarget] = useState(false);
-  const [targetName, setTargetName] = useState("");
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const currentYear = String(new Date().getFullYear());
   const selectedExperience = items.find(({ experience }) => experience.id === selectedExperienceId)?.experience;
@@ -200,9 +198,9 @@ export function TriedView({
     setOpenMenuId(null);
   }
 
-  if (selectedExperience?.exampleTargets && selectedExperienceId) {
+  if (selectedExperience && selectedExperienceId) {
     const selectedRecords = items.find(({ experience }) => experience.id === selectedExperienceId)?.records ?? [];
-    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} />;
+    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} />;
   }
 
   function targetTitleFor(experienceId: string, record: TriedRecord) {
@@ -282,30 +280,6 @@ export function TriedView({
           記録
         </button>
       </div>
-      )}
-
-      {viewMode === "records" && selectedExperienceId && (
-        <section className="mb-3 rounded-2xl border border-green-100 bg-paper px-3 py-3 shadow-sm">
-          <button
-            type="button"
-            onClick={closeExperienceDetail}
-            className="mb-2 inline-flex min-h-10 items-center gap-1 rounded-full px-2 text-sm font-bold text-green-800"
-          >
-            ← 戻る
-          </button>
-          <div className="flex items-end gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-ink-soft">はじめての詳細</p>
-              <h2 className="mt-0.5 text-base font-bold leading-snug text-green-950">
-                {items.find(({ experience }) => experience.id === selectedExperienceId)?.experience.title}
-              </h2>
-            </div>
-            <button type="button" onClick={() => selectedExperience?.exampleTargets ? setAddingTarget(true) : onAddRecord(selectedExperienceId)} className="min-h-9 shrink-0 rounded-full bg-coral-100 px-3 text-sm font-bold text-coral-500">
-              {selectedExperience?.exampleTargets ? "＋ 行きたいを追加" : "追加"}
-            </button>
-          </div>
-          {addingTarget && <div className="mt-3 flex gap-2"><input autoFocus value={targetName} onChange={(event) => setTargetName(event.target.value)} placeholder="やってみたいこと" className="min-w-0 flex-1 rounded-xl border border-green-100 bg-ivory px-3 py-2 text-sm" /><button type="button" onClick={() => { if (onAddTarget(selectedExperienceId, { title: targetName })) { setTargetName(""); setAddingTarget(false); } }} className="rounded-full bg-coral-500 px-3 text-xs font-bold text-paper">追加</button></div>}
-        </section>
       )}
 
       {!selectedExperienceId && (
