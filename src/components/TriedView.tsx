@@ -200,7 +200,7 @@ export function TriedView({
 
   if (selectedExperience && selectedExperienceId) {
     const selectedRecords = items.find(({ experience }) => experience.id === selectedExperienceId)?.records ?? [];
-    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} />;
+    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} backLabel="はじめての一覧に戻る" onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} />;
   }
 
   function targetTitleFor(experienceId: string, record: TriedRecord) {
@@ -277,7 +277,7 @@ export function TriedView({
               : "text-ink-soft"
           }`}
         >
-          記録
+          すべての記録
         </button>
       </div>
       )}

@@ -8,6 +8,7 @@ import { ExperienceRecordTimeline } from "./ExperienceRecordTimeline";
 
 interface Props {
   experience: Experience; targets: ExperienceTarget[]; records: TriedRecord[]; onBack: () => void;
+  backLabel: string;
   onMarkTried: (target: ExperienceTarget) => void; onAddTarget: (draft: ExperienceTargetDraft) => boolean;
   onUpdateTarget: (id: string, draft: ExperienceTargetDraft) => boolean; onRemoveTarget: (id: string) => void;
   onEditRecord: (recordId: string) => void; onDeleteRecord: (recordId: string) => void;
@@ -32,7 +33,7 @@ export function CollectionDetailView(props: Props) {
   function mark(target: ExperienceTarget) { if (markingId) return; setMarkingId(target.id); window.setTimeout(() => { setMarkingId(null); props.onMarkTried(target); }, 340); }
 
   return <div className="px-4 pb-6">
-    <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-11 items-center gap-1 rounded-full pr-4 text-base font-bold text-green-800"><span className="text-2xl">‹</span> 一覧へ戻る</button></div>
+    <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-11 items-center gap-1 rounded-full pr-4 text-base font-bold text-green-800"><span className="text-2xl">‹</span> {props.backLabel}</button></div>
     <header className="mt-3 rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_12px_rgba(44,38,32,0.06)]"><div className="flex items-end gap-3"><div className="min-w-0 flex-1"><p className="text-xs font-medium text-green-700">はじめての詳細</p><h1 className="mt-1 text-xl font-bold text-green-950">{experience.title}</h1></div><button type="button" onClick={() => isCollection ? openForm("new") : props.onAddRecord?.()} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">追加</button></div><p className="mt-2 text-sm leading-6 text-ink-soft">{experience.description}</p><div className="mt-4 flex gap-2 text-xs font-bold">{isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}<span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {completedRecords.length}件</span></div></header>
 
     {isCollection && <section className="mt-5"><div className="flex items-center justify-between gap-3 px-1"><h2 className="text-lg font-bold text-green-950">これから</h2><button type="button" onClick={() => openForm("new")} className="min-h-10 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">＋ やってみたいを追加</button></div>
