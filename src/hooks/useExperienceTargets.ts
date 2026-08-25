@@ -28,8 +28,17 @@ export function readStoredTargets(): TargetsMap {
 async function ensureUserExperience(userId: string, slug: string) {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
-  const { data: existing } = await supabase.from("user_experiences").select("id").eq("user_id", userId).eq("source_template_slug", slug).maybeSingle();
+  const lookup = supabase.from("user_experiences").select("id").eq("user_id", userId);
+  const { data: existing } = slug.startsWith("custom-") ? await lookup.eq("client_key", slug).maybeSingle() : await lookup.eq("source_template_slug", slug).maybeSingle();
   if (existing) return existing.id as string;
+  if (slug.startsWith("custom-")) {
+    const custom = (() => { try { return (JSON.parse(window.localStorage.getItem("mitaiken-zone:custom-experiences") ?? "[]") as { id: string; title: string }[]).find((item) => item.id === slug); } catch { return undefined; } })();
+    if (!custom) return null;
+    const { data } = await supabase.from("user_experiences").insert({ user_id: userId, client_key: slug, title: custom.title, wishlisted_at: new Date().toISOString() }).select("id").maybeSingle();
+    if (data?.id) return data.id as string;
+    const { data: retry } = await supabase.from("user_experiences").select("id").eq("user_id", userId).eq("client_key", slug).maybeSingle();
+    return retry?.id as string | undefined ?? null;
+  }
   const { data: template } = await supabase.from("templates").select("id, title, category_id, image_path").eq("slug", slug).single();
   if (!template) return null;
   const { data } = await supabase.from("user_experiences").upsert({ user_id: userId, source_template_slug: slug, source_template_id: template.id, title: template.title, category_id: template.category_id, image_path: template.image_path }, { onConflict: "user_id,source_template_slug" }).select("id").single();
@@ -92,12 +101,12 @@ export function useExperienceTargets() {
         });
       }
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(local));
-      let { data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null);
+      let { data: parents } = await supabase.from("user_experiences").select("id, source_template_slug, client_key").eq("user_id", userId);
       let parentIds = (parents ?? []).map((parent) => parent.id);
       let rows = parentIds.length
         ? (await supabase.from("user_experience_items").select("id, user_experience_id, source_template_item_id, title, memo, related_url, sort_order, is_primary").in("user_experience_id", parentIds).eq("is_primary", false).order("sort_order", { ascending: true })).data
         : [];
-      const parentDbIdBySlug = new Map((parents ?? []).map((parent) => [parent.source_template_slug as string, parent.id as string]));
+      const parentDbIdBySlug = new Map((parents ?? []).flatMap((parent) => { const key = parent.source_template_slug ?? parent.client_key; return key ? [[key as string, parent.id as string]] : []; }));
       for (const [parentId, targets] of Object.entries(local)) {
         const parentDbId = parentDbIdBySlug.get(parentId);
         const existing = (rows ?? []).filter((row) => row.user_experience_id === parentDbId);
@@ -109,13 +118,13 @@ export function useExperienceTargets() {
           return alreadyStored ? Promise.resolve(null) : saveTarget(userId, parentId, target, index);
         }));
       }
-      ({ data: parents } = await supabase.from("user_experiences").select("id, source_template_slug").eq("user_id", userId).not("source_template_slug", "is", null));
+      ({ data: parents } = await supabase.from("user_experiences").select("id, source_template_slug, client_key").eq("user_id", userId));
       parentIds = (parents ?? []).map((parent) => parent.id);
       rows = parentIds.length
         ? (await supabase.from("user_experience_items").select("id, user_experience_id, source_template_item_id, title, memo, related_url, sort_order, is_primary").in("user_experience_id", parentIds).eq("is_primary", false).order("sort_order", { ascending: true })).data
         : [];
       if (!active || !rows) return;
-      const slugById = new Map((parents ?? []).map((parent) => [parent.id, parent.source_template_slug as string]));
+      const slugById = new Map((parents ?? []).flatMap((parent) => { const key = parent.source_template_slug ?? parent.client_key; return key ? [[parent.id, key as string]] : []; }));
       const remote: TargetsMap = {};
       for (const row of rows) {
         const slug = slugById.get(row.user_experience_id);

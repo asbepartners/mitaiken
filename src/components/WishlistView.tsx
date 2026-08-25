@@ -15,6 +15,8 @@ import { BookmarkIcon } from "./RecordIcons";
 import type { RecordsMap } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 import { CollectionDetailView } from "./CollectionDetailView";
+import { OriginalExperienceForm } from "./OriginalExperienceForm";
+import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -31,6 +33,7 @@ interface WishlistViewProps {
   onRemoveTarget: (parentId: string, id: string) => void;
   onEditRecord: (parentId: string, recordId: string) => void;
   onDeleteRecord: (parentId: string, recordId: string) => void;
+  onCreateOriginal: (draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
 }
 
 export function WishlistView({
@@ -48,6 +51,7 @@ export function WishlistView({
   onRemoveTarget,
   onEditRecord,
   onDeleteRecord,
+  onCreateOriginal,
 }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -55,6 +59,7 @@ export function WishlistView({
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [creatingOriginal, setCreatingOriginal] = useState(false);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
   const filtered = useMemo(
@@ -123,11 +128,10 @@ export function WishlistView({
         <CategoryFilter value={category} onChange={(value) => { setCategory(value); setOpenMenuId(null); }} />
       </div>
 
-      {items.length > 0 && (
-        <p className="mb-2 text-right text-xs font-medium text-ink-soft">
-          {category === "all" ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}
-        </p>
-      )}
+      <div className="mb-2 flex min-h-10 items-center justify-between gap-3">
+        <button type="button" onClick={() => setCreatingOriginal(true)} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルを作る</button>
+        {items.length > 0 && <p className="text-right text-xs font-medium text-ink-soft">{category === "all" ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}</p>}
+      </div>
 
       {items.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-9 text-center shadow-[0_2px_10px_rgba(44,38,32,0.04)]">
@@ -253,6 +257,7 @@ export function WishlistView({
           }}
         />
       )}
+      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
     </div>
   );
 }

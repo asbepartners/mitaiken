@@ -145,14 +145,23 @@ function dbToTiming(year: number, month: number | null, day: number | null): Tim
 async function ensureUserExperience(userId: string, slug: string) {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
-  const { data: existing } = await supabase
+  const lookup = supabase
     .from("user_experiences")
     .select("id")
-    .eq("user_id", userId)
-    .eq("source_template_slug", slug)
-    .maybeSingle();
+    .eq("user_id", userId);
+  const { data: existing } = slug.startsWith("custom-")
+    ? await lookup.eq("client_key", slug).maybeSingle()
+    : await lookup.eq("source_template_slug", slug).maybeSingle();
 
   if (existing) return existing.id as string;
+  if (slug.startsWith("custom-")) {
+    const custom = (() => { try { return (JSON.parse(window.localStorage.getItem("mitaiken-zone:custom-experiences") ?? "[]") as { id: string; title: string }[]).find((item) => item.id === slug); } catch { return undefined; } })();
+    if (!custom) return null;
+    const { data } = await supabase.from("user_experiences").insert({ user_id: userId, client_key: slug, title: custom.title }).select("id").maybeSingle();
+    if (data?.id) return data.id as string;
+    const { data: retry } = await supabase.from("user_experiences").select("id").eq("user_id", userId).eq("client_key", slug).maybeSingle();
+    return retry?.id as string | undefined ?? null;
+  }
 
   const { data: template } = await supabase
     .from("templates")
@@ -257,9 +266,8 @@ export function useExperienceStatus() {
 
     const { data: rows } = await supabase
       .from("user_experiences")
-      .select("id, source_template_slug, wishlisted_at, related_url")
-      .eq("user_id", userId)
-      .not("source_template_slug", "is", null);
+      .select("id, source_template_slug, client_key, wishlisted_at, related_url")
+      .eq("user_id", userId);
 
     const ids = (rows ?? []).map((row) => row.id);
     const { data: logs } = ids.length
@@ -276,13 +284,16 @@ export function useExperienceStatus() {
     const nextRelatedUrls: Record<string, string> = {};
 
     for (const row of rows ?? []) {
-      if (row.related_url) nextRelatedUrls[row.source_template_slug] = row.related_url;
-      if (row.wishlisted_at) nextStatus[row.source_template_slug] = { status: "wishlist" };
+      const key = row.source_template_slug ?? row.client_key;
+      if (!key) continue;
+      if (row.related_url) nextRelatedUrls[key] = row.related_url;
+      if (row.wishlisted_at) nextStatus[key] = { status: "wishlist" };
     }
 
     for (const log of logs ?? []) {
       const row = byId.get(log.user_experience_id);
-      if (!row?.source_template_slug) continue;
+      const key = row?.source_template_slug ?? row?.client_key;
+      if (!row || !key) continue;
 
       const record: TriedRecord = {
         id: log.id,
@@ -294,11 +305,11 @@ export function useExperienceStatus() {
         targetId: log.user_experience_item_id ?? undefined,
       };
 
-      nextRecords[row.source_template_slug] = [
-        ...(nextRecords[row.source_template_slug] ?? []),
+      nextRecords[key] = [
+        ...(nextRecords[key] ?? []),
         record,
       ];
-      nextStatus[row.source_template_slug] = {
+      nextStatus[key] = {
         status: "cleared",
         timing: record.timing,
         photoUrl: record.photoUrl,
@@ -547,11 +558,9 @@ export function useExperienceStatus() {
       void (async () => {
         const supabase = getSupabaseClient();
         if (supabase) {
-          await supabase
-            .from("user_experiences")
-            .update({ wishlisted_at: null })
-            .eq("user_id", userId)
-            .eq("source_template_slug", slug);
+          const query = supabase.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId);
+          if (slug.startsWith("custom-")) await query.eq("client_key", slug);
+          else await query.eq("source_template_slug", slug);
         }
       })();
     }

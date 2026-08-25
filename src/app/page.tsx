@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { useExperienceTargets } from "@/hooks/useExperienceTargets";
+import { useCustomExperiences } from "@/hooks/useCustomExperiences";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
@@ -25,7 +26,8 @@ export default function Home() {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
-  const { experiences } = useExperienceCatalog();
+  const { experiences: catalogExperiences } = useExperienceCatalog();
+  const { customExperiences, createExperience } = useCustomExperiences();
   const auth = useAuth();
   const {
     statusMap,
@@ -40,6 +42,10 @@ export default function Home() {
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
   const { targetsMap, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
+  const experiences = useMemo(() => [
+    ...catalogExperiences,
+    ...customExperiences.map((experience) => (targetsMap[experience.id]?.length ? { ...experience, exampleTargets: [] } : experience)),
+  ], [catalogExperiences, customExperiences, targetsMap]);
 
   const wishlistItems = useMemo(
     () => experiences.filter((experience) => {
@@ -54,15 +60,10 @@ export default function Home() {
   const triedItems = useMemo(
     () =>
       experiences.flatMap((experience) => {
-        const records = experience.exampleTargets
-          ? (recordsMap[experience.id] ?? []).filter((record) =>
-              Boolean(record.targetId) &&
-              (targetsMap[experience.id] ?? []).some((target) => target.id === record.targetId)
-            )
-          : recordsMap[experience.id] ?? [];
+        const records = recordsMap[experience.id] ?? [];
         return records.length ? [{ experience, records }] : [];
       }),
-    [experiences, recordsMap, targetsMap]
+    [experiences, recordsMap]
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
@@ -174,6 +175,11 @@ export default function Home() {
               setEditingRecordId(recordId);
             }}
             onDeleteRecord={deleteRecord}
+            onCreateOriginal={async (draft, targets) => {
+              const id = await createExperience(draft);
+              for (const target of targets) addTarget(id, target);
+              toggleWishlist(id);
+            }}
           />
         )}
         {tab === "tried" && (
