@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORY_LABELS, Category, Experience } from "@/data/experiences";
+import { CATEGORY_LABELS, Category, Experience, experienceCategoryLabel } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
 import { SearchIcon } from "./ExperienceSearchScreen";
 
@@ -48,7 +48,7 @@ function matchesTextAndCategory(
     .map((record) => `${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`)
     .join(" ");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${recordText}`
+    `${experience.title} ${experience.description} ${experience.place} ${experienceCategoryLabel(experience)} ${recordText}`
       .toLocaleLowerCase("ja");
 
   return (
@@ -114,7 +114,7 @@ export function HajimeteSearchScreen({
         records.filter((record) => {
           const year = record.timing.value?.slice(0, 4);
           const searchable =
-            `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
+            `${experience.title} ${experience.description} ${experience.place} ${experienceCategoryLabel(experience)} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
               .toLocaleLowerCase("ja");
 
           return (

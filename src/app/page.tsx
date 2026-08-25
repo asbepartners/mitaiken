@@ -15,6 +15,7 @@ import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { useExperienceTargets } from "@/hooks/useExperienceTargets";
 import { useCustomExperiences } from "@/hooks/useCustomExperiences";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
+import { useSearchMasters } from "@/hooks/useSearchMasters";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -28,6 +29,7 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences: catalogExperiences } = useExperienceCatalog();
   const { customExperiences, createExperience, updateExperience } = useCustomExperiences();
+  const searchMasters = useSearchMasters();
   const auth = useAuth();
   const {
     statusMap,
@@ -184,6 +186,9 @@ export default function Home() {
               await updateExperience(id, draft);
               for (const target of targets) addTarget(id, target);
             }}
+            searchMasters={searchMasters.masters}
+            searchMastersLoading={searchMasters.loading}
+            searchMastersError={searchMasters.error}
           />
         )}
         {tab === "tried" && (

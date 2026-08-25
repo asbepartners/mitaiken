@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORY_LABELS, Experience } from "@/data/experiences";
+import { experienceCategoryLabel, Experience } from "@/data/experiences";
 import type { StatusEntry } from "@/hooks/useExperienceStatus";
 import { formatTiming } from "@/lib/timing";
 import { imageSource } from "@/lib/imageSource";
@@ -56,7 +56,7 @@ export function ExperienceCard({
           hasHero ? "bg-paper/90 text-green-900" : "bg-green-100 text-green-800"
         }`}
       >
-        {CATEGORY_LABELS[experience.category]}
+        {experienceCategoryLabel(experience)}
       </span>
       {experience.solo && (
         <span className="rounded-full bg-coral-100/95 px-3 py-1 text-xs font-medium text-coral-500">

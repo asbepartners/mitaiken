@@ -6,6 +6,7 @@ import {
   Category,
   CostLevel,
   Experience,
+  experienceCategoryLabel,
 } from "@/data/experiences";
 
 export interface ExperienceFilters {
@@ -43,7 +44,7 @@ export function matchesExperienceFilters(
 ): boolean {
   const query = filters.query.trim().toLocaleLowerCase("ja");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${experience.exampleTargets?.join(" ") ?? ""} ${CATEGORY_LABELS[experience.category]}`
+    `${experience.title} ${experience.description} ${experience.place} ${experience.exampleTargets?.join(" ") ?? ""} ${experienceCategoryLabel(experience)}`
       .toLocaleLowerCase("ja");
 
   return (

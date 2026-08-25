@@ -35,13 +35,43 @@ export interface Experience {
   title: string;
   description: string;
   category: Category;
+  categoryId?: string;
+  categoryCode?: string;
+  categoryLabel?: string;
   place: string;
+  locationOptionId?: string;
+  locationCode?: string;
+  locationLabel?: string;
   time: string;
   timeMinutes: number;
+  durationOptionId?: string;
+  durationCode?: string;
+  durationLabel?: string;
+  durationMinMinutes?: number;
+  durationMaxMinutes?: number;
   cost: string;
   costLevel: CostLevel;
+  budgetOptionId?: string;
+  budgetCode?: string;
+  budgetLabel?: string;
+  budgetMinYen?: number;
+  budgetMaxYen?: number;
   solo: boolean;
+  minPeople?: number;
+  maxPeople?: number;
   exampleTargets?: string[];
+}
+
+export function experienceCategoryLabel(experience: Experience) {
+  return experience.categoryLabel ?? CATEGORY_LABELS[experience.category];
+}
+
+export function categoryFromCode(code: string): Category {
+  if (code === "food") return "food";
+  if (code === "outing") return "outing";
+  if (code === "hobby" || code === "hobby-learning" || code === "learning") return "hobby";
+  if (code === "lifestyle") return "home";
+  return "experience";
 }
 
 export const DEFAULT_EXPERIENCE_TARGETS: Record<string, string[]> = {

@@ -1,13 +1,17 @@
 "use client";
 
 import { ChangeEvent, useState } from "react";
-import { CATEGORY_LABELS, CATEGORY_ORDER, Category } from "@/data/experiences";
+import { categoryFromCode } from "@/data/experiences";
 import type { ExperienceTargetDraft } from "@/hooks/useExperienceTargets";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
+import type { SearchMasters } from "@/hooks/useSearchMasters";
 
 interface Props {
   existingTitles: string[];
   initialExperience?: CustomExperienceDraft;
+  masters: SearchMasters;
+  mastersLoading: boolean;
+  mastersError: boolean;
   allowAddingTargets?: boolean;
   onClose: () => void;
   onSubmit: (experience: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
@@ -26,17 +30,38 @@ async function resizeImage(file: File) {
   return canvas.toDataURL("image/jpeg", 0.78);
 }
 
-export function OriginalExperienceForm({ existingTitles, initialExperience, allowAddingTargets = true, onClose, onSubmit }: Props) {
+export function OriginalExperienceForm({ existingTitles, initialExperience, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const editing = Boolean(initialExperience);
   const [step, setStep] = useState<"experience" | "targets">("experience");
   const [title, setTitle] = useState(initialExperience?.title ?? "");
   const [description, setDescription] = useState(initialExperience?.description ?? "");
-  const [category, setCategory] = useState<Category>(initialExperience?.category ?? "outing");
+  const initialCategoryId = initialExperience?.categoryId
+    ?? masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
+    ?? masters.categories[0]?.id
+    ?? "";
+  const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [image, setImage] = useState<string | undefined>(initialExperience?.image);
+  const [locationOptionId, setLocationOptionId] = useState(initialExperience?.locationOptionId ?? "");
+  const [durationOptionId, setDurationOptionId] = useState(initialExperience?.durationOptionId ?? "");
+  const [budgetOptionId, setBudgetOptionId] = useState(initialExperience?.budgetOptionId ?? "");
+  const initialPeopleMode = initialExperience?.minPeople === undefined
+    ? "unset"
+    : initialExperience.minPeople === 1 && initialExperience.maxPeople === undefined
+      ? "solo"
+      : initialExperience.minPeople === 2 && initialExperience.maxPeople === undefined
+        ? "group"
+        : "fixed";
+  const [peopleMode, setPeopleMode] = useState<"unset" | "solo" | "group" | "fixed">(initialPeopleMode);
+  const [fixedPeople, setFixedPeople] = useState(initialPeopleMode === "fixed" ? initialExperience?.minPeople ?? 4 : 4);
+  const [conditionsOpen, setConditionsOpen] = useState(Boolean(initialExperience?.locationOptionId || initialExperience?.durationOptionId || initialExperience?.budgetOptionId || initialPeopleMode !== "unset"));
   const [withTargets, setWithTargets] = useState(false);
   const [targets, setTargets] = useState<ExperienceTargetDraft[]>([emptyTarget()]);
   const [saving, setSaving] = useState(false);
+  const effectiveCategoryId = categoryId
+    || masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
+    || masters.categories[0]?.id
+    || "";
   const duplicate = existingTitles.some((value) => value.trim().toLocaleLowerCase("ja") === title.trim().toLocaleLowerCase("ja"));
   const validTargets = targets.filter((target) => target.title.trim());
   const targetDuplicate = new Set(validTargets.map((target) => target.title.trim().toLocaleLowerCase("ja"))).size !== validTargets.length;
@@ -47,9 +72,38 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, allo
   }
 
   async function save() {
-    if (!title.trim() || duplicate || (withTargets && (!validTargets.length || targetDuplicate))) return;
+    const category = masters.categories.find(({ id }) => id === effectiveCategoryId);
+    if (!title.trim() || !category || duplicate || (withTargets && (!validTargets.length || targetDuplicate))) return;
+    const location = masters.locations.find(({ id }) => id === locationOptionId);
+    const duration = masters.durations.find(({ id }) => id === durationOptionId);
+    const budget = masters.budgets.find(({ id }) => id === budgetOptionId);
+    const minPeople = peopleMode === "solo" ? 1 : peopleMode === "group" ? 2 : peopleMode === "fixed" ? fixedPeople : undefined;
+    const maxPeople = peopleMode === "fixed" ? fixedPeople : undefined;
     setSaving(true);
-    await onSubmit({ title, description, category, image }, withTargets ? validTargets : []);
+    await onSubmit({
+      title,
+      description,
+      category: categoryFromCode(category.code),
+      categoryId: category.id,
+      categoryCode: category.code,
+      categoryLabel: category.label,
+      image,
+      locationOptionId: location?.id,
+      locationCode: location?.code,
+      locationLabel: location?.label,
+      durationOptionId: duration?.id,
+      durationCode: duration?.code,
+      durationLabel: duration?.label,
+      durationMinMinutes: duration?.minMinutes,
+      durationMaxMinutes: duration?.maxMinutes ?? undefined,
+      budgetOptionId: budget?.id,
+      budgetCode: budget?.code,
+      budgetLabel: budget?.label,
+      budgetMinYen: budget?.minYen,
+      budgetMaxYen: budget?.maxYen ?? undefined,
+      minPeople,
+      maxPeople,
+    }, withTargets ? validTargets : []);
     setSaving(false);
   }
 
@@ -70,14 +124,33 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, allo
             <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" onChange={(e) => setTitle(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
             {duplicate && <p className="-mt-3 text-sm font-bold text-coral-500">同じ名前の体験がすでにあります。</p>}
             <label className="block text-sm font-bold text-green-950">説明 <span className="font-normal text-ink-soft">（任意）</span><textarea value={description} maxLength={120} rows={3} placeholder="どんな体験にしたいか、ひとこと" onChange={(e) => setDescription(e.target.value)} className="mt-2 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
-            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={category} onChange={(e) => setCategory(e.target.value as Category)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal">{CATEGORY_ORDER.map((value) => <option key={value} value={value}>{CATEGORY_LABELS[value]}</option>)}</select></label>
+            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60">{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            {mastersLoading && <p className="-mt-3 text-sm text-ink-soft">選択肢を読み込んでいます…</p>}
+            {mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">選択肢を読み込めませんでした。通信状態を確認して開き直してください。</p>}
           </div>
         </div>
+        <details className="mt-5 rounded-3xl border border-green-100 bg-paper p-5 shadow-sm" open={conditionsOpen} onToggle={(event) => setConditionsOpen(event.currentTarget.open)}>
+          <summary className="cursor-pointer font-bold text-green-950">検索しやすくするための条件 <span className="text-sm font-normal text-ink-soft">（任意）</span></summary>
+          <div className="mt-5 space-y-5">
+            <label className="block text-sm font-bold text-green-950">場所<select value={locationOptionId} onChange={(e) => setLocationOptionId(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"><option value="">未設定</option>{masters.locations.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            <label className="block text-sm font-bold text-green-950">所要時間<select value={durationOptionId} onChange={(e) => setDurationOptionId(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"><option value="">未設定</option>{masters.durations.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            <label className="block text-sm font-bold text-green-950">ひとりあたりの予算目安<select value={budgetOptionId} onChange={(e) => setBudgetOptionId(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"><option value="">未設定</option>{masters.budgets.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            <fieldset>
+              <legend className="text-sm font-bold text-green-950">人数</legend>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <PeopleChoice label="未設定" checked={peopleMode === "unset"} onChange={() => setPeopleMode("unset")} />
+                {masters.people.map((option) => <PeopleChoice key={option.id} label={option.label} checked={peopleMode === (option.code === "solo" ? "solo" : "group")} onChange={() => setPeopleMode(option.code === "solo" ? "solo" : "group")} />)}
+                <PeopleChoice label="人数を指定" checked={peopleMode === "fixed"} onChange={() => setPeopleMode("fixed")} />
+              </div>
+              {peopleMode === "fixed" && <label className="mt-3 flex items-center gap-3 text-sm font-medium text-green-950"><input type="number" inputMode="numeric" min={1} max={99} value={fixedPeople} onChange={(e) => setFixedPeople(Math.max(1, Math.min(99, Number(e.target.value) || 1)))} className="w-24 rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" />人で行う</label>}
+            </fieldset>
+          </div>
+        </details>
         {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、場所や項目を<br />追加しますか？</legend>
           <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加しない</strong><small className="mt-1 block text-ink-soft">ひとつの体験として登録します</small></span></label>
           <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加する</strong><small className="mt-1 block text-ink-soft">場所やお店などを分けて登録します</small></span></label>
         </fieldset>}
-        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || duplicate || saving} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "場所や項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
+        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || !effectiveCategoryId || duplicate || saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "場所や項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
       </> : <>
         <p className="mt-3 text-sm leading-6 text-ink-soft">「{title}」で行きたい場所や、集めたい項目を追加しましょう。</p>
         <div className="mt-5 space-y-4">{targets.map((target, index) => <section key={index} className="rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
@@ -92,4 +165,8 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, allo
       </>}
     </main>
   </div>;
+}
+
+function PeopleChoice({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+  return <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-3 py-2 text-sm ${checked ? "border-coral-400 bg-coral-100" : "border-green-100 bg-ivory"}`}><input type="radio" checked={checked} onChange={onChange} className="accent-[#e87871]" /><span>{label}</span></label>;
 }

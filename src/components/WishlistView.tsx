@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORY_LABELS, Experience } from "@/data/experiences";
+import { experienceCategoryLabel, Experience } from "@/data/experiences";
 import { CategoryFilter, CategoryFilterValue } from "./CategoryFilter";
 import {
   countExperienceFilters,
@@ -18,6 +18,7 @@ import { CollectionDetailView } from "./CollectionDetailView";
 import { OriginalExperienceForm } from "./OriginalExperienceForm";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import { imageSource } from "@/lib/imageSource";
+import type { SearchMasters } from "@/hooks/useSearchMasters";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -36,6 +37,9 @@ interface WishlistViewProps {
   onDeleteRecord: (parentId: string, recordId: string) => void;
   onCreateOriginal: (draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
   onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
+  searchMasters: SearchMasters;
+  searchMastersLoading: boolean;
+  searchMastersError: boolean;
 }
 
 export function WishlistView({
@@ -55,6 +59,9 @@ export function WishlistView({
   onDeleteRecord,
   onCreateOriginal,
   onUpdateOriginal,
+  searchMasters,
+  searchMastersLoading,
+  searchMastersError,
 }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -190,7 +197,7 @@ export function WishlistView({
                   {experience.title}
                 </h2>
                 <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                  {CATEGORY_LABELS[experience.category]}
+                  {experienceCategoryLabel(experience)}
                 </span>
                 <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-ink-soft">
                   {isCollection ? `これから${pendingTargets.length}件・タップして詳細を見る` : experience.description}
@@ -264,13 +271,39 @@ export function WishlistView({
           }}
         />
       )}
-      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
+      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
       {editingOriginalId && (() => {
         const experience = items.find((item) => item.id === editingOriginalId);
         if (!experience) return null;
         return <OriginalExperienceForm
           existingTitles={items.filter((item) => item.id !== editingOriginalId).map((item) => item.title)}
-          initialExperience={{ title: experience.title, description: experience.description, category: experience.category, image: experience.image }}
+          initialExperience={{
+            title: experience.title,
+            description: experience.description,
+            category: experience.category,
+            categoryId: experience.categoryId,
+            categoryCode: experience.categoryCode,
+            categoryLabel: experience.categoryLabel,
+            image: experience.image,
+            locationOptionId: experience.locationOptionId,
+            locationCode: experience.locationCode,
+            locationLabel: experience.locationLabel,
+            durationOptionId: experience.durationOptionId,
+            durationCode: experience.durationCode,
+            durationLabel: experience.durationLabel,
+            durationMinMinutes: experience.durationMinMinutes,
+            durationMaxMinutes: experience.durationMaxMinutes,
+            budgetOptionId: experience.budgetOptionId,
+            budgetCode: experience.budgetCode,
+            budgetLabel: experience.budgetLabel,
+            budgetMinYen: experience.budgetMinYen,
+            budgetMaxYen: experience.budgetMaxYen,
+            minPeople: experience.minPeople,
+            maxPeople: experience.maxPeople,
+          }}
+          masters={searchMasters}
+          mastersLoading={searchMastersLoading}
+          mastersError={searchMastersError}
           allowAddingTargets={(targetsMap[editingOriginalId] ?? []).length === 0}
           onClose={() => setEditingOriginalId(null)}
           onSubmit={async (draft, targets) => { await onUpdateOriginal(editingOriginalId, draft, targets); setEditingOriginalId(null); }}

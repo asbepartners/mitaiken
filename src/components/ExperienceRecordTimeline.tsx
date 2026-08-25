@@ -1,7 +1,7 @@
 "use client";
 
 import type { Experience } from "@/data/experiences";
-import { CATEGORY_LABELS } from "@/data/experiences";
+import { experienceCategoryLabel } from "@/data/experiences";
 import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import type { Timing } from "@/lib/timing";
@@ -101,7 +101,7 @@ export function ExperienceRecordTimeline({
                   </p>
                 )}
                 <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                  {CATEGORY_LABELS[experience.category]}
+                  {experienceCategoryLabel(experience)}
                 </span>
 
                 <div className="absolute bottom-1.5 right-2 flex items-center gap-1.5">

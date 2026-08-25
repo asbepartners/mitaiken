@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORY_LABELS, Experience } from "@/data/experiences";
+import { experienceCategoryLabel, Experience } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
 import { Timing } from "@/lib/timing";
 import { SearchIcon } from "./ExperienceSearchScreen";
@@ -64,7 +64,7 @@ function matchesHajimeteSearch(
     .map((record) => `${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`)
     .join(" ");
   const searchable =
-    `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${recordText}`
+    `${experience.title} ${experience.description} ${experience.place} ${experienceCategoryLabel(experience)} ${recordText}`
       .toLocaleLowerCase("ja");
 
   return (
@@ -162,7 +162,7 @@ export function TriedView({
           const year = record.timing.value?.slice(0, 4);
           const query = searchValue.query.trim().toLocaleLowerCase("ja");
           const searchable =
-            `${experience.title} ${experience.description} ${experience.place} ${CATEGORY_LABELS[experience.category]} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
+            `${experience.title} ${experience.description} ${experience.place} ${experienceCategoryLabel(experience)} ${record.place ?? ""} ${record.companion ?? ""} ${record.memo ?? ""}`
               .toLocaleLowerCase("ja");
           return (
             (!query || searchable.includes(query)) &&
@@ -369,7 +369,7 @@ export function TriedView({
                       </p>
                     )}
                     <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                      {CATEGORY_LABELS[experience.category]}
+                      {experienceCategoryLabel(experience)}
                     </span>
                   </div>
                 </button>
@@ -427,7 +427,7 @@ export function TriedView({
                     </p>
                   )}
                   <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
-                    {CATEGORY_LABELS[experience.category]}
+                    {experienceCategoryLabel(experience)}
                   </span>
 
                   <div className="absolute bottom-1.5 right-2 flex items-center gap-1.5">
