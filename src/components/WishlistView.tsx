@@ -91,7 +91,7 @@ export function WishlistView({
 
   const selectedCollection = items.find((item) => item.id === selectedCollectionId);
   if (selectedCollection) {
-    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} onEditExperience={selectedCollection.id.startsWith("custom-") ? () => { setSelectedCollectionId(null); setEditingOriginalId(selectedCollection.id); } : undefined} />;
+    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
   }
 
   return (
