@@ -39,11 +39,11 @@ function makeExperience(id: string, draft: CustomExperienceDraft): Experience {
 }
 
 function categorySlug(category: Category) {
-  return category === "hobby" ? "hobby-learning" : category === "home" ? "lifestyle" : category;
+  return category === "hobby" ? "hobby" : category === "home" ? "lifestyle" : category;
 }
 
 function dbCategory(slug?: string): Category {
-  if (slug === "hobby-learning") return "hobby";
+  if (slug === "hobby-learning" || slug === "hobby") return "hobby";
   if (slug === "lifestyle") return "home";
   if (slug === "food" || slug === "outing" || slug === "experience") return slug;
   return "experience";

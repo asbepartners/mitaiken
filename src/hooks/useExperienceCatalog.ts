@@ -27,6 +27,7 @@ function toCategory(slug: string): Category {
     case "outing":
       return "outing";
     case "hobby-learning":
+    case "hobby":
       return "hobby";
     case "lifestyle":
       return "home";
