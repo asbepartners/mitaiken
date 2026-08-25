@@ -35,6 +35,7 @@ interface WishlistViewProps {
   onEditRecord: (parentId: string, recordId: string) => void;
   onDeleteRecord: (parentId: string, recordId: string) => void;
   onCreateOriginal: (draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
+  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
 }
 
 export function WishlistView({
@@ -53,6 +54,7 @@ export function WishlistView({
   onEditRecord,
   onDeleteRecord,
   onCreateOriginal,
+  onUpdateOriginal,
 }: WishlistViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -61,6 +63,7 @@ export function WishlistView({
   const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [creatingOriginal, setCreatingOriginal] = useState(false);
+  const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
   const filtered = useMemo(
@@ -88,7 +91,7 @@ export function WishlistView({
 
   const selectedCollection = items.find((item) => item.id === selectedCollectionId);
   if (selectedCollection) {
-    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたい一覧に戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
+    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
   }
 
   return (
@@ -230,6 +233,20 @@ export function WishlistView({
 
               {openMenuId === experience.id && (
                 <div className="absolute bottom-2 right-12 z-20 rounded-xl border border-green-100 bg-paper p-1.5 shadow-lg">
+                  {experience.id.startsWith("custom-") && <button
+                    type="button"
+                    onClick={() => { setEditingOriginalId(experience.id); setOpenMenuId(null); }}
+                    className="block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-xs font-bold text-green-800 hover:bg-green-100"
+                  >
+                    体験を編集
+                  </button>}
+                  {isCollection && <button
+                    type="button"
+                    onClick={() => { setSelectedCollectionId(experience.id); setOpenMenuId(null); }}
+                    className="block w-full whitespace-nowrap rounded-lg px-3 py-2 text-left text-xs font-bold text-green-800 hover:bg-green-100"
+                  >
+                    場所や項目を管理
+                  </button>}
                   <button
                     type="button"
                     onClick={() => { onRemove(experience.id); setOpenMenuId(null); }}
@@ -259,6 +276,17 @@ export function WishlistView({
         />
       )}
       {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
+      {editingOriginalId && (() => {
+        const experience = items.find((item) => item.id === editingOriginalId);
+        if (!experience) return null;
+        return <OriginalExperienceForm
+          existingTitles={items.filter((item) => item.id !== editingOriginalId).map((item) => item.title)}
+          initialExperience={{ title: experience.title, description: experience.description, category: experience.category, image: experience.image }}
+          allowAddingTargets={(targetsMap[editingOriginalId] ?? []).length === 0}
+          onClose={() => setEditingOriginalId(null)}
+          onSubmit={async (draft, targets) => { await onUpdateOriginal(editingOriginalId, draft, targets); setEditingOriginalId(null); }}
+        />;
+      })()}
     </div>
   );
 }

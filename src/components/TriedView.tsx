@@ -348,7 +348,7 @@ export function TriedView({
                   <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={imageSource(experience.image, assetBase)}
+                      src={first.photoUrl ?? imageSource(experience.image, assetBase)}
                       alt=""
                       className="h-full w-full object-cover"
                     />

@@ -24,16 +24,14 @@ export function CollectionDetailView(props: Props) {
   const isCollection = Boolean(experience.exampleTargets);
   const recordByTarget = useMemo(() => new Map(targets.map((target) => [target.id, records.find((record) => record.targetId === target.id)])), [records, targets]);
   const pending = targets.filter((target) => !recordByTarget.get(target.id));
-  const completedRecords = isCollection
-    ? records.filter((record) => record.targetId && targets.some((target) => target.id === record.targetId))
-    : records;
+  const completedRecords = records;
 
   function openForm(target: ExperienceTarget | "new") { setEditing(target); setDraft(target === "new" ? { title: "", memo: "", relatedUrl: "" } : { title: target.title, memo: target.memo, relatedUrl: target.relatedUrl }); }
   function save() { const ok = editing === "new" ? props.onAddTarget(draft) : editing ? props.onUpdateTarget(editing.id, draft) : false; if (ok) setEditing(null); }
   function mark(target: ExperienceTarget) { if (markingId) return; setMarkingId(target.id); window.setTimeout(() => { setMarkingId(null); props.onMarkTried(target); }, 340); }
 
   return <div className="px-4 pb-6">
-    <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-11 items-center gap-1 rounded-full pr-4 text-base font-bold text-green-800"><span className="text-2xl">‹</span> {props.backLabel}</button></div>
+    <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-12 items-center gap-2 rounded-full pr-4 text-base font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-sm">←</span><span>{props.backLabel}</span></button></div>
     <header className="mt-3 rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_12px_rgba(44,38,32,0.06)]"><div className="flex items-end gap-3"><div className="min-w-0 flex-1"><p className="text-xs font-medium text-green-700">はじめての詳細</p><h1 className="mt-1 text-xl font-bold text-green-950">{experience.title}</h1></div><button type="button" onClick={() => isCollection ? openForm("new") : props.onAddRecord?.()} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">追加</button></div><p className="mt-2 text-sm leading-6 text-ink-soft">{experience.description}</p><div className="mt-4 flex gap-2 text-xs font-bold">{isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}<span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {completedRecords.length}件</span></div></header>
 
     {isCollection && <section className="mt-5"><div className="flex items-center justify-between gap-3 px-1"><h2 className="text-lg font-bold text-green-950">これから</h2><button type="button" onClick={() => openForm("new")} className="min-h-10 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">＋ やってみたいを追加</button></div>

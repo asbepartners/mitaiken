@@ -127,5 +127,26 @@ export function useCustomExperiences() {
     return id;
   }, [userId, write]);
 
-  return { customExperiences: items, createExperience };
+  const updateExperience = useCallback(async (id: string, draft: CustomExperienceDraft) => {
+    const current = readStored();
+    const previous = current.find((item) => item.id === id);
+    if (!previous) return false;
+    const experience = makeExperience(id, draft);
+    write(current.map((item) => item.id === id ? experience : item));
+    if (userId) {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const { data: category } = await supabase.from("categories").select("id").eq("slug", categorySlug(draft.category)).maybeSingle();
+        await supabase.from("user_experiences").update({
+          title: experience.title,
+          description: experience.description,
+          category_id: category?.id ?? null,
+          image_path: experience.image ?? null,
+        }).eq("user_id", userId).eq("client_key", id);
+      }
+    }
+    return true;
+  }, [userId, write]);
+
+  return { customExperiences: items, createExperience, updateExperience };
 }

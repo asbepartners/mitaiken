@@ -27,7 +27,7 @@ export default function Home() {
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const { experiences: catalogExperiences } = useExperienceCatalog();
-  const { customExperiences, createExperience } = useCustomExperiences();
+  const { customExperiences, createExperience, updateExperience } = useCustomExperiences();
   const auth = useAuth();
   const {
     statusMap,
@@ -179,6 +179,10 @@ export default function Home() {
               const id = await createExperience(draft);
               for (const target of targets) addTarget(id, target);
               toggleWishlist(id);
+            }}
+            onUpdateOriginal={async (id, draft, targets) => {
+              await updateExperience(id, draft);
+              for (const target of targets) addTarget(id, target);
             }}
           />
         )}

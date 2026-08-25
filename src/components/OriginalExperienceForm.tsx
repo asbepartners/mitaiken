@@ -7,6 +7,8 @@ import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 
 interface Props {
   existingTitles: string[];
+  initialExperience?: CustomExperienceDraft;
+  allowAddingTargets?: boolean;
   onClose: () => void;
   onSubmit: (experience: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
 }
@@ -24,13 +26,14 @@ async function resizeImage(file: File) {
   return canvas.toDataURL("image/jpeg", 0.78);
 }
 
-export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Props) {
+export function OriginalExperienceForm({ existingTitles, initialExperience, allowAddingTargets = true, onClose, onSubmit }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
+  const editing = Boolean(initialExperience);
   const [step, setStep] = useState<"experience" | "targets">("experience");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<Category>("outing");
-  const [image, setImage] = useState<string>();
+  const [title, setTitle] = useState(initialExperience?.title ?? "");
+  const [description, setDescription] = useState(initialExperience?.description ?? "");
+  const [category, setCategory] = useState<Category>(initialExperience?.category ?? "outing");
+  const [image, setImage] = useState<string | undefined>(initialExperience?.image);
   const [withTargets, setWithTargets] = useState(false);
   const [targets, setTargets] = useState<ExperienceTargetDraft[]>([emptyTarget()]);
   const [saving, setSaving] = useState(false);
@@ -52,9 +55,9 @@ export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Pr
 
   return <div className="fixed inset-0 z-50 overflow-y-auto bg-ivory">
     <main className="mx-auto min-h-full w-full max-w-2xl px-5 pb-10 pt-5">
-      <button type="button" onClick={step === "targets" ? () => setStep("experience") : onClose} className="min-h-11 text-sm font-bold text-green-800">‹ {step === "targets" ? "体験の入力に戻る" : "やってみたい一覧に戻る"}</button>
+      <button type="button" onClick={step === "targets" ? () => setStep("experience") : onClose} className="flex min-h-12 items-center gap-2 text-sm font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-sm">←</span><span>{step === "targets" ? "体験の入力に戻る" : "やってみたいリストに戻る"}</span></button>
       <p className="mt-3 text-xs font-bold tracking-widest text-coral-500">オリジナル</p>
-      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? "体験を作る" : "場所や項目を追加"}</h1>
+      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? (editing ? "体験を編集" : "体験を作る") : "場所や項目を追加"}</h1>
 
       {step === "experience" ? <>
         <div className="mt-6 overflow-hidden rounded-3xl border border-green-100 bg-paper shadow-sm">
@@ -70,11 +73,11 @@ export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Pr
             <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={category} onChange={(e) => setCategory(e.target.value as Category)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal">{CATEGORY_ORDER.map((value) => <option key={value} value={value}>{CATEGORY_LABELS[value]}</option>)}</select></label>
           </div>
         </div>
-        <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、場所や項目を<br />追加しますか？</legend>
+        {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、場所や項目を<br />追加しますか？</legend>
           <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加しない</strong><small className="mt-1 block text-ink-soft">ひとつの体験として登録します</small></span></label>
           <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加する</strong><small className="mt-1 block text-ink-soft">場所やお店などを分けて登録します</small></span></label>
-        </fieldset>
-        <button type="button" onClick={withTargets ? () => setStep("targets") : save} disabled={!title.trim() || duplicate || saving} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets ? "場所や項目の入力へ" : "やってみたいに追加"}</button>
+        </fieldset>}
+        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || duplicate || saving} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "場所や項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
       </> : <>
         <p className="mt-3 text-sm leading-6 text-ink-soft">「{title}」で行きたい場所や、集めたい項目を追加しましょう。</p>
         <div className="mt-5 space-y-4">{targets.map((target, index) => <section key={index} className="rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
@@ -85,7 +88,7 @@ export function OriginalExperienceForm({ existingTitles, onClose, onSubmit }: Pr
         </section>)}</div>
         {targetDuplicate && <p className="mt-3 text-sm font-bold text-coral-500">同じ名前の項目が含まれています。</p>}
         <button type="button" onClick={() => setTargets([...targets, emptyTarget()])} className="mt-4 min-h-12 w-full rounded-full border border-coral-400 bg-paper font-bold text-coral-500">＋ 続けて追加</button>
-        <button type="button" onClick={save} disabled={!validTargets.length || targetDuplicate || saving} className="mt-5 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{saving ? "追加しています…" : "やってみたいに追加"}</button>
+        <button type="button" onClick={save} disabled={!validTargets.length || targetDuplicate || saving} className="mt-5 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{saving ? "保存しています…" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
       </>}
     </main>
   </div>;
