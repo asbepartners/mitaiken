@@ -17,6 +17,7 @@ import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hook
 import { CollectionDetailView } from "./CollectionDetailView";
 import { OriginalExperienceForm } from "./OriginalExperienceForm";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
+import { imageSource } from "@/lib/imageSource";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -175,7 +176,7 @@ export function WishlistView({
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                  src={imageSource(experience.image, assetBase)}
                   alt=""
                   className="h-full w-full object-cover"
                 />

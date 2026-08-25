@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CATEGORY_LABELS, Experience } from "@/data/experiences";
 import type { StatusEntry } from "@/hooks/useExperienceStatus";
 import { formatTiming } from "@/lib/timing";
+import { imageSource } from "@/lib/imageSource";
 
 interface ExperienceCardProps {
   experience: Experience;
@@ -33,9 +34,10 @@ export function ExperienceCard({
   const isTried = entry?.status === "cleared";
   const isFeatured = variant === "featured";
   const hasHero = isFeatured;
-  const imagePath = `${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}${
-    experience.image ?? "/experiences/noimage.svg"
-  }`;
+  const imagePath = imageSource(
+    experience.image,
+    process.env.NODE_ENV === "production" ? "/mitaiken" : ""
+  );
 
   function handleToggleWishlist() {
     if (!isFeatured || isWishlisted) {

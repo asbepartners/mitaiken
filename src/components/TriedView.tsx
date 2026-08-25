@@ -12,6 +12,7 @@ import {
 import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 import { CollectionDetailView } from "./CollectionDetailView";
 import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
+import { imageSource } from "@/lib/imageSource";
 
 export interface TriedExperience {
   experience: Experience;
@@ -347,7 +348,7 @@ export function TriedView({
                   <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={`${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                      src={imageSource(experience.image, assetBase)}
                       alt=""
                       className="h-full w-full object-cover"
                     />
@@ -402,7 +403,7 @@ export function TriedView({
                   <img
                     src={
                       record.photoUrl ??
-                      `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`
+                      imageSource(experience.image, assetBase)
                     }
                     alt=""
                     className="h-full w-full object-cover"

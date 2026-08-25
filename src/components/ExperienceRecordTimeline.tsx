@@ -6,6 +6,7 @@ import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import type { Timing } from "@/lib/timing";
 import { CrownIcon } from "./RecordIcons";
+import { imageSource } from "@/lib/imageSource";
 
 interface Props {
   experience: Experience;
@@ -74,7 +75,7 @@ export function ExperienceRecordTimeline({
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={record.photoUrl ?? `${assetBase}${experience.image ?? "/experiences/noimage.svg"}`}
+                  src={record.photoUrl ?? imageSource(experience.image, assetBase)}
                   alt=""
                   className="h-full w-full object-cover"
                 />
