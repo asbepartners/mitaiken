@@ -134,9 +134,13 @@ export function useExperienceCatalog() {
       if (!data) return;
       const remoteExperiences = (data as unknown as CatalogRow[]).map(toExperience);
       const collectionTemplates = fallbackExperiences.filter(({ exampleTargets }) => exampleTargets);
+      const remoteIds = new Set(remoteExperiences.map(({ id }) => id));
       setExperiences([
-        ...remoteExperiences.filter(({ id }) => !collectionTemplates.some((template) => template.id === id)),
-        ...collectionTemplates,
+        ...remoteExperiences.map((experience) => {
+          const collection = collectionTemplates.find((template) => template.id === experience.id);
+          return collection ? { ...experience, exampleTargets: collection.exampleTargets } : experience;
+        }),
+        ...collectionTemplates.filter(({ id }) => !remoteIds.has(id)),
       ]);
       setSource("supabase");
     }
