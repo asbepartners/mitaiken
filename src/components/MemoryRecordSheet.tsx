@@ -22,6 +22,7 @@ interface MemoryRecordSheetProps {
 }
 
 type TimingMode = "date" | "month" | "year";
+type YearChoice = "current" | "previous" | "custom";
 const inputClass =
   "block box-border min-w-0 w-full max-w-full appearance-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base text-ink focus:border-green-700 focus:outline-none";
 
@@ -72,6 +73,16 @@ export function MemoryRecordSheet({
   const [yearValue, setYearValue] = useState(
     initialTiming?.type === "year" ? initialTiming.value ?? "" : String(currentYear)
   );
+  const initialYearChoice: YearChoice = initialTiming?.type !== "year" || initialTiming.value === String(currentYear)
+    ? "current"
+    : initialTiming.value === String(currentYear - 1)
+      ? "previous"
+      : "custom";
+  const [yearChoice, setYearChoice] = useState<YearChoice>(initialYearChoice);
+  const yearOptions = useMemo(
+    () => Array.from({ length: currentYear - 1900 + 1 }, (_, index) => currentYear - index),
+    [currentYear]
+  );
   const [unknown, setUnknown] = useState(initialTiming?.type === "unknown");
   const [place, setPlace] = useState(initialRecord?.place ?? "");
   const [companion, setCompanion] = useState(initialRecord?.companion ?? "");
@@ -121,6 +132,13 @@ export function MemoryRecordSheet({
     setMode(next);
   }
 
+  function chooseYear(next: YearChoice) {
+    setUnknown(false);
+    setYearChoice(next);
+    if (next === "current") setYearValue(String(currentYear));
+    if (next === "previous") setYearValue(String(currentYear - 1));
+  }
+
   return (
     <div className="fixed inset-0 z-30 flex max-w-full items-end justify-center overflow-hidden overscroll-none sm:items-center">
       <button type="button" aria-label="閉じる" onClick={onCancel} className="absolute inset-0 bg-ink/30" />
@@ -164,7 +182,12 @@ export function MemoryRecordSheet({
           <div className="mt-2">
             {mode==="date" && <input type="date" value={dateValue} max={today.value ?? undefined} disabled={unknown} onChange={e=>{setUnknown(false);setDateValue(e.target.value)}} className={inputClass}/>}
             {mode==="month" && <input type="month" value={monthValue} max={today.value?.slice(0,7)} disabled={unknown} onChange={e=>{setUnknown(false);setMonthValue(e.target.value)}} className={inputClass}/>}
-            {mode==="year" && <input type="number" inputMode="numeric" min={1900} max={currentYear} value={yearValue} disabled={unknown} onChange={e=>{setUnknown(false);setYearValue(e.target.value)}} className={inputClass}/>}
+            {mode==="year" && <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2">
+                {([ ["current", "今年"], ["previous", "去年"], ["custom", "年を指定"] ] as const).map(([value, label]) => <button key={value} type="button" disabled={unknown} onClick={() => chooseYear(value)} className={`min-h-11 rounded-xl border px-2 py-2 text-sm font-bold ${yearChoice === value && !unknown ? "border-coral-400 bg-coral-100 text-green-950" : "border-green-100 bg-ivory text-green-900"}`}>{label}</button>)}
+              </div>
+              {yearChoice === "custom" && <select value={yearValue} disabled={unknown} onChange={e=>{setUnknown(false);setYearValue(e.target.value)}} className={inputClass} aria-label="年を選択">{yearOptions.map((year) => <option key={year} value={year}>{year}年</option>)}</select>}
+            </div>}
           </div>
           <div className="mt-1.5 text-right">
             <button type="button" onClick={()=>setUnknown(v=>!v)} className={`text-xs font-medium underline underline-offset-4 ${unknown ? "text-coral-500":"text-green-800"}`}>
