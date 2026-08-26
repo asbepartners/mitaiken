@@ -73,6 +73,7 @@ export function WishlistView({
   const [creatingOriginal, setCreatingOriginal] = useState(false);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
+  const activeFilterCount = countExperienceFilters(filters);
 
   const filtered = useMemo(
     () =>
@@ -123,9 +124,9 @@ export function WishlistView({
           className="absolute right-5 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md"
         >
           <SearchIcon />
-          {countExperienceFilters(filters) > 0 && (
+          {activeFilterCount > 0 && (
             <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-coral-500 px-1 text-center text-[10px] font-bold leading-5 text-paper">
-              {countExperienceFilters(filters)}
+              {activeFilterCount}
             </span>
           )}
         </button>
@@ -137,7 +138,7 @@ export function WishlistView({
 
       <div className="mb-2 flex min-h-10 items-center justify-between gap-3">
         <button type="button" onClick={() => setCreatingOriginal(true)} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルのはじめてを追加</button>
-        {items.length > 0 && <p className="text-right text-xs font-medium text-ink-soft">{category === "all" ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}</p>}
+        {items.length > 0 && <p className="text-right text-xs font-medium text-ink-soft">{category === "all" && activeFilterCount === 0 ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}</p>}
       </div>
 
       {items.length === 0 ? (
@@ -165,7 +166,7 @@ export function WishlistView({
         </div>
       ) : filtered.length === 0 ? (
         <p className="rounded-3xl border border-dashed border-green-100 bg-paper px-6 py-10 text-center text-sm text-ink-soft">
-          このカテゴリの「やってみたい」は、まだありません。
+          {activeFilterCount > 0 ? "条件に合う「やってみたい」は、見つかりませんでした。" : "このカテゴリの「やってみたい」は、まだありません。"}
         </p>
       ) : (
         <ul className="flex flex-col gap-2.5">

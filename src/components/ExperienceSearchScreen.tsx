@@ -29,7 +29,6 @@ function matchesLocation(experience: Experience, selected: LocationOption | unde
   if (!selected) return true;
   const experienceLocation = masters.locations.find(({ code }) => code === experience.locationCode);
   if (!experienceLocation) return false;
-  if (selected.code === "either") return experienceLocation.code === "either";
   return (selected.supportsHome && experienceLocation.supportsHome) || (selected.supportsOuting && experienceLocation.supportsOuting);
 }
 
