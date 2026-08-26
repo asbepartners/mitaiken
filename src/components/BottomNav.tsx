@@ -32,6 +32,13 @@ export function BottomNav({ active, onChange, wishlistCount }: BottomNavProps) {
     mypage: null,
   };
 
+  function changeTab(tab: Tab) {
+    onChange(tab);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    });
+  }
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-green-100 bg-paper/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur">
       <div className="mx-auto flex max-w-2xl items-stretch">
@@ -42,7 +49,7 @@ export function BottomNav({ active, onChange, wishlistCount }: BottomNavProps) {
             <button
               key={tab.key}
               type="button"
-              onClick={() => onChange(tab.key)}
+              onClick={() => changeTab(tab.key)}
               className={`relative flex flex-1 flex-col items-center gap-0.5 py-3 text-xs font-medium transition-colors ${
                 isActive ? "text-green-800" : "text-ink-soft"
               }`}
