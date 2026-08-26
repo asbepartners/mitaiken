@@ -38,6 +38,7 @@ export function CollectionDetailView(props: Props) {
   function openForm(target: ExperienceTarget | "new") { setEditing(target); setDraft(target === "new" ? { title: "", memo: "", relatedUrl: "" } : { title: target.title, memo: target.memo, relatedUrl: target.relatedUrl }); }
   function save() { const ok = editing === "new" ? props.onAddTarget(draft) : editing ? props.onUpdateTarget(editing.id, draft) : false; if (ok) setEditing(null); }
   function mark(target: ExperienceTarget) { if (markingId) return; setMarkingId(target.id); window.setTimeout(() => { setMarkingId(null); props.onMarkTried(target); }, 340); }
+  function markSingle() { if (markingId) return; setMarkingId(experience.id); window.setTimeout(() => { setMarkingId(null); props.onAddRecord?.(); }, 340); }
 
   return <div className="px-4 pb-6">
     <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-12 items-center gap-2 rounded-full pr-4 text-base font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-coral-300 bg-coral-100 text-2xl text-coral-500 shadow-sm">←</span><span>{props.backLabel}</span></button></div>
@@ -52,7 +53,10 @@ export function CollectionDetailView(props: Props) {
             <p className="text-xs font-medium text-green-700">{props.detailLabel ?? "はじめての詳細"}</p>
             <h1 className="mt-1 text-xl font-bold text-green-950">{experience.title}</h1>
           </div>
-          <button type="button" onClick={() => isCollection ? openForm("new") : props.onAddRecord?.()} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">{props.primaryActionLabel ?? "追加"}</button>
+          {isCollection ? <button type="button" onClick={() => openForm("new")} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">{props.primaryActionLabel ?? "追加"}</button> : <button type="button" onClick={markSingle} disabled={markingId !== null} className="shrink-0 text-coral-500">
+            <span className={markingId === experience.id ? "heart-pop" : ""}><BookmarkIcon filled={markingId === experience.id} className="mx-auto h-8 w-8" /></span>
+            <span className="mt-1 block text-[9px] font-bold">やってみた！</span>
+          </button>}
         </div>
         <p className="mt-2 text-sm leading-6 text-ink-soft">{experience.description}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
