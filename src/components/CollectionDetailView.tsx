@@ -6,6 +6,7 @@ import type { ExperienceTarget, ExperienceTargetDraft } from "@/hooks/useExperie
 import { BookmarkIcon } from "./RecordIcons";
 import { ExperienceRecordTimeline } from "./ExperienceRecordTimeline";
 import { ExperienceConditions } from "./ExperienceConditions";
+import { imageSource } from "@/lib/imageSource";
 
 interface Props {
   experience: Experience; targets: ExperienceTarget[]; records: TriedRecord[]; onBack: () => void;
@@ -14,10 +15,13 @@ interface Props {
   onUpdateTarget: (id: string, draft: ExperienceTargetDraft) => boolean; onRemoveTarget: (id: string) => void;
   onEditRecord: (recordId: string) => void; onDeleteRecord: (recordId: string) => void;
   onAddRecord?: () => void;
+  detailLabel?: string;
+  primaryActionLabel?: string;
 }
 
 export function CollectionDetailView(props: Props) {
   const { experience, targets, records } = props;
+  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const [editing, setEditing] = useState<ExperienceTarget | "new" | null>(null);
   const [draft, setDraft] = useState<ExperienceTargetDraft>({ title: "", memo: "", relatedUrl: "" });
   const [menuId, setMenuId] = useState<string | null>(null);
@@ -37,7 +41,30 @@ export function CollectionDetailView(props: Props) {
 
   return <div className="px-4 pb-6">
     <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-12 items-center gap-2 rounded-full pr-4 text-base font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-coral-300 bg-coral-100 text-2xl text-coral-500 shadow-sm">←</span><span>{props.backLabel}</span></button></div>
-    <header className="mt-3 rounded-3xl border border-green-100 bg-paper p-5 shadow-[0_2px_12px_rgba(44,38,32,0.06)]"><div className="flex items-end gap-3"><div className="min-w-0 flex-1"><p className="text-xs font-medium text-green-700">はじめての詳細</p><h1 className="mt-1 text-xl font-bold text-green-950">{experience.title}</h1></div><button type="button" onClick={() => isCollection ? openForm("new") : props.onAddRecord?.()} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">追加</button></div><p className="mt-2 text-sm leading-6 text-ink-soft">{experience.description}</p><div className="mt-3 flex flex-wrap items-center gap-2"><span className="rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">{experienceCategoryLabel(experience)}</span><ExperienceConditions experience={experience} className="text-xs font-medium text-ink-soft" /></div><div className="mt-4 flex gap-2 text-xs font-bold">{isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}<span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {completedRecords.length}件</span></div></header>
+    <header className="mt-3 overflow-hidden rounded-3xl border border-green-100 bg-paper shadow-[0_2px_12px_rgba(44,38,32,0.06)]">
+      <div className="h-44 w-full overflow-hidden bg-ivory">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageSource(experience.image, assetBase)} alt="" className="h-full w-full object-cover" />
+      </div>
+      <div className="p-5">
+        <div className="flex items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-green-700">{props.detailLabel ?? "はじめての詳細"}</p>
+            <h1 className="mt-1 text-xl font-bold text-green-950">{experience.title}</h1>
+          </div>
+          <button type="button" onClick={() => isCollection ? openForm("new") : props.onAddRecord?.()} className="min-h-10 shrink-0 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">{props.primaryActionLabel ?? "追加"}</button>
+        </div>
+        <p className="mt-2 text-sm leading-6 text-ink-soft">{experience.description}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <span className="rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">{experienceCategoryLabel(experience)}</span>
+          <ExperienceConditions experience={experience} className="text-xs font-medium text-ink-soft" />
+        </div>
+        <div className="mt-4 flex gap-2 text-xs font-bold">
+          {isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}
+          <span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {completedRecords.length}件</span>
+        </div>
+      </div>
+    </header>
 
     {isCollection && <section className="mt-5"><div className="flex items-center justify-between gap-3 px-1"><h2 className="text-lg font-bold text-green-950">これから</h2><button type="button" onClick={() => openForm("new")} className="min-h-10 rounded-full bg-coral-100 px-4 text-sm font-bold text-coral-500">＋ やってみたいを追加</button></div>
       {pending.length ? <ul className="mt-3 space-y-2.5">{pending.map((target) => <li key={target.id} className="relative flex min-h-28 items-center gap-3 rounded-2xl border border-green-100 bg-paper py-2 pl-4 pr-2 shadow-sm"><button type="button" onClick={() => openForm(target)} className="min-w-0 flex-1 text-left"><p className="font-bold text-green-950">{target.title}</p>{target.memo && <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink-soft">{target.memo}</p>}</button><div className="flex w-[5.5rem] shrink-0 flex-col items-center"><button type="button" onClick={() => mark(target)} disabled={markingId !== null} className="text-coral-500"><span className={markingId === target.id ? "heart-pop" : ""}><BookmarkIcon filled={markingId === target.id} className="h-8 w-8" /></span><span className="block text-[9px] font-bold">やってみた！</span></button><div className="mt-1 flex gap-1"><button type="button" onClick={() => openForm(target)} className="min-h-8 whitespace-nowrap rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button><button type="button" onClick={() => setMenuId(menuId === target.id ? null : target.id)} className="h-8 w-8 shrink-0 rounded-full bg-ivory-deep font-bold">…</button></div></div>{menuId === target.id && <div className="absolute bottom-2 right-12 z-10 rounded-xl border border-green-100 bg-paper p-1 shadow-lg"><button type="button" onClick={() => props.onRemoveTarget(target.id)} className="whitespace-nowrap px-3 py-2 text-xs font-bold text-coral-500">リストから外す</button></div>}</li>)}</ul> : <p className="mt-3 rounded-2xl border border-dashed border-green-100 bg-paper px-4 py-5 text-center text-sm text-ink-soft">今のところ、すべて記録済みです。</p>}

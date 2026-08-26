@@ -69,7 +69,7 @@ export function WishlistView({
   const [searchOpen, setSearchOpen] = useState(false);
   const [filters, setFilters] = useState<ExperienceFilters>(EMPTY_EXPERIENCE_FILTERS);
   const [bookmarkPendingId, setBookmarkPendingId] = useState<string | null>(null);
-  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [selectedDetailId, setSelectedDetailId] = useState<string | null>(null);
   const [creatingOriginal, setCreatingOriginal] = useState(false);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
@@ -93,9 +93,9 @@ export function WishlistView({
     }, 340);
   }
 
-  const selectedCollection = items.find((item) => item.id === selectedCollectionId);
-  if (selectedCollection) {
-    return <CollectionDetailView experience={selectedCollection} targets={targetsMap[selectedCollection.id] ?? []} records={recordsMap[selectedCollection.id] ?? []} onBack={() => setSelectedCollectionId(null)} backLabel="やってみたいリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedCollection.id, target)} onAddTarget={(draft) => onAddTarget(selectedCollection.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedCollection.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedCollection.id, id)} onEditRecord={(recordId) => onEditRecord(selectedCollection.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedCollection.id, recordId)} />;
+  const selectedDetail = items.find((item) => item.id === selectedDetailId);
+  if (selectedDetail) {
+    return <CollectionDetailView experience={selectedDetail} targets={targetsMap[selectedDetail.id] ?? []} records={recordsMap[selectedDetail.id] ?? []} onBack={() => setSelectedDetailId(null)} backLabel="やってみたいリストに戻る" detailLabel="やってみたいの詳細" primaryActionLabel={selectedDetail.exampleTargets ? "追加" : "やってみた！"} onMarkTried={(target) => onRequestTargetRecord(selectedDetail.id, target)} onAddTarget={(draft) => onAddTarget(selectedDetail.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedDetail.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedDetail.id, id)} onEditRecord={(recordId) => onEditRecord(selectedDetail.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedDetail.id, recordId)} onAddRecord={() => onRequestMarkTried(selectedDetail.id)} />;
   }
 
   return (
@@ -174,12 +174,13 @@ export function WishlistView({
             const completedPlaces = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
             const pendingTargets = (targetsMap[experience.id] ?? []).filter((target) => !(recordsMap[experience.id] ?? []).some((record) => record.targetId === target.id || (!record.targetId && completedPlaces.has(target.title))));
             const isCollection = Boolean(experience.exampleTargets);
+            const isCustom = experience.id.startsWith("custom-");
             return (
             <li
               key={experience.id}
               className="relative flex min-h-28 overflow-visible rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]"
             >
-              <button type="button" onClick={() => isCollection && setSelectedCollectionId(experience.id)} className="flex min-w-0 flex-1 text-left">
+              <button type="button" onClick={() => isCollection && setSelectedDetailId(experience.id)} className="flex min-w-0 flex-1 text-left">
               <div className="h-28 w-28 shrink-0 self-start overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -202,7 +203,7 @@ export function WishlistView({
               </button>
 
               <div className="flex w-[5.5rem] shrink-0 flex-col items-center justify-center gap-1 py-2">
-                {isCollection && <button type="button" onClick={() => setSelectedCollectionId(experience.id)} aria-label={`${experience.title}の詳細`} className="flex h-10 w-10 items-center justify-center rounded-full bg-coral-100 text-2xl text-coral-500">›</button>}
+                {isCollection && <button type="button" onClick={() => setSelectedDetailId(experience.id)} aria-label={`${experience.title}の詳細`} className="flex h-10 w-10 items-center justify-center rounded-full bg-coral-100 text-2xl text-coral-500">›</button>}
                 {!isCollection && <button
                   type="button"
                   onClick={() => handleRequestMarkTried(experience.id)}
@@ -224,7 +225,8 @@ export function WishlistView({
                   <span className="mt-1 text-[9px] font-bold">やってみた！</span>
                 </button>}
                 <div className="flex items-center gap-1">
-                  {experience.id.startsWith("custom-") && <button type="button" onClick={() => setEditingOriginalId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button>}
+                  {isCustom && <button type="button" onClick={() => setEditingOriginalId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button>}
+                  {!isCustom && !isCollection && <button type="button" onClick={() => setSelectedDetailId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">詳細</button>}
                   <button
                     type="button"
                     onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
