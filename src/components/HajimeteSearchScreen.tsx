@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CATEGORY_LABELS, Category, Experience, experienceCategoryLabel } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
 import { SearchIcon } from "./ExperienceSearchScreen";
+import { HajimeteYearFilter } from "./HajimeteYearFilter";
 
 export type HajimeteSearchView = "firsts" | "records";
 
@@ -266,25 +267,7 @@ export function HajimeteSearchScreen({
           <h3 className="mb-2 text-sm font-bold text-green-950">
             {draft.view === "firsts" ? "はじめて年" : "記録年"}
           </h3>
-          <div className="flex flex-wrap gap-2">
-            {["all", ...years].map((year) => {
-              const active = draft.year === year;
-              return (
-                <button
-                  key={year}
-                  type="button"
-                  onClick={() => setDraft((current) => ({ ...current, year }))}
-                  className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-                    active
-                      ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
-                      : "border-green-100 bg-paper text-green-800"
-                  }`}
-                >
-                  {year === "all" ? "すべて" : `${year}年`}
-                </button>
-              );
-            })}
-          </div>
+          <HajimeteYearFilter years={years} value={draft.year} onChange={(year) => setDraft((current) => ({ ...current, year }))} />
         </section>
 
       </div>

@@ -13,6 +13,7 @@ import { BookmarkIcon, CrownIcon } from "./RecordIcons";
 import { CollectionDetailView } from "./CollectionDetailView";
 import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 import { imageSource } from "@/lib/imageSource";
+import { HajimeteYearFilter } from "./HajimeteYearFilter";
 
 export interface TriedExperience {
   experience: Experience;
@@ -284,25 +285,7 @@ export function TriedView({
       )}
 
       {!selectedExperienceId && (
-      <div className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {["all", ...years].map((year) => (
-          <button
-            key={year}
-            type="button"
-            onClick={() => {
-              setSelectedYear(year);
-              setSearchValue((current) => ({ ...current, year }));
-            }}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
-              selectedYear === year
-                ? "border-coral-400 bg-coral-400 text-paper shadow-sm"
-                : "border-green-100 bg-paper text-green-800"
-            }`}
-          >
-            {year === "all" ? "すべて" : `${year}年`}
-          </button>
-        ))}
-      </div>
+      <HajimeteYearFilter years={years} value={selectedYear} onChange={(year) => { setSelectedYear(year); setSearchValue((current) => ({ ...current, year })); }} className="mb-3" />
       )}
 
       {firstItems.length > 0 && !selectedExperienceId && (
