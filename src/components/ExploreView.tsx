@@ -13,6 +13,7 @@ import {
   matchesExperienceFilters,
   SearchIcon,
 } from "./ExperienceSearchScreen";
+import type { SearchMasters } from "@/hooks/useSearchMasters";
 
 interface ExploreViewProps {
   items: Experience[];
@@ -22,6 +23,9 @@ interface ExploreViewProps {
   onToggleWishlist: (id: string) => void;
   onRequestMarkTried: (id: string) => void;
   onUndoTried: (id: string) => void;
+  searchMasters: SearchMasters;
+  searchMastersLoading: boolean;
+  searchMastersError: boolean;
 }
 
 export function ExploreView({
@@ -32,6 +36,9 @@ export function ExploreView({
   onToggleWishlist,
   onRequestMarkTried,
   onUndoTried,
+  searchMasters,
+  searchMastersLoading,
+  searchMastersError,
 }: ExploreViewProps) {
   const [category, setCategory] = useState<CategoryFilterValue>("all");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -46,14 +53,10 @@ export function ExploreView({
 
   const filtered = useMemo(() => {
     return searchableItems.filter((experience) => {
-      const matchesCategory =
-        category === "all" ||
-        (category === "home"
-          ? experience.place.includes("自宅")
-          : experience.category === category);
-      return matchesCategory && matchesExperienceFilters(experience, filters);
+      const matchesCategory = category === "all" || experience.categoryCode === category;
+      return matchesCategory && matchesExperienceFilters(experience, filters, searchMasters);
     });
-  }, [category, filters, searchableItems]);
+  }, [category, filters, searchableItems, searchMasters]);
 
   function handleCategoryChange(nextCategory: CategoryFilterValue) {
     setCategory(nextCategory);
@@ -117,7 +120,7 @@ export function ExploreView({
       </header>
 
       <div className="mb-4">
-        <CategoryFilter value={category} onChange={handleCategoryChange} />
+        <CategoryFilter value={category} categories={searchMasters.categories} onChange={handleCategoryChange} />
       </div>
 
       {filtered.length > 0 && (
@@ -187,6 +190,9 @@ export function ExploreView({
           title="未体験を探す"
           items={searchableItems}
           value={filters}
+          masters={searchMasters}
+          mastersLoading={searchMastersLoading}
+          mastersError={searchMastersError}
           onClose={() => setSearchOpen(false)}
           onApply={(nextFilters) => {
             setFilters(nextFilters);

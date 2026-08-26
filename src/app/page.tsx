@@ -150,6 +150,9 @@ export default function Home() {
             }}
             onRequestMarkTried={setPendingId}
             onUndoTried={undoTried}
+            searchMasters={searchMasters.masters}
+            searchMastersLoading={searchMasters.loading}
+            searchMastersError={searchMasters.error}
           />
         )}
         {tab === "wishlist" && (

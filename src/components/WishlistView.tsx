@@ -77,15 +77,10 @@ export function WishlistView({
   const filtered = useMemo(
     () =>
       items.filter((experience) => {
-        const matchesCategory =
-          category === "all"
-            ? true
-            : category === "home"
-              ? experience.place.includes("自宅")
-              : experience.category === category;
-        return matchesCategory && matchesExperienceFilters(experience, filters);
+        const matchesCategory = category === "all" || experience.categoryCode === category;
+        return matchesCategory && matchesExperienceFilters(experience, filters, searchMasters);
       }),
-    [category, filters, items]
+    [category, filters, items, searchMasters]
   );
 
   function handleRequestMarkTried(id: string) {
@@ -137,7 +132,7 @@ export function WishlistView({
       </header>
 
       <div className="mb-3">
-        <CategoryFilter value={category} onChange={(value) => { setCategory(value); setOpenMenuId(null); }} />
+        <CategoryFilter value={category} categories={searchMasters.categories} onChange={(value) => { setCategory(value); setOpenMenuId(null); }} />
       </div>
 
       <div className="mb-2 flex min-h-10 items-center justify-between gap-3">
@@ -262,6 +257,9 @@ export function WishlistView({
           title="やってみたいを探す"
           items={items}
           value={filters}
+          masters={searchMasters}
+          mastersLoading={searchMastersLoading}
+          mastersError={searchMastersError}
           onClose={() => setSearchOpen(false)}
           onApply={(nextFilters) => {
             setFilters(nextFilters);
