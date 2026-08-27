@@ -23,6 +23,10 @@ interface CatalogRow {
   template_tags: {
     tag: { slug: string; name: string } | { slug: string; name: string }[] | null;
   }[];
+  template_items: {
+    title: string;
+    display_order: number;
+  }[];
 }
 
 function toCategory(slug: string): Category {
@@ -60,6 +64,9 @@ function toExperience(row: CatalogRow): Experience {
     if (!tag) return [];
     return [first(tag).slug];
   });
+  const exampleTargets = [...row.template_items]
+    .sort((a, b) => a.display_order - b.display_order)
+    .map(({ title }) => title);
 
   return {
     id: row.slug,
@@ -91,6 +98,7 @@ function toExperience(row: CatalogRow): Experience {
     solo: row.min_people === 1 || tagSlugs.includes("solo-ok"),
     minPeople: row.min_people ?? undefined,
     maxPeople: row.max_people ?? undefined,
+    exampleTargets: exampleTargets.length > 0 ? exampleTargets : undefined,
   };
 }
 
@@ -119,7 +127,8 @@ export function useExperienceCatalog() {
           budget:budget_options(id, code, label, min_yen, max_yen),
           min_people,
           max_people,
-          template_tags(tag:tags(slug, name))
+          template_tags(tag:tags(slug, name)),
+          template_items(title, display_order)
         `)
         .eq("publication_status", "published")
         .order("display_order", { ascending: true });
@@ -132,16 +141,7 @@ export function useExperienceCatalog() {
       }
 
       if (!data) return;
-      const remoteExperiences = (data as unknown as CatalogRow[]).map(toExperience);
-      const collectionTemplates = fallbackExperiences.filter(({ exampleTargets }) => exampleTargets);
-      const remoteIds = new Set(remoteExperiences.map(({ id }) => id));
-      setExperiences([
-        ...remoteExperiences.map((experience) => {
-          const collection = collectionTemplates.find((template) => template.id === experience.id);
-          return collection ? { ...experience, exampleTargets: collection.exampleTargets } : experience;
-        }),
-        ...collectionTemplates.filter(({ id }) => !remoteIds.has(id)),
-      ]);
+      setExperiences((data as unknown as CatalogRow[]).map(toExperience));
       setSource("supabase");
     }
 

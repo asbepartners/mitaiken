@@ -110,9 +110,11 @@ export function ExperienceCard({
               <h3 className="text-xl font-bold leading-snug sm:text-2xl">{experience.title}</h3>
               <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-6 sm:text-base">{experience.description}</p>
               {experience.exampleTargets && (
-                <p className="mt-2 rounded-xl bg-paper/90 px-3 py-2 text-xs font-bold text-green-950 [text-shadow:none]">
-                  たとえば：{experience.exampleTargets.join("・")}　＋自分で追加
-                </p>
+                <div className="mt-2 rounded-xl bg-paper/90 px-3 py-2 text-green-950 [text-shadow:none]">
+                  <p className="text-[11px] font-medium">このリストに最初から入っています</p>
+                  <p className="mt-0.5 text-xs font-bold">{experience.exampleTargets.join("・")}</p>
+                  <p className="mt-0.5 text-[11px] font-medium text-green-800">あとから自分で追加できます</p>
+                </div>
               )}
               <ExperienceConditions experience={experience} className="mt-2 text-xs font-medium" />
             </div>
