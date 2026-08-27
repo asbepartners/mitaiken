@@ -54,6 +54,20 @@ function formatTimelineTiming(timing: Timing): string {
   return year;
 }
 
+function TimelineMarker({ first, last }: { first: boolean; last: boolean }) {
+  return (
+    <span className="pointer-events-none absolute inset-y-0 right-0" aria-hidden="true">
+      {!first && (
+        <span className="absolute right-0 top-0 h-7 w-0.5 bg-coral-400/70" />
+      )}
+      {!last && (
+        <span className="absolute -bottom-2.5 right-0 top-7 w-0.5 bg-coral-400/70" />
+      )}
+      <span className="absolute -right-[3px] top-6 h-2 w-2 rounded-full border-2 border-paper bg-coral-500" />
+    </span>
+  );
+}
+
 
 function matchesHajimeteSearch(
   experience: Experience,
@@ -310,15 +324,9 @@ export function TriedView({
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
                   {formatTimelineTiming(first.timing)}
                 </p>
-                <span
-                  className={`absolute right-0 w-0.5 rounded-full bg-coral-400/70 ${
-                    index === 0 ? "top-4" : "top-0"
-                  } ${
-                    index === filteredFirstItems.length - 1
-                      ? "bottom-1/2"
-                      : "bottom-[-0.625rem]"
-                  }`}
-                  aria-hidden="true"
+                <TimelineMarker
+                  first={index === 0}
+                  last={index === filteredFirstItems.length - 1}
                 />
               </div>
 
@@ -368,15 +376,9 @@ export function TriedView({
                 <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
                   {formatTimelineTiming(record.timing)}
                 </p>
-                <span
-                  className={`absolute right-0 w-0.5 rounded-full bg-coral-400/70 ${
-                    index === 0 ? "top-4" : "top-0"
-                  } ${
-                    index === filteredRecordItems.length - 1
-                      ? "bottom-1/2"
-                      : "bottom-[-0.625rem]"
-                  }`}
-                  aria-hidden="true"
+                <TimelineMarker
+                  first={index === 0}
+                  last={index === filteredRecordItems.length - 1}
                 />
               </div>
 
