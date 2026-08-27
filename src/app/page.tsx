@@ -1,5 +1,6 @@
 "use client";
 
+import "@/lib/resetDevelopmentTestData";
 import { TouchEvent, useMemo, useRef, useState } from "react";
 import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
