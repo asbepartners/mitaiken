@@ -54,17 +54,33 @@ function formatTimelineTiming(timing: Timing): string {
   return year;
 }
 
-function TimelineMarker({ first, last }: { first: boolean; last: boolean }) {
+function TimelineDate({
+  timing,
+  first,
+  last,
+}: {
+  timing: Timing;
+  first: boolean;
+  last: boolean;
+}) {
   return (
-    <span className="pointer-events-none absolute inset-y-0 right-0" aria-hidden="true">
+    <div className="relative flex w-14 shrink-0 items-start justify-center pt-3 text-center">
       {!first && (
-        <span className="absolute right-0 top-0 h-7 w-0.5 bg-coral-400/70" />
+        <span
+          className="absolute left-1/2 top-0 h-7 w-0.5 -translate-x-1/2 bg-coral-400/70"
+          aria-hidden="true"
+        />
       )}
       {!last && (
-        <span className="absolute -bottom-2.5 right-0 top-7 w-0.5 bg-coral-400/70" />
+        <span
+          className="absolute -bottom-2.5 left-1/2 top-7 w-0.5 -translate-x-1/2 bg-coral-400/70"
+          aria-hidden="true"
+        />
       )}
-      <span className="absolute -right-[3px] top-6 h-2 w-2 rounded-full border-2 border-paper bg-coral-500" />
-    </span>
+      <p className="relative z-10 whitespace-pre-line rounded-md bg-ivory px-1.5 py-1 text-[11px] font-bold leading-tight text-green-950">
+        {formatTimelineTiming(timing)}
+      </p>
+    </div>
   );
 }
 
@@ -319,16 +335,12 @@ export function TriedView({
       ) : viewMode === "firsts" ? (
         <ul className="flex flex-col gap-2.5">
           {filteredFirstItems.map(({ experience, first, records }, index) => (
-            <li key={experience.id} className="flex gap-3">
-              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
-                <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
-                  {formatTimelineTiming(first.timing)}
-                </p>
-                <TimelineMarker
-                  first={index === 0}
-                  last={index === filteredFirstItems.length - 1}
-                />
-              </div>
+            <li key={experience.id} className="flex gap-2">
+              <TimelineDate
+                timing={first.timing}
+                first={index === 0}
+                last={index === filteredFirstItems.length - 1}
+              />
 
               <div className="relative flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
                 <button
@@ -371,16 +383,12 @@ export function TriedView({
       ) : (
         <ul className="flex flex-col gap-2.5">
           {filteredRecordItems.map(({ experience, record }, index) => (
-            <li key={record.id} className="flex gap-3">
-              <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
-                <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
-                  {formatTimelineTiming(record.timing)}
-                </p>
-                <TimelineMarker
-                  first={index === 0}
-                  last={index === filteredRecordItems.length - 1}
-                />
-              </div>
+            <li key={record.id} className="flex gap-2">
+              <TimelineDate
+                timing={record.timing}
+                first={index === 0}
+                last={index === filteredRecordItems.length - 1}
+              />
 
               <div className="flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
                 <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
