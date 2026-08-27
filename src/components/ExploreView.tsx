@@ -156,7 +156,7 @@ export function ExploreView({
                 type="button"
                 onClick={() => scrollToCard(currentIndex - 1)}
                 aria-label="前の未体験へ"
-                className="absolute left-1 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
+                className="absolute left-1 top-[38%] z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
               >
                 ‹
               </button>
@@ -166,7 +166,7 @@ export function ExploreView({
                 type="button"
                 onClick={() => scrollToCard(currentIndex + 1)}
                 aria-label="次の未体験へ"
-                className="absolute right-1 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
+                className="absolute right-1 top-[38%] z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-paper/95 pb-1 text-4xl font-light leading-none text-green-950 opacity-0 shadow-lg transition hover:scale-105 focus-visible:opacity-100 md:flex md:group-hover/carousel:opacity-100"
               >
                 ›
               </button>
