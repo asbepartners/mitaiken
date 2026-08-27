@@ -311,7 +311,7 @@ export function TriedView({
                   {formatTimelineTiming(first.timing)}
                 </p>
                 <span
-                  className={`absolute right-0 w-px bg-green-100 ${
+                  className={`absolute right-0 w-0.5 rounded-full bg-coral-400/70 ${
                     index === 0 ? "top-4" : "top-0"
                   } ${
                     index === filteredFirstItems.length - 1
@@ -369,7 +369,7 @@ export function TriedView({
                   {formatTimelineTiming(record.timing)}
                 </p>
                 <span
-                  className={`absolute right-0 w-px bg-green-100 ${
+                  className={`absolute right-0 w-0.5 rounded-full bg-coral-400/70 ${
                     index === 0 ? "top-4" : "top-0"
                   } ${
                     index === filteredRecordItems.length - 1
