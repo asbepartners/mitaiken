@@ -75,11 +75,25 @@ export function categoryFromCode(code: string): Category {
 }
 
 export const DEFAULT_EXPERIENCE_TARGETS: Record<string, string[]> = {
+  "unvisited-prefectures": ["北海道に行く", "沖縄県に行く"],
   "goshuin-collection": ["出雲大社", "伊勢神宮"],
-  "restaurant-collection": ["○○ダイニング", "○○鮨"],
+  "restaurant-collection": ["千疋屋フルーツパーラー", "帝国ホテルのレストラン"],
 };
 
 export const experiences: Experience[] = [
+  {
+    id: "unvisited-prefectures",
+    title: "まだ行ったことのない都道府県に行く",
+    description: "未訪問の都道府県を追加して、訪れた記録をひとつずつ残す。",
+    category: "outing",
+    place: "日本各地",
+    time: "2日以上",
+    timeMinutes: 1441,
+    cost: "1万円超",
+    costLevel: 3,
+    solo: true,
+    exampleTargets: DEFAULT_EXPERIENCE_TARGETS["unvisited-prefectures"],
+  },
   {
     id: "goshuin-collection",
     title: "御朱印を集める",
