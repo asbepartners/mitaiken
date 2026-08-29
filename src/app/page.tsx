@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import "@/lib/resetDevelopmentTestData";
 import { TouchEvent, useMemo, useRef, useState } from "react";
@@ -6,6 +6,7 @@ import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
 import { MyPageView } from "@/components/MyPageView";
+import { InitialTabSync } from "@/components/InitialTabSync";
 import { MemoryRecordDraft, MemoryRecordSheet } from "@/components/MemoryRecordSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
@@ -134,6 +135,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-full min-w-0 flex-1 flex-col overflow-x-hidden bg-ivory bg-paper-texture">
+      <InitialTabSync onChange={setTab} />
       <main
         className="mx-auto min-w-0 w-full max-w-2xl flex-1 pb-24"
         onTouchStart={handleTouchStart}
@@ -278,3 +280,4 @@ export default function Home() {
     </div>
   );
 }
+
