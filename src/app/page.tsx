@@ -275,6 +275,8 @@ export default function Home() {
           onClose={() => setAuthOpen(false)}
           onSendOtp={auth.sendOtp}
           onVerifyOtp={auth.verifyOtp}
+          onGetLegalAcceptanceStatus={auth.getLegalAcceptanceStatus}
+          onRecordLegalAcceptance={auth.recordCurrentLegalAcceptance}
         />
       )}
     </div>
