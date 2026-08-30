@@ -81,9 +81,8 @@ export function ExperienceRecordTimeline({
                 />
               </div>
               <div className="relative min-w-0 flex-1 px-3 py-2.5">
-                {onOpenTarget && target && <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-coral-500">詳細 ›</span>}
                 {isCollection && targetTitle && (
-                  <h3 className={`line-clamp-1 text-[15px] font-bold leading-snug text-green-950 ${onOpenTarget ? "pr-12" : ""}`}>
+                  <h3 className="line-clamp-1 text-[15px] font-bold leading-snug text-green-950">
                     {targetTitle}
                   </h3>
                 )}

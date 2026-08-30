@@ -362,7 +362,7 @@ export function TriedView({
                     </h2>
                     {(records.length > 1 || experience.exampleTargets) && (
                       <p className="mt-1 pr-16 text-[11px] leading-snug text-ink-soft">
-                        {records.length}{experience.exampleTargets ? "件" : "回"}の記録
+                        {records.length}件の記録
                       </p>
                     )}
                     {first.memo && (
