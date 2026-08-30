@@ -84,7 +84,7 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, hidd
             <p className="mt-1 break-all text-base font-bold text-green-950">{user.email}</p>
             <p className="mt-4 text-xs leading-5 text-ink-soft">ログアウトすると、この端末内の個人データを削除します。アカウントに保存された記録は削除されません。</p>
             {signOutError && <p className="mt-3 text-sm font-bold text-coral-500">{signOutError}</p>}
-            <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="mt-4 w-full rounded-full border border-green-200 px-5 py-2.5 text-sm font-bold text-green-800 disabled:opacity-50">{signingOut ? "ログアウトしています…" : "ログアウト"}</button>
+            <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="mt-4 w-full rounded-full border border-green-100 px-5 py-2.5 text-sm font-bold text-green-800 disabled:opacity-50">{signingOut ? "ログアウトしています…" : "ログアウト"}</button>
           </>
         ) : (
           <>
