@@ -40,7 +40,6 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
   const initialCategoryId = initialExperience?.categoryId
     ?? masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
     ?? masters.categories.find(({ code }) => code === initialCategoryCode)?.id
-    ?? masters.categories[0]?.id
     ?? "";
   const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [image, setImage] = useState<string | undefined>(initialExperience?.image);
@@ -62,7 +61,6 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
   const effectiveCategoryId = categoryId
     || masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
     || masters.categories.find(({ code }) => code === initialCategoryCode)?.id
-    || masters.categories[0]?.id
     || "";
   const duplicate = existingTitles.some((value) => value.trim().toLocaleLowerCase("ja") === title.trim().toLocaleLowerCase("ja"));
   const validTargets = targets.filter((target) => target.title.trim());
@@ -127,7 +125,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
             <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" onChange={(e) => setTitle(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
             {duplicate && <p className="-mt-3 text-sm font-bold text-coral-500">同じ名前の体験がすでにあります。</p>}
             <label className="block text-sm font-bold text-green-950">説明 <span className="font-normal text-ink-soft">（任意）</span><textarea value={description} maxLength={120} rows={3} placeholder="どんな体験にしたいか、ひとこと" onChange={(e) => setDescription(e.target.value)} className="mt-2 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
-            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60">{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60"><option value="">選択してください</option>{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
             {mastersLoading && <p className="-mt-3 text-sm text-ink-soft">選択肢を読み込んでいます…</p>}
             {mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">選択肢を読み込めませんでした。通信状態を確認して開き直してください。</p>}
           </div>
