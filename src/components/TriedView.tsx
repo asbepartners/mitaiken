@@ -9,7 +9,7 @@ import {
   HajimeteSearchScreen,
   HajimeteSearchValue,
 } from "./HajimeteSearchScreen";
-import { BookmarkIcon, CrownIcon } from "./RecordIcons";
+import { BookmarkIcon } from "./RecordIcons";
 import { CollectionDetailView } from "./CollectionDetailView";
 import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 import { imageSource } from "@/lib/imageSource";
@@ -357,8 +357,7 @@ export function TriedView({
                     />
                   </div>
                   <div className="relative min-w-0 flex-1 px-3 py-2.5">
-                    <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
-                    <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
+                    <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                       {experience.title}
                     </h2>
                     {(records.length > 1 || experience.exampleTargets) && (
@@ -367,7 +366,7 @@ export function TriedView({
                       </p>
                     )}
                     {first.memo && (
-                      <p className="mt-0.5 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                      <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-ink-soft">
                         {first.memo}
                       </p>
                     )}
@@ -403,19 +402,18 @@ export function TriedView({
                   />
                 </div>
                 <div className="relative min-w-0 flex-1 px-3 py-2.5">
-                  <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
-                  <h2 className="line-clamp-2 pr-7 text-[15px] font-bold leading-snug text-green-950">
+                  <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
                   </h2>
                   {(record.targetId || record.place || record.companion) && (
-                    <p className="mt-1 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                    <p className="mt-1 line-clamp-1 text-[11px] leading-snug text-ink-soft">
                       {[targetTitleFor(experience.id, record), record.place, record.companion ? `with ${record.companion}` : undefined]
                         .filter(Boolean)
                         .join(" ・ ")}
                     </p>
                   )}
                   {record.memo && (
-                    <p className="mt-0.5 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                    <p className="mt-0.5 line-clamp-1 text-[11px] leading-snug text-ink-soft">
                       {record.memo}
                     </p>
                   )}

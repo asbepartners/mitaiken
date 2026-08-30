@@ -5,7 +5,6 @@ import { experienceCategoryLabel } from "@/data/experiences";
 import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import type { Timing } from "@/lib/timing";
-import { CrownIcon } from "./RecordIcons";
 import { imageSource } from "@/lib/imageSource";
 
 interface Props {
@@ -81,22 +80,21 @@ export function ExperienceRecordTimeline({
                 />
               </div>
               <div className="relative min-w-0 flex-1 px-3 py-2.5">
-                <CrownIcon className="absolute right-2.5 top-2.5 h-6 w-6 text-[#d39a2c]" />
                 {isCollection && targetTitle && (
-                  <h3 className="line-clamp-1 pr-7 text-[15px] font-bold leading-snug text-green-950">
+                  <h3 className="line-clamp-1 text-[15px] font-bold leading-snug text-green-950">
                     {targetTitle}
                   </h3>
                 )}
                 {record.memo && (
-                  <p className={`${isCollection && targetTitle ? "mt-0.5 text-[11px]" : "pr-7 text-[15px] font-bold"} line-clamp-2 leading-snug text-green-950`}>
+                  <p className={`${isCollection && targetTitle ? "mt-0.5 text-[11px]" : "text-[15px] font-bold"} line-clamp-2 leading-snug text-green-950`}>
                     {record.memo}
                   </p>
                 )}
                 {!record.memo && !targetTitle && (
-                  <p className="pr-7 text-sm font-medium text-ink-soft">記録</p>
+                  <p className="text-sm font-medium text-ink-soft">記録</p>
                 )}
                 {metadata && (
-                  <p className="mt-1 line-clamp-1 pr-7 text-[11px] leading-snug text-ink-soft">
+                  <p className="mt-1 line-clamp-1 text-[11px] leading-snug text-ink-soft">
                     {metadata}
                   </p>
                 )}
