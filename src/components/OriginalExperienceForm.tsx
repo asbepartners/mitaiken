@@ -58,6 +58,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
   const [withTargets, setWithTargets] = useState(false);
   const [targets, setTargets] = useState<ExperienceTargetDraft[]>([emptyTarget()]);
   const [saving, setSaving] = useState(false);
+  const [showRequiredErrors, setShowRequiredErrors] = useState(false);
   const effectiveCategoryId = categoryId
     || masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
     || masters.categories.find(({ code }) => code === initialCategoryCode)?.id
@@ -108,6 +109,16 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
     setSaving(false);
   }
 
+  function handlePrimaryAction() {
+    setShowRequiredErrors(true);
+    if (!title.trim() || !effectiveCategoryId || duplicate || mastersLoading || mastersError) return;
+    if (withTargets && allowAddingTargets) {
+      setStep("targets");
+      return;
+    }
+    void save();
+  }
+
   return <div className="fixed inset-0 z-50 overflow-y-auto bg-ivory">
     <main className="mx-auto min-h-full w-full max-w-2xl px-5 pb-10 pt-5">
       <button type="button" onClick={step === "targets" ? () => setStep("experience") : onClose} className="flex min-h-12 items-center gap-2 text-sm font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-sm">←</span><span>{step === "targets" ? "体験の入力に戻る" : "やってみたいリストに戻る"}</span></button>
@@ -122,10 +133,12 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
             <label className="absolute bottom-3 right-3 cursor-pointer rounded-full bg-paper px-4 py-2 text-sm font-bold text-green-800 shadow"><input type="file" accept="image/*" className="sr-only" onChange={chooseImage} />{image ? "画像を変更" : "写真を選ぶ"}</label>
           </div>
           <div className="space-y-5 p-5">
-            <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" onChange={(e) => setTitle(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
+            <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" aria-invalid={showRequiredErrors && !title.trim()} onChange={(e) => setTitle(e.target.value)} className={`mt-2 w-full rounded-2xl border bg-ivory px-4 py-3 text-base font-normal ${showRequiredErrors && !title.trim() ? "border-coral-500" : "border-green-100"}`} /></label>
+            {showRequiredErrors && !title.trim() && <p className="-mt-3 text-sm font-bold text-coral-500">体験名を入力してください。</p>}
             {duplicate && <p className="-mt-3 text-sm font-bold text-coral-500">同じ名前の体験がすでにあります。</p>}
             <label className="block text-sm font-bold text-green-950">説明 <span className="font-normal text-ink-soft">（任意）</span><textarea value={description} maxLength={120} rows={3} placeholder="どんな体験にしたいか、ひとこと" onChange={(e) => setDescription(e.target.value)} className="mt-2 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
-            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60"><option value="">選択してください</option>{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} aria-invalid={showRequiredErrors && !effectiveCategoryId} className={`mt-2 w-full rounded-2xl border bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60 ${showRequiredErrors && !effectiveCategoryId ? "border-coral-500" : "border-green-100"}`}><option value="">選択してください</option>{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
+            {showRequiredErrors && !effectiveCategoryId && !mastersLoading && !mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">カテゴリを選択してください。</p>}
             {mastersLoading && <p className="-mt-3 text-sm text-ink-soft">選択肢を読み込んでいます…</p>}
             {mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">選択肢を読み込めませんでした。通信状態を確認して開き直してください。</p>}
           </div>
@@ -154,7 +167,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
             <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="accent-[#e87871]" /><strong className="text-green-950">はい</strong></label>
           </div>
         </fieldset>}
-        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || !effectiveCategoryId || duplicate || saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "行き先・項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
+        <button type="button" onClick={handlePrimaryAction} disabled={saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "行き先・項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
       </> : <>
         <p className="mt-3 text-sm leading-6 text-ink-soft">「{title}」で行きたい場所や、集めたい項目を追加しましょう。</p>
         <div className="mt-5 space-y-4">{targets.map((target, index) => <section key={index} className="rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
