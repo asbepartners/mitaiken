@@ -6,6 +6,7 @@ import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import type { Timing } from "@/lib/timing";
 import { imageSource } from "@/lib/imageSource";
+import { TimelineDate } from "./TimelineDate";
 
 interface Props {
   experience: Experience;
@@ -23,14 +24,6 @@ function timingSortKey(timing: Timing): string {
   if (timing.type === "year") return `${timing.value}-00-00`;
   if (timing.type === "month") return `${timing.value}-00`;
   return timing.value;
-}
-
-function formatTimelineTiming(timing: Timing): string {
-  if (!timing.value || timing.type === "unknown") return "もっと\n以前";
-  const [year, month, day] = timing.value.split("-");
-  if (timing.type === "date" && month && day) return `${year}\n${Number(month)}.${Number(day)}`;
-  if (timing.type === "month" && month) return `${year}\n${Number(month)}月`;
-  return year;
 }
 
 export function ExperienceRecordTimeline({
@@ -60,16 +53,8 @@ export function ExperienceRecordTimeline({
         ].filter(Boolean).join(" ・ ");
 
         return (
-          <li key={record.id} className="flex gap-3">
-            <div className="relative flex w-12 shrink-0 items-start justify-end pr-3 pt-4 text-right">
-              <p className="whitespace-pre-line text-[11px] font-bold leading-tight text-green-950">
-                {formatTimelineTiming(record.timing)}
-              </p>
-              <span
-                className={`absolute right-0 w-px bg-green-100 ${index === 0 ? "top-4" : "top-0"} ${index === sorted.length - 1 ? "bottom-1/2" : "bottom-[-0.625rem]"}`}
-                aria-hidden="true"
-              />
-            </div>
+          <li key={record.id} className="flex gap-2">
+            <TimelineDate timing={record.timing} first={index === 0} last={index === sorted.length - 1} />
 
             <div role={onOpenTarget && target ? "button" : undefined} tabIndex={onOpenTarget && target ? 0 : undefined} onClick={() => { if (target) onOpenTarget?.(target.id); }} onKeyDown={(event) => { if (target && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onOpenTarget?.(target.id); } }} className={`flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)] ${onOpenTarget && target ? "cursor-pointer" : ""}`}>
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
