@@ -15,6 +15,7 @@ interface Props {
   onDeleteRecord: (recordId: string) => void;
   openMenuId: string | null;
   onToggleMenu: (recordId: string) => void;
+  onOpenTarget?: (targetId: string) => void;
 }
 
 function timingSortKey(timing: Timing): string {
@@ -40,6 +41,7 @@ export function ExperienceRecordTimeline({
   onDeleteRecord,
   openMenuId,
   onToggleMenu,
+  onOpenTarget,
 }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const isCollection = Boolean(experience.exampleTargets);
@@ -50,9 +52,8 @@ export function ExperienceRecordTimeline({
   return (
     <ul className="flex flex-col gap-2.5">
       {sorted.map((record, index) => {
-        const targetTitle = record.targetId
-          ? targets.find((target) => target.id === record.targetId)?.title
-          : undefined;
+        const target = targets.find((candidate) => candidate.id === record.targetId || (!record.targetId && candidate.title === record.place));
+        const targetTitle = target?.title;
         const metadata = [
           record.place,
           record.companion ? `with ${record.companion}` : undefined,
@@ -70,7 +71,7 @@ export function ExperienceRecordTimeline({
               />
             </div>
 
-            <div className="flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
+            <div role={onOpenTarget && target ? "button" : undefined} tabIndex={onOpenTarget && target ? 0 : undefined} onClick={() => { if (target) onOpenTarget?.(target.id); }} onKeyDown={(event) => { if (target && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onOpenTarget?.(target.id); } }} className={`flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)] ${onOpenTarget && target ? "cursor-pointer" : ""}`}>
               <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -80,8 +81,9 @@ export function ExperienceRecordTimeline({
                 />
               </div>
               <div className="relative min-w-0 flex-1 px-3 py-2.5">
+                {onOpenTarget && target && <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-coral-500">詳細 ›</span>}
                 {isCollection && targetTitle && (
-                  <h3 className="line-clamp-1 text-[15px] font-bold leading-snug text-green-950">
+                  <h3 className={`line-clamp-1 text-[15px] font-bold leading-snug text-green-950 ${onOpenTarget ? "pr-12" : ""}`}>
                     {targetTitle}
                   </h3>
                 )}
@@ -103,17 +105,17 @@ export function ExperienceRecordTimeline({
                 </span>
 
                 <div className="absolute bottom-1.5 right-2 flex items-center gap-1.5">
-                  <button type="button" onClick={() => onEditRecord(record.id)} className="flex min-h-9 items-center rounded-full bg-green-100 px-3 text-sm font-bold text-green-800">
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onEditRecord(record.id); }} className="flex min-h-9 items-center rounded-full bg-green-100 px-3 text-sm font-bold text-green-800">
                     編集
                   </button>
-                  <button type="button" onClick={() => onToggleMenu(record.id)} aria-label="記録のその他の操作" aria-expanded={openMenuId === record.id} className="flex h-9 w-9 items-center justify-center rounded-full bg-ivory-deep text-lg font-bold leading-none text-ink-soft">
+                  <button type="button" onClick={(event) => { event.stopPropagation(); onToggleMenu(record.id); }} aria-label="記録のその他の操作" aria-expanded={openMenuId === record.id} className="flex h-9 w-9 items-center justify-center rounded-full bg-ivory-deep text-lg font-bold leading-none text-ink-soft">
                     …
                   </button>
                 </div>
 
                 {openMenuId === record.id && (
                   <div className="absolute bottom-11 right-2 z-10 overflow-hidden rounded-xl border border-green-100 bg-paper p-1 shadow-lg">
-                    <button type="button" onClick={() => onDeleteRecord(record.id)} className="min-h-10 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold text-coral-500 hover:bg-coral-100">
+                    <button type="button" onClick={(event) => { event.stopPropagation(); onDeleteRecord(record.id); }} className="min-h-10 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold text-coral-500 hover:bg-coral-100">
                       記録を削除
                     </button>
                   </div>

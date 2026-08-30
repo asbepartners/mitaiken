@@ -25,18 +25,14 @@ export function CollectionDetailView(props: Props) {
   const [draft, setDraft] = useState<ExperienceTargetDraft>({ title: "", memo: "", relatedUrl: "" });
   const [menuId, setMenuId] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const isCollection = Boolean(experience.exampleTargets);
   const recordByTarget = useMemo(() => new Map(targets.map((target) => [target.id, records.find((record) => record.targetId === target.id || (!record.targetId && record.place === target.title))])), [records, targets]);
-  const recordCountByTarget = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const record of records) {
-      const targetId = record.targetId ?? targets.find((target) => target.title === record.place)?.id;
-      if (targetId) counts.set(targetId, (counts.get(targetId) ?? 0) + 1);
-    }
-    return counts;
-  }, [records, targets]);
   const pending = targets.filter((target) => !recordByTarget.get(target.id));
-  const completedRecords = records;
+  const latestRecordsByTarget = targets.flatMap((target) => {
+    const targetRecords = records.filter((record) => record.targetId === target.id || (!record.targetId && record.place === target.title));
+    return targetRecords.length > 0 ? [targetRecords[targetRecords.length - 1]] : [];
+  });
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -46,6 +42,19 @@ export function CollectionDetailView(props: Props) {
   function save() { const ok = editing === "new" ? props.onAddTarget(draft) : editing ? props.onUpdateTarget(editing.id, draft) : false; if (ok) setEditing(null); }
   function mark(target: ExperienceTarget) { if (markingId) return; setMarkingId(target.id); window.setTimeout(() => { setMarkingId(null); props.onMarkTried(target); }, 340); }
   function markSingle() { if (markingId) return; setMarkingId(experience.id); window.setTimeout(() => { setMarkingId(null); props.onAddRecord?.(); }, 340); }
+
+  const selectedTarget = targets.find((target) => target.id === selectedTargetId);
+  if (isCollection && selectedTarget) {
+    const targetRecords = records.filter((record) => record.targetId === selectedTarget.id || (!record.targetId && record.place === selectedTarget.title));
+    const targetExperience: Experience = {
+      ...experience,
+      id: selectedTarget.id,
+      title: selectedTarget.title,
+      description: selectedTarget.memo || experience.description,
+      exampleTargets: undefined,
+    };
+    return <CollectionDetailView experience={targetExperience} targets={[]} records={targetRecords} onBack={() => setSelectedTargetId(null)} backLabel={`${experience.title}に戻る`} detailLabel="項目の詳細" onMarkTried={() => {}} onAddTarget={() => false} onUpdateTarget={() => false} onRemoveTarget={() => {}} onEditRecord={props.onEditRecord} onDeleteRecord={props.onDeleteRecord} onAddRecord={() => props.onMarkTried(selectedTarget)} />;
+  }
 
   return <div className="px-4 pb-6">
     <div className="sticky top-0 z-20 -mx-4 border-b border-green-100 bg-ivory/95 px-4 py-2 backdrop-blur"><button type="button" onClick={props.onBack} className="flex min-h-12 items-center gap-2 rounded-full pr-4 text-base font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-coral-300 bg-coral-100 text-2xl text-coral-500 shadow-sm">←</span><span>{props.backLabel}</span></button></div>
@@ -72,17 +81,17 @@ export function CollectionDetailView(props: Props) {
         </div>
         <div className="mt-4 flex gap-2 text-xs font-bold">
           {isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}
-          <span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {completedRecords.length}件</span>
+          <span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {records.length}件</span>
         </div>
         {isCollection && <button type="button" onClick={() => openForm("new")} className="mt-4 min-h-11 w-full rounded-full border border-coral-300 bg-paper px-3 text-sm font-bold text-coral-500">＋ 項目を追加</button>}
       </div>
     </header>
 
-    {isCollection && <section className="mt-5"><h2 className="px-1 text-lg font-bold text-green-950">項目</h2>
-      {targets.length ? <ul className="mt-3 space-y-2.5">{targets.map((target) => { const count = recordCountByTarget.get(target.id) ?? 0; return <li key={target.id} className="relative flex min-h-28 items-center gap-3 rounded-2xl border border-green-100 bg-paper py-2 pl-4 pr-2 shadow-sm"><button type="button" onClick={() => openForm(target)} className="min-w-0 flex-1 text-left"><p className="font-bold text-green-950">{target.title}</p><p className="mt-1 text-xs font-medium text-ink-soft">{count > 0 ? `記録 ${count}件` : "まだ記録なし"}</p>{target.memo && <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink-soft">{target.memo}</p>}</button><div className="flex w-[5.5rem] shrink-0 flex-col items-center"><button type="button" onClick={() => mark(target)} disabled={markingId !== null} className="text-coral-500"><span className={markingId === target.id ? "heart-pop" : ""}><BookmarkIcon filled={markingId === target.id} className="h-8 w-8" /></span><span className="block text-[9px] font-bold">{count > 0 ? "記録を追加" : "やってみた！"}</span></button><div className="mt-1 flex gap-1"><button type="button" onClick={() => openForm(target)} className="min-h-8 whitespace-nowrap rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button><button type="button" onClick={() => setMenuId(menuId === target.id ? null : target.id)} className="h-8 w-8 shrink-0 rounded-full bg-ivory-deep font-bold">…</button></div></div>{menuId === target.id && <div className="absolute bottom-2 right-12 z-10 rounded-xl border border-green-100 bg-paper p-1 shadow-lg"><button type="button" onClick={() => props.onRemoveTarget(target.id)} className="whitespace-nowrap px-3 py-2 text-xs font-bold text-coral-500">リストから外す</button></div>}</li>; })}</ul> : <p className="mt-3 rounded-2xl border border-dashed border-green-100 bg-paper px-4 py-5 text-center text-sm leading-6 text-ink-soft">項目がまだありません。<br />「項目を追加」から登録できます。</p>}
+    {isCollection && <section className="mt-5"><h2 className="px-1 text-lg font-bold text-green-950">これから</h2>
+      {pending.length ? <ul className="mt-3 space-y-2.5">{pending.map((target) => <li key={target.id} className="relative flex min-h-28 items-center gap-3 rounded-2xl border border-green-100 bg-paper py-2 pl-4 pr-2 shadow-sm"><button type="button" onClick={() => openForm(target)} className="min-w-0 flex-1 text-left"><p className="font-bold text-green-950">{target.title}</p>{target.memo && <p className="mt-1 line-clamp-2 text-xs leading-5 text-ink-soft">{target.memo}</p>}</button><div className="flex w-[5.5rem] shrink-0 flex-col items-center"><button type="button" onClick={() => mark(target)} disabled={markingId !== null} className="text-coral-500"><span className={markingId === target.id ? "heart-pop" : ""}><BookmarkIcon filled={markingId === target.id} className="h-8 w-8" /></span><span className="block text-[9px] font-bold">やってみた！</span></button><div className="mt-1 flex gap-1"><button type="button" onClick={() => openForm(target)} className="min-h-8 whitespace-nowrap rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button><button type="button" onClick={() => setMenuId(menuId === target.id ? null : target.id)} className="h-8 w-8 shrink-0 rounded-full bg-ivory-deep font-bold">…</button></div></div>{menuId === target.id && <div className="absolute bottom-2 right-12 z-10 rounded-xl border border-green-100 bg-paper p-1 shadow-lg"><button type="button" onClick={() => props.onRemoveTarget(target.id)} className="whitespace-nowrap px-3 py-2 text-xs font-bold text-coral-500">リストから外す</button></div>}</li>)}</ul> : <p className="mt-3 rounded-2xl border border-dashed border-green-100 bg-paper px-4 py-5 text-center text-sm leading-6 text-ink-soft">すべての項目に記録があります。</p>}
     </section>}
 
-    {completedRecords.length > 0 && <section className="mt-7 border-t border-green-100 pt-6"><h2 className="px-1 text-lg font-bold text-green-950">やってみた記録</h2><div className="mt-3"><ExperienceRecordTimeline experience={experience} records={completedRecords} targets={targets} onEditRecord={props.onEditRecord} onDeleteRecord={(recordId) => { props.onDeleteRecord(recordId); setMenuId(null); }} openMenuId={menuId} onToggleMenu={(recordId) => setMenuId(menuId === recordId ? null : recordId)} /></div></section>}
+    {latestRecordsByTarget.length > 0 && <section className="mt-7 border-t border-green-100 pt-6"><h2 className="px-1 text-lg font-bold text-green-950">やってみた記録</h2><div className="mt-3"><ExperienceRecordTimeline experience={experience} records={latestRecordsByTarget} targets={targets} onOpenTarget={setSelectedTargetId} onEditRecord={props.onEditRecord} onDeleteRecord={(recordId) => { props.onDeleteRecord(recordId); setMenuId(null); }} openMenuId={menuId} onToggleMenu={(recordId) => setMenuId(menuId === recordId ? null : recordId)} /></div></section>}
 
     {editing && <div className="fixed inset-0 z-40 flex items-end justify-center overflow-x-hidden bg-green-950/35 px-3" onClick={() => setEditing(null)}><section className="min-w-0 w-full max-w-2xl rounded-t-[2rem] bg-paper px-5 pb-7 pt-5" onClick={(event) => event.stopPropagation()}><h2 className="text-lg font-bold text-green-950">{editing === "new" ? "項目を追加" : "項目を編集"}</h2><label className="mt-5 block text-sm font-bold">行き先・項目 <span className="text-coral-500">＊</span><input value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} className="mt-2 min-w-0 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label><label className="mt-4 block text-sm font-bold">気になった理由・覚えておきたいこと <span className="font-normal text-ink-soft">（任意）</span><textarea value={draft.memo ?? ""} maxLength={100} rows={3} onChange={(event) => setDraft({ ...draft, memo: event.target.value })} className="mt-2 min-w-0 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label><label className="mt-4 block text-sm font-bold">関連URL <span className="font-normal text-ink-soft">（任意）</span><input type="url" value={draft.relatedUrl ?? ""} onChange={(event) => setDraft({ ...draft, relatedUrl: event.target.value })} className="mt-2 min-w-0 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>{editing !== "new" && draft.relatedUrl && <a href={draft.relatedUrl} target="_blank" rel="noreferrer" className="mt-3 inline-block max-w-full truncate text-sm font-bold text-green-800 underline">関連リンクを見る ↗</a>}<div className="mt-6 flex gap-3"><button type="button" onClick={() => setEditing(null)} className="min-h-12 flex-1 rounded-full border border-green-100">キャンセル</button><button type="button" onClick={save} disabled={!draft.title.trim()} className="min-h-12 flex-1 rounded-full bg-coral-500 font-bold text-paper disabled:opacity-40">保存</button></div></section></div>}
   </div>;
