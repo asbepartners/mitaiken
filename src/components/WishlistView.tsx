@@ -272,7 +272,7 @@ export function WishlistView({
           }}
         />
       )}
-      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
+      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} initialCategoryCode={category === "all" ? undefined : category} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
       {editingOriginalId && (() => {
         const experience = items.find((item) => item.id === editingOriginalId);
         if (!experience) return null;

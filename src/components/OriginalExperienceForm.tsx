@@ -9,6 +9,7 @@ import type { SearchMasters } from "@/hooks/useSearchMasters";
 interface Props {
   existingTitles: string[];
   initialExperience?: CustomExperienceDraft;
+  initialCategoryCode?: string;
   masters: SearchMasters;
   mastersLoading: boolean;
   mastersError: boolean;
@@ -30,7 +31,7 @@ async function resizeImage(file: File) {
   return canvas.toDataURL("image/jpeg", 0.78);
 }
 
-export function OriginalExperienceForm({ existingTitles, initialExperience, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
+export function OriginalExperienceForm({ existingTitles, initialExperience, initialCategoryCode, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const editing = Boolean(initialExperience);
   const [step, setStep] = useState<"experience" | "targets">("experience");
@@ -38,6 +39,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
   const [description, setDescription] = useState(initialExperience?.description ?? "");
   const initialCategoryId = initialExperience?.categoryId
     ?? masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
+    ?? masters.categories.find(({ code }) => code === initialCategoryCode)?.id
     ?? masters.categories[0]?.id
     ?? "";
   const [categoryId, setCategoryId] = useState(initialCategoryId);
@@ -59,6 +61,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
   const [saving, setSaving] = useState(false);
   const effectiveCategoryId = categoryId
     || masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
+    || masters.categories.find(({ code }) => code === initialCategoryCode)?.id
     || masters.categories[0]?.id
     || "";
   const duplicate = existingTitles.some((value) => value.trim().toLocaleLowerCase("ja") === title.trim().toLocaleLowerCase("ja"));
@@ -111,7 +114,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
     <main className="mx-auto min-h-full w-full max-w-2xl px-5 pb-10 pt-5">
       <button type="button" onClick={step === "targets" ? () => setStep("experience") : onClose} className="flex min-h-12 items-center gap-2 text-sm font-bold text-green-800"><span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-full border border-green-100 bg-paper text-2xl shadow-sm">←</span><span>{step === "targets" ? "体験の入力に戻る" : "やってみたいリストに戻る"}</span></button>
       <p className="mt-3 text-xs font-bold tracking-widest text-coral-500">オリジナル</p>
-      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? (editing ? (allowAddingTargets ? "体験を編集" : "リストを編集") : "体験を作る") : "場所や項目を追加"}</h1>
+      <h1 className="mt-1 text-2xl font-bold text-green-950">{step === "experience" ? (editing ? (allowAddingTargets ? "体験を編集" : "リストを編集") : "体験を作る") : "行き先・項目を追加"}</h1>
 
       {step === "experience" ? <>
         <div className="mt-6 overflow-hidden rounded-3xl border border-green-100 bg-paper shadow-sm">
@@ -146,11 +149,14 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, mast
             </fieldset>
           </div>
         </details>
-        {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、場所や項目を<br />追加しますか？</legend>
-          <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加しない</strong><small className="mt-1 block text-ink-soft">ひとつの体験として登録します</small></span></label>
-          <label className={`mt-3 flex cursor-pointer gap-3 rounded-2xl border p-4 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="mt-1 accent-[#e87871]" /><span><strong className="block text-green-950">追加する</strong><small className="mt-1 block text-ink-soft">場所やお店などを分けて登録します</small></span></label>
+        {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、複数の行き先や項目がありますか？</legend>
+          <p className="mt-1 text-sm leading-6 text-ink-soft">例：「行きたい国に旅行する」の中に、ノルウェーやスペインを登録する</p>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="accent-[#e87871]" /><strong className="text-green-950">いいえ</strong></label>
+            <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="accent-[#e87871]" /><strong className="text-green-950">はい</strong></label>
+          </div>
         </fieldset>}
-        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || !effectiveCategoryId || duplicate || saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "場所や項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
+        <button type="button" onClick={withTargets && allowAddingTargets ? () => setStep("targets") : save} disabled={!title.trim() || !effectiveCategoryId || duplicate || saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "行き先・項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
       </> : <>
         <p className="mt-3 text-sm leading-6 text-ink-soft">「{title}」で行きたい場所や、集めたい項目を追加しましょう。</p>
         <div className="mt-5 space-y-4">{targets.map((target, index) => <section key={index} className="rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
