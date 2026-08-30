@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Experience } from "@/data/experiences";
 
@@ -53,6 +54,20 @@ function MenuLink({ href, children, external = false }: { href: string; children
 }
 
 export function MyPageView({ user, loading, configured, onLogin, onSignOut, hiddenItems, onRestoreHidden }: MyPageViewProps) {
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+
+  async function handleSignOut() {
+    if (signingOut) return;
+    setSigningOut(true);
+    setSignOutError(null);
+    const result = await onSignOut();
+    if (result.error) {
+      setSignOutError(result.error);
+      setSigningOut(false);
+    }
+  }
+
   return (
     <div className="px-5 pb-8 pt-8">
       <header>
@@ -67,7 +82,9 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, hidd
           <>
             <p className="mt-3 text-xs font-medium text-green-700">ログイン中</p>
             <p className="mt-1 break-all text-base font-bold text-green-950">{user.email}</p>
-            <button type="button" onClick={() => void onSignOut()} className="mt-5 rounded-full border border-green-100 px-5 py-2.5 text-sm font-medium text-ink-soft">ログアウト</button>
+            <p className="mt-4 text-xs leading-5 text-ink-soft">ログアウトすると、この端末内の個人データを削除します。アカウントに保存された記録は削除されません。</p>
+            {signOutError && <p className="mt-3 text-sm font-bold text-coral-500">{signOutError}</p>}
+            <button type="button" disabled={signingOut} onClick={() => void handleSignOut()} className="mt-4 w-full rounded-full border border-green-200 px-5 py-2.5 text-sm font-bold text-green-800 disabled:opacity-50">{signingOut ? "ログアウトしています…" : "ログアウト"}</button>
           </>
         ) : (
           <>

@@ -26,6 +26,7 @@ interface WishlistViewProps {
   triedCount: number;
   markingId: string | null;
   onExplore: () => void;
+  onRequireAuth: (action: () => void) => void;
   onRequestMarkTried: (id: string) => void;
   onRemove: (id: string) => void;
   targetsMap: TargetsMap;
@@ -48,6 +49,7 @@ export function WishlistView({
   triedCount,
   markingId,
   onExplore,
+  onRequireAuth,
   onRequestMarkTried,
   onRemove,
   targetsMap,
@@ -137,7 +139,7 @@ export function WishlistView({
       </div>
 
       <div className="mb-2 flex min-h-10 items-center justify-between gap-3">
-        <button type="button" onClick={() => setCreatingOriginal(true)} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルのはじめてを追加</button>
+        <button type="button" onClick={() => onRequireAuth(() => setCreatingOriginal(true))} className="rounded-full border border-coral-300 bg-paper px-3 py-2 text-xs font-bold text-coral-500 shadow-sm">＋ オリジナルのはじめてを追加</button>
         {items.length > 0 && <p className="text-right text-xs font-medium text-ink-soft">{category === "all" && activeFilterCount === 0 ? `${items.length}件のやってみたい` : `${filtered.length}件を表示`}</p>}
       </div>
 

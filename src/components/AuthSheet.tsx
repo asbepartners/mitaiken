@@ -7,13 +7,14 @@ type AuthMode = "signup" | "login";
 
 interface AuthSheetProps {
   onClose: () => void;
+  onAuthenticated: () => void;
   onSendOtp: (email: string, mode: AuthMode) => Promise<{ error: string | null }>;
   onVerifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
   onGetLegalAcceptanceStatus: () => Promise<{ requiresAcceptance: boolean; reason: string | null; error: string | null }>;
   onRecordLegalAcceptance: () => Promise<{ error: string | null }>;
 }
 
-export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanceStatus, onRecordLegalAcceptance }: AuthSheetProps) {
+export function AuthSheet({ onClose, onAuthenticated, onSendOtp, onVerifyOtp, onGetLegalAcceptanceStatus, onRecordLegalAcceptance }: AuthSheetProps) {
   const [step, setStep] = useState<"choice" | "email" | "code" | "consent">("choice");
   const [mode, setMode] = useState<AuthMode | null>(null);
   const [email, setEmail] = useState("");
@@ -82,6 +83,7 @@ export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanc
         return;
       }
       setBusy(false);
+      onAuthenticated();
       onClose();
       return;
     }
@@ -100,6 +102,7 @@ export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanc
     }
 
     setBusy(false);
+    onAuthenticated();
     onClose();
   }
 
@@ -128,13 +131,14 @@ export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanc
       setError(result.error);
       return;
     }
+    onAuthenticated();
     onClose();
   }
 
   const isSignup = mode === "signup";
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
       <button type="button" aria-label="閉じる" onClick={onClose} className="absolute inset-0 bg-ink/30" />
       <div className="relative w-full max-w-sm animate-[slide-up_0.2s_ease-out] rounded-t-3xl bg-paper px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl sm:pb-6">
         <button
@@ -174,7 +178,7 @@ export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanc
         ) : step === "choice" ? (
           <div className="mt-5 flex flex-col gap-3">
             <p className="text-sm leading-6 text-ink-soft">
-              はじめて帖を使うには、メールアドレスで登録またはログインしてください。
+              記録を大切に保存するため、メールアドレスで登録またはログインしてください。
             </p>
             <button type="button" onClick={() => chooseMode("signup")} className="cursor-pointer rounded-full bg-green-800 py-3 text-sm font-bold text-paper transition hover:bg-green-900">
               新しく登録する
@@ -303,6 +307,11 @@ export function AuthSheet({ onClose, onSendOtp, onVerifyOtp, onGetLegalAcceptanc
               メールアドレスを変更
             </button>
           </form>
+        )}
+        {!legalView && (
+          <p className="mt-5 rounded-2xl bg-ivory px-4 py-3 text-xs leading-5 text-ink-soft">
+            共用端末では、利用後に必ずログアウトしてください。
+          </p>
         )}
         <style jsx>{`
           .legal-scroll {
