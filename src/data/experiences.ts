@@ -3,7 +3,9 @@ export type Category =
   | "outing"
   | "food"
   | "experience"
-  | "hobby";
+  | "hobby"
+  | "lifestyle"
+  | "for-others";
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   home: "家でできる",
@@ -11,6 +13,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   food: "食べる",
   experience: "体験",
   hobby: "趣味・学ぶ",
+  lifestyle: "暮らし",
+  "for-others": "誰かのために",
 };
 
 export const CATEGORY_ORDER: Category[] = [
@@ -18,6 +22,8 @@ export const CATEGORY_ORDER: Category[] = [
   "outing",
   "food",
   "hobby",
+  "lifestyle",
+  "for-others",
 ];
 
 export type CostLevel = 0 | 1 | 2 | 3;
@@ -70,7 +76,8 @@ export function categoryFromCode(code: string): Category {
   if (code === "food") return "food";
   if (code === "outing") return "outing";
   if (code === "hobby" || code === "hobby-learning" || code === "learning") return "hobby";
-  if (code === "lifestyle") return "home";
+  if (code === "lifestyle") return "lifestyle";
+  if (code === "for-others") return "for-others";
   return "experience";
 }
 

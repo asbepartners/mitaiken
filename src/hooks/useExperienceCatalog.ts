@@ -40,7 +40,9 @@ function toCategory(slug: string): Category {
     case "learning":
       return "hobby";
     case "lifestyle":
-      return "home";
+      return "lifestyle";
+    case "for-others":
+      return "for-others";
     default:
       return "experience";
   }
