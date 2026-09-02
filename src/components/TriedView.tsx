@@ -18,6 +18,7 @@ import { TimelineDate } from "./TimelineDate";
 import type { CategoryOption, SearchMasters } from "@/hooks/useSearchMasters";
 import { OriginalExperienceForm } from "./OriginalExperienceForm";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
+import { PhotoLightbox } from "./PhotoLightbox";
 
 export interface TriedExperience {
   experience: Experience;
@@ -99,6 +100,7 @@ export function TriedView({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<{ src: string; alt: string } | null>(null);
   const [searchValue, setSearchValue] = useState<HajimeteSearchValue>({
     query: "",
     categoryCodes: [],
@@ -353,20 +355,16 @@ export function TriedView({
               />
 
               <div className="relative flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
-                <button
-                  type="button"
-                  onClick={() => openExperience(experience.id)}
-                  className="flex min-w-0 flex-1 text-left"
-                >
-                  <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+                <div className="flex min-w-0 flex-1">
+                  <button type="button" onClick={() => setPreviewPhoto({ src: first.photoUrl ?? imageSource(experience.image, assetBase), alt: `${experience.title}の写真` })} aria-label={`${experience.title}の写真を拡大`} className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl cursor-zoom-in">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={first.photoUrl ?? imageSource(experience.image, assetBase)}
                       alt=""
                       className="h-full w-full object-cover"
                     />
-                  </div>
-                  <div className="relative min-w-0 flex-1 px-3 py-2.5">
+                  </button>
+                  <button type="button" onClick={() => openExperience(experience.id)} className="relative min-w-0 flex-1 px-3 py-2.5 text-left">
                     <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                       {experience.title}
                     </h2>
@@ -383,8 +381,8 @@ export function TriedView({
                     <span className="mt-1 inline-block rounded-md bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-green-800">
                       {experienceCategoryLabel(experience)}
                     </span>
-                  </div>
-                </button>
+                  </button>
+                </div>
               </div>
             </li>
           ))}
@@ -400,7 +398,7 @@ export function TriedView({
               />
 
               <div className="flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)]">
-                <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+                <button type="button" onClick={() => setPreviewPhoto({ src: record.photoUrl ?? imageSource(experience.image, assetBase), alt: `${experience.title}の記録写真` })} aria-label={`${experience.title}の写真を拡大`} className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl cursor-zoom-in">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={
@@ -410,7 +408,7 @@ export function TriedView({
                     alt=""
                     className="h-full w-full object-cover"
                   />
-                </div>
+                </button>
                 <div className="relative min-w-0 flex-1 px-3 py-2.5">
                   <h2 className="line-clamp-2 text-[15px] font-bold leading-snug text-green-950">
                     {experience.title}
@@ -499,6 +497,7 @@ export function TriedView({
           }}
         />
       )}
+      {previewPhoto && <PhotoLightbox src={previewPhoto.src} alt={previewPhoto.alt} onClose={() => setPreviewPhoto(null)} />}
     </div>
   );
 }

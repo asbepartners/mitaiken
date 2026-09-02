@@ -17,6 +17,7 @@ interface Props {
   openMenuId: string | null;
   onToggleMenu: (recordId: string) => void;
   onOpenTarget?: (targetId: string) => void;
+  onPreviewPhoto?: (src: string, alt: string) => void;
 }
 
 function timingSortKey(timing: Timing): string {
@@ -35,6 +36,7 @@ export function ExperienceRecordTimeline({
   openMenuId,
   onToggleMenu,
   onOpenTarget,
+  onPreviewPhoto,
 }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const isCollection = Boolean(experience.exampleTargets);
@@ -45,6 +47,7 @@ export function ExperienceRecordTimeline({
   return (
     <ul className="flex flex-col gap-2.5">
       {sorted.map((record, index) => {
+        const photoSrc = record.photoUrl ?? imageSource(experience.image, assetBase);
         const target = targets.find((candidate) => candidate.id === record.targetId || (!record.targetId && candidate.title === record.place));
         const targetTitle = target?.title;
         const metadata = [
@@ -57,14 +60,14 @@ export function ExperienceRecordTimeline({
             <TimelineDate timing={record.timing} first={index === 0} last={index === sorted.length - 1} />
 
             <div role={onOpenTarget && target ? "button" : undefined} tabIndex={onOpenTarget && target ? 0 : undefined} onClick={() => { if (target) onOpenTarget?.(target.id); }} onKeyDown={(event) => { if (target && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); onOpenTarget?.(target.id); } }} className={`flex h-32 min-w-0 flex-1 overflow-hidden rounded-2xl border border-green-100 bg-paper shadow-[0_2px_10px_rgba(44,38,32,0.07)] ${onOpenTarget && target ? "cursor-pointer" : ""}`}>
-              <div className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl">
+              <button type="button" onClick={(event) => { event.stopPropagation(); onPreviewPhoto?.(photoSrc, `${experience.title}の記録写真`); }} onKeyDown={(event) => event.stopPropagation()} aria-label={`${experience.title}の写真を拡大`} className="w-28 shrink-0 self-stretch overflow-hidden rounded-2xl cursor-zoom-in">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={record.photoUrl ?? imageSource(experience.image, assetBase)}
+                  src={photoSrc}
                   alt=""
                   className="h-full w-full object-cover"
                 />
-              </div>
+              </button>
               <div className="relative min-w-0 flex-1 px-3 py-2.5">
                 {isCollection && targetTitle && (
                   <h3 className="line-clamp-1 text-[15px] font-bold leading-snug text-green-950">
