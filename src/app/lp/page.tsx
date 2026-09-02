@@ -10,26 +10,69 @@ const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
 
 const steps = [
   {
-    number: "01",
+    icon: "telescope",
     title: "見つける",
-    body: "まだ知らないことの中から、ちょっと気になる「やってみたい」に出会う。",
+    body: "まだ知らない「はじめて」に出会う",
   },
   {
-    number: "02",
+    icon: "heart",
+    title: "気になる",
+    body: "心が少し動いたものを選ぶ",
+  },
+  {
+    icon: "bookmark",
+    title: "貯めておく",
+    body: "いつかの楽しみとして残す",
+  },
+  {
+    icon: "flag",
     title: "やってみる",
-    body: "今日でなくても大丈夫。自分のペースで、いつかの楽しみにしておく。",
+    body: "自分のペースで体験する",
   },
   {
-    number: "03",
-    title: "残しておく",
-    body: "写真や短い言葉で、そのときのことを、わたしの記録として残す。",
-  },
-  {
-    number: "04",
+    icon: "book",
     title: "振り返る",
-    body: "積み重なった「はじめて」を眺めて、自分の人生をもう一度味わう。",
+    body: "わたしの人生として眺める",
   },
 ];
+
+function JourneyIcon({ name }: { name: string }) {
+  if (name === "telescope") {
+    return (
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="m8 29 11-12 19-8 4 7-20 8-14 5Z" />
+        <path d="m20 24-4 16m9-18 7 18M36 10l-2-5 5-2 2 5" />
+      </svg>
+    );
+  }
+  if (name === "heart") {
+    return (
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M40 12c-4-5-12-5-16 0-4-5-12-5-16 0-4 5-3 11 1 15l15 14 15-14c4-4 5-10 1-15Z" />
+      </svg>
+    );
+  }
+  if (name === "bookmark") {
+    return (
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M13 6h22v36L24 34l-11 8V6Z" />
+      </svg>
+    );
+  }
+  if (name === "flag") {
+    return (
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M13 43V7m1 2c9-6 13 6 23 0v20c-10 6-14-6-23 0" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M5 10c7-2 13 0 19 5v27c-6-5-12-7-19-5V10Zm38 0c-7-2-13 0-19 5v27c6-5 12-7 19-5V10Z" />
+      <path d="m37 4 1.2 3.2L42 8.5l-3.8 1.3L37 13l-1.2-3.2L32 8.5l3.8-1.3L37 4Z" />
+    </svg>
+  );
+}
 
 export default function LandingPage() {
   return (
@@ -136,29 +179,54 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-green-900 px-6 py-24 text-paper sm:px-10 sm:py-32">
-          <div className="mx-auto max-w-5xl">
+        <section className="bg-paper px-6 py-24 sm:px-10 sm:py-32">
+          <div className="mx-auto max-w-6xl rounded-[2rem] border border-green-800/10 bg-ivory px-6 py-12 shadow-[0_18px_60px_rgba(45,74,60,0.06)] sm:px-10 sm:py-16">
             <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm tracking-[0.2em] text-[#e7bd68]">これまでと、これからを一冊に</p>
-              <h2 className="mt-5 text-3xl font-semibold leading-[1.55] tracking-[0.05em] sm:text-5xl">
+              <p className="text-sm tracking-[0.2em] text-[#b67c18]">わたしのはじめて帖の楽しみ方</p>
+              <h2 className="mt-5 text-3xl font-semibold leading-[1.55] tracking-[0.05em] text-green-950 sm:text-5xl">
                 「やってみたい」が、
                 <br />
                 いつか人生の記録になる。
               </h2>
             </div>
 
-            <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((step) => (
+            <div className="mx-auto mt-14 grid max-w-5xl gap-6 sm:grid-cols-5 sm:gap-3 lg:gap-6">
+              {steps.map((step, index) => (
                 <article
-                  key={step.number}
-                  className="rounded-[1.6rem] border border-paper/10 bg-paper/[0.06] p-6 backdrop-blur-sm"
+                  key={step.title}
+                  className="relative grid grid-cols-[4.5rem_1fr] items-center gap-4 text-left sm:block sm:text-center"
                 >
-                  <p className="text-xs tracking-[0.18em] text-[#e7bd68]">{step.number}</p>
-                  <h3 className="mt-4 text-xl font-semibold tracking-[0.08em]">{step.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-paper/75">{step.body}</p>
+                  <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border border-[#dfc99e] bg-paper shadow-sm sm:mx-auto sm:h-24 sm:w-24">
+                    <span className={`h-9 w-9 [&_svg]:h-full [&_svg]:w-full [&_svg]:fill-none [&_svg]:stroke-current [&_svg]:stroke-[1.8] [&_svg]:stroke-linecap-round [&_svg]:stroke-linejoin-round sm:h-11 sm:w-11 ${
+                      step.icon === "heart" || step.icon === "bookmark"
+                        ? "text-coral-500"
+                        : step.icon === "book"
+                          ? "text-[#c58d27]"
+                          : "text-green-700"
+                    }`}>
+                      <JourneyIcon name={step.icon} />
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold tracking-[0.06em] text-green-900 sm:mt-5">{step.title}</h3>
+                    <p className="mt-1.5 text-sm leading-6 text-ink-soft/75 sm:mt-3 sm:leading-7">{step.body}</p>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute -bottom-5 left-[1.9rem] text-lg text-[#c9aa72] sm:-right-4 sm:top-8 sm:bottom-auto sm:left-auto lg:-right-5"
+                    >
+                      <span className="sm:hidden">↓</span>
+                      <span className="hidden sm:inline">→</span>
+                    </span>
+                  )}
                 </article>
               ))}
             </div>
+
+            <p className="mx-auto mt-14 max-w-2xl rounded-2xl border border-green-800/10 bg-green-100/45 px-6 py-5 text-center text-sm leading-7 text-green-800 sm:text-base">
+              毎日使わなくても大丈夫。気になったときにひらいて、自分のペースで「はじめて」を増やしていこう。
+            </p>
           </div>
         </section>
 
