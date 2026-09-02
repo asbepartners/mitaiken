@@ -114,7 +114,7 @@ export function ExploreView({
               <h1 className="text-[1.7rem] font-bold tracking-wide text-green-950">わたしのはじめて帖</h1>
               <span aria-hidden="true" className="-mt-4 text-sm text-[#d39a2c]">✦</span>
             </div>
-            <p className="mt-1 text-sm font-medium leading-snug text-green-950/80">
+            <p className="ml-auto mt-1 w-fit text-left text-sm font-medium leading-snug text-green-950/80">
               <span className="block">まだ知らない</span>
               <span className="block">「やってみたい」を見つけよう。</span>
             </p>
