@@ -144,13 +144,13 @@ export default function LandingPage() {
             <p className="mx-auto mt-7 max-w-2xl text-base leading-8 text-green-800/85 sm:text-lg sm:leading-9">
               やってみたいことを見つけて、やってみたことを残す。
               <br className="hidden sm:block" />
-              いつか振り返るための、わたしだけの小さな帖です。
+              いつか振り返るための、わたしだけの小さな記録です。
             </p>
             <a
               href="#story"
               className="mt-8 inline-flex items-center gap-3 rounded-full bg-coral-500 px-7 py-4 text-sm font-semibold tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(232,111,114,0.22)] transition hover:-translate-y-0.5 hover:bg-coral-400"
             >
-              この帖に込めた想い
+              このアプリに込めた想い
               <span aria-hidden="true">↓</span>
             </a>
           </div>
@@ -166,11 +166,13 @@ export default function LandingPage() {
 
         <section id="story" className="bg-paper px-6 py-24 sm:px-10 sm:py-32">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm tracking-[0.2em] text-[#b67c18]">この帖をつくった理由</p>
+            <p className="text-sm tracking-[0.2em] text-[#b67c18]">このアプリをつくった理由</p>
             <h2 className="mt-5 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
               わたしの人生は、
               <br />
-              思っていたより、ちゃんと楽しい。
+              思っていたより、
+              <br className="sm:hidden" />
+              ちゃんと楽しい。
             </h2>
             <div className="mx-auto mt-10 max-w-2xl space-y-7 text-left text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
               <p>
