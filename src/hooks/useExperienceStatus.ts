@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
@@ -214,9 +214,13 @@ async function ensurePrimaryItem(userExperienceId: string, title: string) {
 }
 
 export function useExperienceStatus() {
+  const configured = Boolean(getSupabaseClient());
   const [userId, setUserId] = useState<string | undefined>();
+  const userIdRef = useRef<string | undefined>(undefined);
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
   const [relatedUrlMap, setRelatedUrlMap] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(configured);
+  const [error, setError] = useState(false);
   const statusMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const writeRecordsMap = useCallback((next: RecordsMap) => {
@@ -252,31 +256,50 @@ export function useExperienceStatus() {
   useEffect(() => {
     const supabase = getSupabaseClient();
     if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id));
+    void supabase.auth.getSession().then(({ data }) => {
+      const nextUserId = data.session?.user.id;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      if (!nextUserId) setLoading(false);
+    });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user.id);
+      const nextUserId = session?.user.id;
+      const userChanged = userIdRef.current !== nextUserId;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      setError(false);
+      if (!nextUserId) setLoading(false);
+      else if (userChanged) setLoading(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
 
   const reload = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) return false;
     const supabase = getSupabaseClient();
-    if (!supabase) return;
+    if (!supabase) return false;
 
-    const { data: rows } = await supabase
+    const { data: rows, error: rowsError } = await supabase
       .from("user_experiences")
       .select("id, source_template_slug, client_key, wishlisted_at, related_url")
       .eq("user_id", userId);
+    if (rowsError) {
+      console.error("Failed to load user experiences:", rowsError);
+      return false;
+    }
 
     const ids = (rows ?? []).map((row) => row.id);
-    const { data: logs } = ids.length
+    const { data: logs, error: logsError } = ids.length
       ? await supabase
           .from("experience_logs")
           .select("id, user_experience_id, user_experience_item_id, experienced_year, experienced_month, experienced_day, place, companion, memo, photo_path, created_at")
           .in("user_experience_id", ids)
           .order("created_at", { ascending: true })
-      : { data: [] };
+      : { data: [], error: null };
+    if (logsError) {
+      console.error("Failed to load experience logs:", logsError);
+      return false;
+    }
 
     const byId = new Map((rows ?? []).map((row) => [row.id, row]));
     const nextStatus: StatusMap = {};
@@ -320,6 +343,7 @@ export function useExperienceStatus() {
     writeRecordsMap(nextRecords);
     setRelatedUrlMap(nextRelatedUrls);
     writeStatusMap(nextStatus);
+    return true;
   }, [userId, writeRecordsMap]);
 
   useEffect(() => {
@@ -327,8 +351,10 @@ export function useExperienceStatus() {
     const local = readStorage();
     const marker = `${MIGRATION_KEY_PREFIX}${userId}`;
 
+    let active = true;
     void (async () => {
-      if (window.localStorage.getItem(marker) !== "1") {
+      try {
+        if (window.localStorage.getItem(marker) !== "1") {
         for (const [slug, entry] of Object.entries(local)) {
           const id = await ensureUserExperience(userId, slug);
           const supabase = getSupabaseClient();
@@ -357,8 +383,16 @@ export function useExperienceStatus() {
         }
         window.localStorage.setItem(marker, "1");
       }
-      await reload();
+        const loaded = await reload();
+        if (active) setError(!loaded);
+      } catch (loadError) {
+        console.error("Failed to prepare user experience data:", loadError);
+        if (active) setError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
+    return () => { active = false; };
   }, [userId, reload]);
 
   const toggleWishlist = useCallback((slug: string) => {
@@ -570,6 +604,8 @@ export function useExperienceStatus() {
     statusMap,
     recordsMap,
     relatedUrlMap,
+    loading,
+    error,
     toggleWishlist,
     markTried,
     updateRecord,

@@ -19,6 +19,7 @@ import { useCustomExperiences } from "@/hooks/useCustomExperiences";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import { useSearchMasters } from "@/hooks/useSearchMasters";
 import { clearLocalUserData } from "@/lib/localUserData";
+import { InitialAppScreen } from "@/components/InitialAppScreen";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -31,14 +32,16 @@ export default function Home() {
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const pendingAuthAction = useRef<(() => void) | null>(null);
-  const { experiences: catalogExperiences } = useExperienceCatalog();
-  const { customExperiences, createExperience, updateExperience } = useCustomExperiences();
+  const { experiences: catalogExperiences, loading: catalogLoading } = useExperienceCatalog();
+  const { customExperiences, loading: customExperiencesLoading, error: customExperiencesError, createExperience, updateExperience } = useCustomExperiences();
   const searchMasters = useSearchMasters();
   const auth = useAuth();
   const {
     statusMap,
     recordsMap,
     relatedUrlMap,
+    loading: experienceStatusLoading,
+    error: experienceStatusError,
     toggleWishlist,
     markTried,
     updateRecord,
@@ -47,7 +50,7 @@ export default function Home() {
     removeStatus,
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
-  const { targetsMap, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
+  const { targetsMap, loading: targetsLoading, error: targetsError, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
   const hasAuthenticatedUser = Boolean(auth.user);
   const categoryLabels = useMemo(
     () => new Map(searchMasters.masters.categories.map(({ code, label }) => [code, label])),
@@ -177,6 +180,16 @@ export default function Home() {
     setPendingId(null);
     setPendingTarget(null);
   }
+
+  const initialLoading = auth.loading || catalogLoading || searchMasters.loading || (
+    hasAuthenticatedUser && (experienceStatusLoading || customExperiencesLoading || targetsLoading)
+  );
+  const initialError = searchMasters.error || (
+    hasAuthenticatedUser && (experienceStatusError || customExperiencesError || targetsError)
+  );
+
+  if (initialLoading) return <InitialAppScreen state="loading" />;
+  if (initialError) return <InitialAppScreen state="error" />;
 
   return (
     <div className="flex min-h-full min-w-0 flex-1 flex-col overflow-x-hidden bg-ivory bg-paper-texture">

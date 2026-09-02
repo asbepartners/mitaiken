@@ -86,8 +86,10 @@ function toExperience(row: CatalogRow): Experience {
 }
 
 export function useExperienceCatalog() {
+  const configured = Boolean(getSupabaseClient());
   const [experiences, setExperiences] = useState<Experience[]>(fallbackExperiences);
   const [source, setSource] = useState<"fallback" | "supabase">("fallback");
+  const [loading, setLoading] = useState(configured);
 
   useEffect(() => {
     const supabase = getSupabaseClient();
@@ -120,12 +122,17 @@ export function useExperienceCatalog() {
 
       if (error) {
         console.error("Failed to load templates from Supabase:", error);
+        setLoading(false);
         return;
       }
 
-      if (!data) return;
+      if (!data) {
+        setLoading(false);
+        return;
+      }
       setExperiences((data as unknown as CatalogRow[]).map(toExperience));
       setSource("supabase");
+      setLoading(false);
     }
 
     void loadCatalog();
@@ -134,5 +141,5 @@ export function useExperienceCatalog() {
     };
   }, []);
 
-  return { experiences, source };
+  return { experiences, source, loading };
 }

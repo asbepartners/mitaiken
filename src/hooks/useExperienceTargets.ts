@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEFAULT_EXPERIENCE_TARGETS } from "@/data/experiences";
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -62,16 +62,33 @@ export async function ensureStoredTargetInDatabase(userId: string, parentId: str
 }
 
 export function useExperienceTargets() {
+  const configured = Boolean(getSupabaseClient());
   const [targetsMap, setTargetsMap] = useState<TargetsMap>({});
   const [userId, setUserId] = useState<string>();
+  const userIdRef = useRef<string | undefined>(undefined);
+  const [loading, setLoading] = useState(configured);
+  const [error, setError] = useState(false);
   function write(next: TargetsMap) { setTargetsMap(next); window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
 
   useEffect(() => { const frame = window.requestAnimationFrame(() => setTargetsMap(readStoredTargets())); return () => window.cancelAnimationFrame(frame); }, []);
   useEffect(() => {
     const supabase = getSupabaseClient();
     if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id));
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUserId(session?.user.id));
+    void supabase.auth.getSession().then(({ data }) => {
+      const nextUserId = data.session?.user.id;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      setError(false);
+      if (!nextUserId) setLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id;
+      const userChanged = userIdRef.current !== nextUserId;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      if (!nextUserId) setLoading(false);
+      else if (userChanged) setLoading(true);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -81,6 +98,7 @@ export function useExperienceTargets() {
     if (!supabase) return;
     let active = true;
     void (async () => {
+      try {
       const storedLocal = readStoredTargets();
       const local: TargetsMap = {};
       for (const [parentId, targets] of Object.entries(storedLocal)) {
@@ -132,6 +150,12 @@ export function useExperienceTargets() {
         remote[slug] = [...(remote[slug] ?? []), { id: row.id, title: row.title, memo: row.memo ?? undefined, relatedUrl: row.related_url ?? undefined, sourceTemplateItemId: row.source_template_item_id ?? undefined }];
       }
       write({ ...local, ...remote });
+      } catch (loadError) {
+        console.error("Failed to prepare experience items:", loadError);
+        if (active) setError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => { active = false; };
   }, [userId]);
@@ -180,5 +204,5 @@ export function useExperienceTargets() {
     const current = readStoredTargets(); const removedIds = (current[parentId] ?? []).map((target) => target.id); const next = { ...current }; delete next[parentId]; write(next);
     const supabase = getSupabaseClient(); if (userId && supabase && removedIds.length) void supabase.from("user_experience_items").delete().in("id", removedIds);
   }
-  return { targetsMap, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets };
+  return { targetsMap, loading, error, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets };
 }

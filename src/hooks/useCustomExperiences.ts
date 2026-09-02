@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { categoryFromCode, type Category, type CostLevel, type Experience } from "@/data/experiences";
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -83,8 +83,12 @@ function dbCategory(slug?: string): Category {
 }
 
 export function useCustomExperiences() {
+  const configured = Boolean(getSupabaseClient());
   const [items, setItems] = useState<Experience[]>([]);
   const [userId, setUserId] = useState<string>();
+  const userIdRef = useRef<string | undefined>(undefined);
+  const [loading, setLoading] = useState(configured);
+  const [error, setError] = useState(false);
 
   const write = useCallback((next: Experience[]) => {
     setItems(next);
@@ -99,8 +103,21 @@ export function useCustomExperiences() {
   useEffect(() => {
     const supabase = getSupabaseClient();
     if (!supabase) return;
-    void supabase.auth.getSession().then(({ data }) => setUserId(data.session?.user.id));
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => setUserId(session?.user.id));
+    void supabase.auth.getSession().then(({ data }) => {
+      const nextUserId = data.session?.user.id;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      if (!nextUserId) setLoading(false);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      const nextUserId = session?.user.id;
+      const userChanged = userIdRef.current !== nextUserId;
+      userIdRef.current = nextUserId;
+      setUserId(nextUserId);
+      setError(false);
+      if (!nextUserId) setLoading(false);
+      else if (userChanged) setLoading(true);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -110,6 +127,7 @@ export function useCustomExperiences() {
     if (!supabase) return;
     let active = true;
     void (async () => {
+      try {
       for (const item of readStored()) {
         const categoryCode = item.categoryCode ?? categorySlug(item.category);
         const { data: category } = item.categoryId
@@ -130,7 +148,7 @@ export function useCustomExperiences() {
           wishlisted_at: new Date().toISOString(),
         }, { onConflict: "user_id,client_key" });
       }
-      const { data } = await supabase.from("user_experiences").select(`
+      const { data, error: loadError } = await supabase.from("user_experiences").select(`
         client_key,
         title,
         description,
@@ -142,6 +160,11 @@ export function useCustomExperiences() {
         duration:duration_options(id, code, label, min_minutes, max_minutes),
         budget:budget_options(id, code, label, min_yen, max_yen)
       `).eq("user_id", userId).not("client_key", "is", null);
+      if (loadError) {
+        console.error("Failed to load original experiences:", loadError);
+        if (active) setError(true);
+        return;
+      }
       if (!active || !data) return;
       const remote = data.map((row) => {
         const category = Array.isArray(row.category) ? row.category[0] : row.category;
@@ -174,6 +197,12 @@ export function useCustomExperiences() {
         });
       });
       write(remote);
+      } catch (loadError) {
+        console.error("Failed to prepare original experiences:", loadError);
+        if (active) setError(true);
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
     return () => { active = false; };
   }, [userId, write]);
@@ -237,5 +266,5 @@ export function useCustomExperiences() {
     return true;
   }, [userId, write]);
 
-  return { customExperiences: items, createExperience, updateExperience };
+  return { customExperiences: items, loading, error, createExperience, updateExperience };
 }
