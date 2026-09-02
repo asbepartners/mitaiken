@@ -100,7 +100,7 @@ export function ExploreView({
       <header className="relative -mx-4 -mt-6 mb-4 h-36 overflow-hidden border-b border-green-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore-v4.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 px-5 py-4">
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 px-5 py-2">
           <button type="button" onClick={() => setSearchOpen(true)} aria-label="体験を詳しく検索" className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-paper/95 text-green-900 shadow-md">
             <SearchIcon />
             {countExperienceFilters(filters) > 0 && (
@@ -111,10 +111,10 @@ export function ExploreView({
           </button>
           <div className="min-w-0 text-right [text-shadow:0_1px_0_rgba(255,253,247,0.95)]">
             <div className="flex items-center justify-end gap-1.5">
-              <h1 className="text-[1.7rem] font-bold tracking-wide text-green-950">わたしのはじめて帖</h1>
+              <h1 className="text-[1.7rem] font-bold leading-tight tracking-wide text-green-950">わたしのはじめて帖</h1>
               <span aria-hidden="true" className="-mt-4 text-sm text-[#d39a2c]">✦</span>
             </div>
-            <p className="mt-1 text-sm font-medium text-green-950/80">まだ知らない「やってみたい」を見つけよう。</p>
+            <p className="mt-0.5 text-sm font-medium text-green-950/80">まだ知らない「やってみたい」を見つけよう。</p>
           </div>
         </div>
       </header>
