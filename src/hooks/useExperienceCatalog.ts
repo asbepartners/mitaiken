@@ -29,25 +29,6 @@ interface CatalogRow {
   }[];
 }
 
-function toCategory(slug: string): Category {
-  switch (slug) {
-    case "food":
-      return "food";
-    case "outing":
-      return "outing";
-    case "hobby-learning":
-    case "hobby":
-    case "learning":
-      return "hobby";
-    case "lifestyle":
-      return "lifestyle";
-    case "for-others":
-      return "for-others";
-    default:
-      return "experience";
-  }
-}
-
 function first<T>(value: T | T[]): T {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -75,7 +56,7 @@ function toExperience(row: CatalogRow): Experience {
     image: row.image_path ?? undefined,
     title: row.title,
     description: row.description,
-    category: toCategory(category.slug),
+    category: category.slug as Category,
     categoryId: category.id,
     categoryCode: category.slug,
     categoryLabel: category.name,

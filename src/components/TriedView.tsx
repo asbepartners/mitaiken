@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { experienceCategoryLabel, Experience } from "@/data/experiences";
+import { experienceCategoryCode, experienceCategoryLabel, Experience } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
 import { Timing } from "@/lib/timing";
 import { SearchIcon } from "./ExperienceSearchScreen";
@@ -15,6 +15,7 @@ import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hook
 import { imageSource } from "@/lib/imageSource";
 import { HajimeteYearFilter } from "./HajimeteYearFilter";
 import { TimelineDate } from "./TimelineDate";
+import type { CategoryOption } from "@/hooks/useSearchMasters";
 
 export interface TriedExperience {
   experience: Experience;
@@ -23,6 +24,7 @@ export interface TriedExperience {
 
 interface TriedViewProps {
   items: TriedExperience[];
+  categories: CategoryOption[];
   wishlistCount: number;
   onExplore: () => void;
   onOpenWishlist: () => void;
@@ -60,13 +62,14 @@ function matchesHajimeteSearch(
 
   return (
     (!query || searchable.includes(query)) &&
-    (searchValue.categories.length === 0 ||
-      searchValue.categories.includes(experience.category))
+    (searchValue.categoryCodes.length === 0 ||
+      searchValue.categoryCodes.includes(experienceCategoryCode(experience)))
   );
 }
 
 export function TriedView({
   items,
+  categories,
   wishlistCount,
   onExplore,
   onOpenWishlist,
@@ -87,7 +90,7 @@ export function TriedView({
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState<HajimeteSearchValue>({
     query: "",
-    categories: [],
+    categoryCodes: [],
     view: "firsts",
     year: "all",
   });
@@ -157,8 +160,8 @@ export function TriedView({
               .toLocaleLowerCase("ja");
           return (
             (!query || searchable.includes(query)) &&
-            (searchValue.categories.length === 0 ||
-              searchValue.categories.includes(experience.category)) &&
+            (searchValue.categoryCodes.length === 0 ||
+              searchValue.categoryCodes.includes(experienceCategoryCode(experience))) &&
             (!selectedExperienceId || experience.id === selectedExperienceId) &&
             (selectedExperienceId || selectedYear === "all" || year === selectedYear)
           );
@@ -218,11 +221,11 @@ export function TriedView({
         >
           <SearchIcon />
           {(Boolean(searchValue.query.trim()) ||
-            searchValue.categories.length > 0 ||
+            searchValue.categoryCodes.length > 0 ||
             searchValue.year !== "all") && (
             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-coral-500 px-1 text-center text-[10px] font-bold text-paper">
               {Number(Boolean(searchValue.query.trim())) +
-                searchValue.categories.length +
+                searchValue.categoryCodes.length +
                 Number(searchValue.year !== "all")}
             </span>
           )}
@@ -429,6 +432,7 @@ export function TriedView({
       {searchOpen && (
         <HajimeteSearchScreen
           items={items}
+          categories={categories}
           value={{ ...searchValue, view: viewMode, year: selectedYear }}
           onClose={() => setSearchOpen(false)}
           onClear={(nextValue) => {

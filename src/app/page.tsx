@@ -49,12 +49,19 @@ export default function Home() {
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
   const { targetsMap, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
   const hasAuthenticatedUser = Boolean(auth.user);
+  const categoryLabels = useMemo(
+    () => new Map(searchMasters.masters.categories.map(({ code, label }) => [code, label])),
+    [searchMasters.masters.categories]
+  );
   const experiences = useMemo(() => [
     ...catalogExperiences,
     ...(hasAuthenticatedUser
       ? customExperiences.map((experience) => (targetsMap[experience.id]?.length ? { ...experience, exampleTargets: [] } : experience))
       : []),
-  ], [catalogExperiences, customExperiences, hasAuthenticatedUser, targetsMap]);
+  ].map((experience) => ({
+    ...experience,
+    categoryLabel: categoryLabels.get(experience.categoryCode ?? experience.category) ?? experience.categoryLabel,
+  })), [catalogExperiences, categoryLabels, customExperiences, hasAuthenticatedUser, targetsMap]);
 
   const wishlistItems = useMemo(
     () => hasAuthenticatedUser ? experiences.filter((experience) => {
@@ -241,6 +248,7 @@ export default function Home() {
         {tab === "tried" && (
           <TriedView
             items={triedItems}
+            categories={searchMasters.masters.categories}
             wishlistCount={wishlistItems.length}
             onExplore={() => setTab("explore")}
             onOpenWishlist={() => setTab("wishlist")}

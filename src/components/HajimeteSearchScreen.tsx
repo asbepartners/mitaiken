@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORY_LABELS, Category, Experience, experienceCategoryLabel } from "@/data/experiences";
+import { Experience, experienceCategoryCode, experienceCategoryLabel } from "@/data/experiences";
 import { TriedRecord } from "@/hooks/useExperienceStatus";
+import type { CategoryOption } from "@/hooks/useSearchMasters";
 import { SearchIcon } from "./ExperienceSearchScreen";
 import { HajimeteYearFilter } from "./HajimeteYearFilter";
 
@@ -10,7 +11,7 @@ export type HajimeteSearchView = "firsts" | "records";
 
 export interface HajimeteSearchValue {
   query: string;
-  categories: Category[];
+  categoryCodes: string[];
   view: HajimeteSearchView;
   year: string;
 }
@@ -22,13 +23,12 @@ interface HajimeteSearchItem {
 
 interface HajimeteSearchScreenProps {
   items: HajimeteSearchItem[];
+  categories: CategoryOption[];
   value: HajimeteSearchValue;
   onApply: (value: HajimeteSearchValue) => void;
   onClear: (value: HajimeteSearchValue) => void;
   onClose: () => void;
 }
-
-const categories = Object.entries(CATEGORY_LABELS) as [Category, string][];
 
 function timingSortKey(record: TriedRecord): string {
   const timing = record.timing;
@@ -42,7 +42,7 @@ function matchesTextAndCategory(
   experience: Experience,
   records: TriedRecord[],
   query: string,
-  selectedCategories: Category[]
+  selectedCategoryCodes: string[]
 ): boolean {
   const normalizedQuery = query.trim().toLocaleLowerCase("ja");
   const recordText = records
@@ -54,7 +54,7 @@ function matchesTextAndCategory(
 
   return (
     (!normalizedQuery || searchable.includes(normalizedQuery)) &&
-    (selectedCategories.length === 0 || selectedCategories.includes(experience.category))
+    (selectedCategoryCodes.length === 0 || selectedCategoryCodes.includes(experienceCategoryCode(experience)))
   );
 }
 
@@ -64,6 +64,7 @@ function firstRecord(records: TriedRecord[]): TriedRecord | undefined {
 
 export function HajimeteSearchScreen({
   items,
+  categories,
   value,
   onApply,
   onClear,
@@ -92,7 +93,7 @@ export function HajimeteSearchScreen({
   const resultCount = useMemo(() => {
     if (draft.view === "firsts") {
       return items.filter(({ experience, records }) => {
-        if (!matchesTextAndCategory(experience, records, draft.query, draft.categories)) return false;
+        if (!matchesTextAndCategory(experience, records, draft.query, draft.categoryCodes)) return false;
         const first = firstRecord(records);
         if (!first) return false;
         const year = first.timing.value?.slice(0, 4);
@@ -102,8 +103,8 @@ export function HajimeteSearchScreen({
 
     return items.reduce((count, { experience, records }) => {
       if (
-        draft.categories.length > 0 &&
-        !draft.categories.includes(experience.category)
+        draft.categoryCodes.length > 0 &&
+        !draft.categoryCodes.includes(experienceCategoryCode(experience))
       ) {
         return count;
       }
@@ -131,19 +132,19 @@ export function HajimeteSearchScreen({
     setDraft((current) => ({ ...current, view, year: "all" }));
   }
 
-  function toggleCategory(category: Category) {
+  function toggleCategory(categoryCode: string) {
     setDraft((current) => ({
       ...current,
-      categories: current.categories.includes(category)
-        ? current.categories.filter((item) => item !== category)
-        : [...current.categories, category],
+      categoryCodes: current.categoryCodes.includes(categoryCode)
+        ? current.categoryCodes.filter((item) => item !== categoryCode)
+        : [...current.categoryCodes, categoryCode],
     }));
   }
 
   function reset() {
     const cleared: HajimeteSearchValue = {
       query: "",
-      categories: [],
+      categoryCodes: [],
       view: draft.view,
       year: "all",
     };
@@ -152,7 +153,7 @@ export function HajimeteSearchScreen({
   }
 
   const hasConditions =
-    Boolean(draft.query.trim()) || draft.categories.length > 0 || draft.year !== "all";
+    Boolean(draft.query.trim()) || draft.categoryCodes.length > 0 || draft.year !== "all";
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-ivory bg-paper-texture">
@@ -243,13 +244,13 @@ export function HajimeteSearchScreen({
             </button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {categories.map(([category, label]) => {
-              const active = draft.categories.includes(category);
+            {categories.map(({ code, label }) => {
+              const active = draft.categoryCodes.includes(code);
               return (
                 <button
-                  key={category}
+                  key={code}
                   type="button"
-                  onClick={() => toggleCategory(category)}
+                  onClick={() => toggleCategory(code)}
                   className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
                     active
                       ? "border-coral-400 bg-coral-400 text-paper shadow-sm"

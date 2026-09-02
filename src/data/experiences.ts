@@ -1,30 +1,6 @@
-export type Category =
-  | "home"
-  | "outing"
-  | "food"
-  | "experience"
-  | "hobby"
-  | "lifestyle"
-  | "for-others";
-
-export const CATEGORY_LABELS: Record<Category, string> = {
-  home: "家でできる",
-  outing: "おでかけ",
-  food: "食べる",
-  experience: "体験",
-  hobby: "趣味・学ぶ",
-  lifestyle: "暮らし",
-  "for-others": "誰かのために",
-};
-
-export const CATEGORY_ORDER: Category[] = [
-  "home",
-  "outing",
-  "food",
-  "hobby",
-  "lifestyle",
-  "for-others",
-];
+// Category slugs are stable identifiers supplied by the database. Keeping this
+// open-ended lets an active category be added without a frontend deployment.
+export type Category = string;
 
 export type CostLevel = 0 | 1 | 2 | 3;
 
@@ -69,16 +45,15 @@ export interface Experience {
 }
 
 export function experienceCategoryLabel(experience: Experience) {
-  return experience.categoryLabel ?? CATEGORY_LABELS[experience.category];
+  return experience.categoryLabel ?? experience.categoryCode ?? experience.category;
 }
 
 export function categoryFromCode(code: string): Category {
-  if (code === "food") return "food";
-  if (code === "outing") return "outing";
-  if (code === "hobby" || code === "hobby-learning" || code === "learning") return "hobby";
-  if (code === "lifestyle") return "lifestyle";
-  if (code === "for-others") return "for-others";
-  return "experience";
+  return code;
+}
+
+export function experienceCategoryCode(experience: Experience) {
+  return experience.categoryCode ?? experience.category;
 }
 
 export const DEFAULT_EXPERIENCE_TARGETS: Record<string, string[]> = {
