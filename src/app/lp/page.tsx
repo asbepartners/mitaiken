@@ -239,13 +239,17 @@ export default function LandingPage() {
               </h2>
             </div>
 
-            <div className="mx-auto mt-14 grid max-w-5xl gap-6 sm:grid-cols-5 sm:gap-3 lg:gap-6">
-              {steps.map((step, index) => (
+            <div className="relative mx-auto mt-14 grid max-w-5xl gap-6 sm:grid-cols-5 sm:gap-3 lg:gap-6">
+              <div
+                aria-hidden="true"
+                className="absolute top-9 bottom-9 left-9 w-px bg-coral-400/70 sm:top-12 sm:right-[10%] sm:bottom-auto sm:left-[10%] sm:h-px sm:w-auto"
+              />
+              {steps.map((step) => (
                 <article
                   key={step.title}
-                  className="relative grid grid-cols-[4.5rem_1fr] items-center gap-4 text-left sm:block sm:text-center"
+                  className="relative z-[1] grid grid-cols-[4.5rem_1fr] items-center gap-4 text-left sm:block sm:text-center"
                 >
-                  <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border border-[#dfc99e] bg-paper shadow-sm sm:mx-auto sm:h-24 sm:w-24">
+                  <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full border border-coral-400/70 bg-paper shadow-sm sm:mx-auto sm:h-24 sm:w-24">
                     <span className="h-11 w-11 [&_svg]:h-full [&_svg]:w-full [&_svg]:stroke-green-800 [&_svg]:stroke-[1.7] [&_svg]:stroke-linecap-round [&_svg]:stroke-linejoin-round sm:h-14 sm:w-14">
                       <JourneyIcon name={step.icon} />
                     </span>
@@ -254,20 +258,11 @@ export default function LandingPage() {
                     <h3 className="text-lg font-semibold tracking-[0.06em] text-green-900 sm:mt-5">{step.title}</h3>
                     <p className="mt-1.5 text-sm leading-6 text-ink-soft/75 sm:mt-3 sm:leading-7">{step.body}</p>
                   </div>
-                  {index < steps.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute -bottom-5 left-[1.9rem] text-lg text-[#c9aa72] sm:-right-4 sm:top-8 sm:bottom-auto sm:left-auto lg:-right-5"
-                    >
-                      <span className="sm:hidden">↓</span>
-                      <span className="hidden sm:inline">→</span>
-                    </span>
-                  )}
                 </article>
               ))}
             </div>
 
-            <p className="mx-auto mt-14 max-w-2xl rounded-2xl border border-green-800/10 bg-green-100/45 px-6 py-5 text-center text-sm leading-7 text-green-800 sm:text-base">
+            <p className="mx-auto mt-14 max-w-2xl rounded-2xl border border-green-800/10 bg-green-100/45 px-6 py-5 text-left text-sm leading-7 text-green-800 sm:text-base">
               毎日使わなくても大丈夫。気になったときにひらいて、自分のペースで「はじめて」を増やしていこう。
             </p>
           </div>
