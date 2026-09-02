@@ -193,23 +193,29 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute right-[10%] top-40 text-sm text-[#d99a25]/60">✦</div>
           <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
             <div>
-              <p className="text-sm tracking-[0.2em] text-[#b67c18]">主語はいつも、わたし。</p>
+              <p className="text-sm tracking-[0.2em] text-[#b67c18]">ここでは、「わたし」が主役。</p>
               <h2 className="mt-5 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
-                見せなくていい。
+                妻でも、母でも。
                 <br />
-                映えなくていい。
+                夫でも、父でも。
               </h2>
-              <p className="mt-7 text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
-                ここはSNSではありません。共有ボタンも、いいねも、ランキングもありません。誰かの反応を気にせず、自分が覚えておきたいことを、自分のために残せます。
-              </p>
+              <div className="mt-7 space-y-5 text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
+                <p>ここでは、ひとりの「わたし」が主役です。</p>
+                <p>
+                  誰かに見せなくていい。映えなくていい。いいねをもらわなくてもいい。
+                </p>
+                <p>
+                  これは、わたし自身の人生を残すための記録です。
+                </p>
+              </div>
             </div>
 
             <div className="rounded-[2rem] border border-green-800/10 bg-paper p-7 shadow-[0_24px_70px_rgba(45,74,60,0.08)] sm:p-10">
               <div className="space-y-6">
                 {[
-                  { icon: "heart", text: "いいねの数で、体験の価値を決めない。" },
-                  { icon: "photo", text: "きれいな写真がなくても、立派な文章が書けなくてもいい。" },
-                  { icon: "book", text: "ささやかな出来事も、昔の曖昧な記憶も、そのままでいい。" },
+                  { icon: "heart", text: "わたしが見たもの。" },
+                  { icon: "photo", text: "わたしがやってみたこと。" },
+                  { icon: "book", text: "わたしが感じたこと。" },
                 ].map((item) => (
                   <div key={item.text} className="flex gap-4 border-b border-green-800/10 pb-6 last:border-0 last:pb-0">
                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-coral-100 p-2 shadow-sm [&_svg]:h-full [&_svg]:w-full [&_svg]:stroke-green-800 [&_svg]:stroke-[1.5] [&_svg]:stroke-linecap-round [&_svg]:stroke-linejoin-round">
