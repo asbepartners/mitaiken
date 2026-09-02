@@ -39,7 +39,7 @@ interface TriedViewProps {
   onRemoveTarget: (experienceId: string, id: string) => void;
   targetsMap: TargetsMap;
   onRequestTargetRecord: (experienceId: string, target: ExperienceTarget) => void;
-  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
+  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<boolean>;
   searchMasters: SearchMasters;
   searchMastersLoading: boolean;
   searchMastersError: boolean;
@@ -242,7 +242,7 @@ export function TriedView({
         mastersError={searchMastersError}
         allowAddingTargets={(targetsMap[selectedExperienceId] ?? []).length === 0}
         onClose={() => setEditingOriginalId(null)}
-        onSubmit={async (draft, targets) => { await onUpdateOriginal(selectedExperienceId, draft, targets); setEditingOriginalId(null); }}
+        onSubmit={async (draft, targets) => { if (await onUpdateOriginal(selectedExperienceId, draft, targets)) setEditingOriginalId(null); }}
       />}
     </>;
   }

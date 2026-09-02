@@ -20,6 +20,8 @@ import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import { useSearchMasters } from "@/hooks/useSearchMasters";
 import { clearLocalUserData } from "@/lib/localUserData";
 import { InitialAppScreen } from "@/components/InitialAppScreen";
+import { ConnectivityNotice } from "@/components/ConnectivityNotice";
+import { useConnectivity } from "@/hooks/useConnectivity";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -31,7 +33,9 @@ export default function Home() {
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
   const pendingAuthAction = useRef<(() => void) | null>(null);
+  const connectivity = useConnectivity();
   const { experiences: catalogExperiences, loading: catalogLoading } = useExperienceCatalog();
   const { customExperiences, loading: customExperiencesLoading, error: customExperiencesError, createExperience, updateExperience } = useCustomExperiences();
   const searchMasters = useSearchMasters();
@@ -136,12 +140,22 @@ export default function Home() {
   }
 
   function requireAuth(action: () => void) {
+    if (!connectivity.online) {
+      setConnectivityNoticeOpen(true);
+      return;
+    }
     if (auth.user) {
       action();
       return;
     }
     pendingAuthAction.current = action;
     setAuthOpen(true);
+  }
+
+  function canSave() {
+    if (connectivity.online) return true;
+    setConnectivityNoticeOpen(true);
+    return false;
   }
 
   function closeAuth() {
@@ -169,6 +183,7 @@ export default function Home() {
       requireAuth(() => handleConfirmRecord(record));
       return;
     }
+    if (!canSave()) return;
     if (editingId && editingRecordId) {
       updateRecord(editingId, editingRecordId, record);
       setEditingId(null);
@@ -181,13 +196,15 @@ export default function Home() {
     setPendingTarget(null);
   }
 
-  const initialLoading = auth.loading || catalogLoading || searchMasters.loading || (
+  const initialLoading = !connectivity.ready || auth.loading || catalogLoading || searchMasters.loading || (
     hasAuthenticatedUser && (experienceStatusLoading || customExperiencesLoading || targetsLoading)
   );
   const initialError = searchMasters.error || (
     hasAuthenticatedUser && (experienceStatusError || customExperiencesError || targetsError)
   );
 
+  if (!connectivity.ready) return <InitialAppScreen state="loading" />;
+  if (connectivity.offlineAtStartup) return <InitialAppScreen state="offline" />;
   if (initialLoading) return <InitialAppScreen state="loading" />;
   if (initialError) return <InitialAppScreen state="error" />;
 
@@ -206,11 +223,12 @@ export default function Home() {
             statusMap={hasAuthenticatedUser ? statusMap : {}}
             onHide={hideExperience}
             onToggleWishlist={(id) => requireAuth(() => {
+              if (!canSave()) return;
               if (!statusMap[id]) void initializeTargets(id);
               toggleWishlist(id);
             })}
             onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
-            onUndoTried={(id) => requireAuth(() => undoTried(id))}
+            onUndoTried={(id) => requireAuth(() => { if (canSave()) undoTried(id); })}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
             searchMastersError={searchMasters.error}
@@ -225,6 +243,7 @@ export default function Home() {
             onRequireAuth={requireAuth}
             onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
             onRemove={(id) => {
+              if (!canSave()) return;
               removeStatus(id);
               clearTargets(id);
             }}
@@ -236,22 +255,26 @@ export default function Home() {
                 setPendingId(parentId);
               });
             }}
-            onAddTarget={addTarget}
-            onUpdateTarget={updateTarget}
-            onRemoveTarget={removeTarget}
+            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : false}
+            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : false}
+            onRemoveTarget={(parentId, id) => { if (canSave()) removeTarget(parentId, id); }}
             onEditRecord={(experienceId, recordId) => {
               setEditingId(experienceId);
               setEditingRecordId(recordId);
             }}
-            onDeleteRecord={deleteRecord}
+            onDeleteRecord={(experienceId, recordId) => { if (canSave()) deleteRecord(experienceId, recordId); }}
             onCreateOriginal={async (draft, targets) => {
+              if (!canSave()) return false;
               const id = await createExperience(draft);
               for (const target of targets) addTarget(id, target);
               toggleWishlist(id);
+              return true;
             }}
             onUpdateOriginal={async (id, draft, targets) => {
+              if (!canSave()) return false;
               await updateExperience(id, draft);
               for (const target of targets) addTarget(id, target);
+              return true;
             }}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
@@ -270,17 +293,19 @@ export default function Home() {
               setEditingId(experienceId);
               setEditingRecordId(recordId);
             }}
-            onDeleteRecord={deleteRecord}
+            onDeleteRecord={(experienceId, recordId) => { if (canSave()) deleteRecord(experienceId, recordId); }}
             onUpdateOriginal={async (id, draft, targets) => {
+              if (!canSave()) return false;
               await updateExperience(id, draft);
               for (const target of targets) addTarget(id, target);
+              return true;
             }}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
             searchMastersError={searchMasters.error}
-            onAddTarget={addTarget}
-            onUpdateTarget={updateTarget}
-            onRemoveTarget={removeTarget}
+            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : false}
+            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : false}
+            onRemoveTarget={(parentId, id) => { if (canSave()) removeTarget(parentId, id); }}
             targetsMap={targetsMap}
             onRequestTargetRecord={(parentId, target) => {
               requireAuth(() => {
@@ -354,6 +379,8 @@ export default function Home() {
           onRecordLegalAcceptance={auth.recordCurrentLegalAcceptance}
         />
       )}
+
+      {connectivityNoticeOpen && <ConnectivityNotice onClose={() => setConnectivityNoticeOpen(false)} />}
     </div>
   );
 }

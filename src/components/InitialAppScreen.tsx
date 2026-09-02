@@ -1,7 +1,7 @@
 "use client";
 
 interface Props {
-  state: "loading" | "error";
+  state: "loading" | "offline" | "error";
 }
 
 export function InitialAppScreen({ state }: Props) {
@@ -19,6 +19,13 @@ export function InitialAppScreen({ state }: Props) {
             <div className="mt-8 flex gap-3 text-sm text-[#d39a2c]" aria-hidden="true">
               <span className="loading-spark">✦</span><span className="loading-spark">✦</span><span className="loading-spark">✦</span>
             </div>
+          </>
+        ) : state === "offline" ? (
+          <>
+            <p role="alert" className="mt-4 text-sm leading-6 text-ink-soft">インターネットに接続してから、<br />もう一度お試しください。</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`${assetBase}/header-explore-v4.png`} alt="望遠鏡で遠くを眺める女性のイラスト" className="mt-10 h-52 w-full object-cover object-[28%_100%]" />
+            <button type="button" onClick={() => window.location.reload()} className="mt-8 min-h-12 rounded-full bg-coral-500 px-7 text-base font-bold text-paper shadow-sm">もう一度試す</button>
           </>
         ) : (
           <>

@@ -37,8 +37,8 @@ interface WishlistViewProps {
   onRemoveTarget: (parentId: string, id: string) => void;
   onEditRecord: (parentId: string, recordId: string) => void;
   onDeleteRecord: (parentId: string, recordId: string) => void;
-  onCreateOriginal: (draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
-  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
+  onCreateOriginal: (draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<boolean>;
+  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<boolean>;
   searchMasters: SearchMasters;
   searchMastersLoading: boolean;
   searchMastersError: boolean;
@@ -274,7 +274,7 @@ export function WishlistView({
           }}
         />
       )}
-      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} initialCategoryCode={category === "all" ? undefined : category} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { await onCreateOriginal(draft, targets); setCreatingOriginal(false); }} />}
+      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} initialCategoryCode={category === "all" ? undefined : category} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { if (await onCreateOriginal(draft, targets)) setCreatingOriginal(false); }} />}
       {editingOriginalId && (() => {
         const experience = items.find((item) => item.id === editingOriginalId);
         if (!experience) return null;
@@ -309,7 +309,7 @@ export function WishlistView({
           mastersError={searchMastersError}
           allowAddingTargets={(targetsMap[editingOriginalId] ?? []).length === 0}
           onClose={() => setEditingOriginalId(null)}
-          onSubmit={async (draft, targets) => { await onUpdateOriginal(editingOriginalId, draft, targets); setEditingOriginalId(null); }}
+          onSubmit={async (draft, targets) => { if (await onUpdateOriginal(editingOriginalId, draft, targets)) setEditingOriginalId(null); }}
         />;
       })()}
     </div>
