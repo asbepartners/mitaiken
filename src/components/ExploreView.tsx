@@ -97,7 +97,7 @@ export function ExploreView({
 
   return (
     <div className="px-4 pb-4 pt-6">
-      <header className="relative -mx-4 -mt-6 mb-4 h-48 overflow-hidden border-b border-green-100">
+      <header className="relative -mx-4 -mt-6 mb-4 h-36 overflow-hidden border-b border-green-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${process.env.NODE_ENV === "production" ? "/mitaiken" : ""}/header-explore-v4.png`} alt="" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-4 px-5 py-4">
