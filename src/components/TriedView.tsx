@@ -15,7 +15,9 @@ import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hook
 import { imageSource } from "@/lib/imageSource";
 import { HajimeteYearFilter } from "./HajimeteYearFilter";
 import { TimelineDate } from "./TimelineDate";
-import type { CategoryOption } from "@/hooks/useSearchMasters";
+import type { CategoryOption, SearchMasters } from "@/hooks/useSearchMasters";
+import { OriginalExperienceForm } from "./OriginalExperienceForm";
+import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 
 export interface TriedExperience {
   experience: Experience;
@@ -36,6 +38,10 @@ interface TriedViewProps {
   onRemoveTarget: (experienceId: string, id: string) => void;
   targetsMap: TargetsMap;
   onRequestTargetRecord: (experienceId: string, target: ExperienceTarget) => void;
+  onUpdateOriginal: (id: string, draft: CustomExperienceDraft, targets: ExperienceTargetDraft[]) => Promise<void>;
+  searchMasters: SearchMasters;
+  searchMastersLoading: boolean;
+  searchMastersError: boolean;
 }
 
 type ViewMode = "firsts" | "records";
@@ -81,6 +87,10 @@ export function TriedView({
   onRequestTargetRecord,
   onUpdateTarget,
   onRemoveTarget,
+  onUpdateOriginal,
+  searchMasters,
+  searchMastersLoading,
+  searchMastersError,
 }: TriedViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("firsts");
   const [selectedYear, setSelectedYear] = useState<string>("all");
@@ -88,6 +98,7 @@ export function TriedView({
   const [detailReturnView, setDetailReturnView] = useState<ViewMode>("firsts");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [searchValue, setSearchValue] = useState<HajimeteSearchValue>({
     query: "",
     categoryCodes: [],
@@ -195,7 +206,43 @@ export function TriedView({
 
   if (selectedExperience && selectedExperienceId) {
     const selectedRecords = items.find(({ experience }) => experience.id === selectedExperienceId)?.records ?? [];
-    return <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} backLabel="はじめてリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} />;
+    const editingOriginal = editingOriginalId === selectedExperienceId;
+    return <>
+      <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} backLabel="はじめてリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} onEditExperience={selectedExperience.id.startsWith("custom-") ? () => setEditingOriginalId(selectedExperienceId) : undefined} />
+      {editingOriginal && <OriginalExperienceForm
+        existingTitles={items.filter(({ experience }) => experience.id !== selectedExperienceId).map(({ experience }) => experience.title)}
+        initialExperience={{
+          title: selectedExperience.title,
+          description: selectedExperience.description,
+          category: selectedExperience.category,
+          categoryId: selectedExperience.categoryId,
+          categoryCode: selectedExperience.categoryCode,
+          categoryLabel: selectedExperience.categoryLabel,
+          image: selectedExperience.image,
+          locationOptionId: selectedExperience.locationOptionId,
+          locationCode: selectedExperience.locationCode,
+          locationLabel: selectedExperience.locationLabel,
+          durationOptionId: selectedExperience.durationOptionId,
+          durationCode: selectedExperience.durationCode,
+          durationLabel: selectedExperience.durationLabel,
+          durationMinMinutes: selectedExperience.durationMinMinutes,
+          durationMaxMinutes: selectedExperience.durationMaxMinutes,
+          budgetOptionId: selectedExperience.budgetOptionId,
+          budgetCode: selectedExperience.budgetCode,
+          budgetLabel: selectedExperience.budgetLabel,
+          budgetMinYen: selectedExperience.budgetMinYen,
+          budgetMaxYen: selectedExperience.budgetMaxYen,
+          minPeople: selectedExperience.minPeople,
+          maxPeople: selectedExperience.maxPeople,
+        }}
+        masters={searchMasters}
+        mastersLoading={searchMastersLoading}
+        mastersError={searchMastersError}
+        allowAddingTargets={(targetsMap[selectedExperienceId] ?? []).length === 0}
+        onClose={() => setEditingOriginalId(null)}
+        onSubmit={async (draft, targets) => { await onUpdateOriginal(selectedExperienceId, draft, targets); setEditingOriginalId(null); }}
+      />}
+    </>;
   }
 
   function targetTitleFor(experienceId: string, record: TriedRecord) {

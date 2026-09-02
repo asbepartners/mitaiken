@@ -15,6 +15,7 @@ interface Props {
   onUpdateTarget: (id: string, draft: ExperienceTargetDraft) => boolean; onRemoveTarget: (id: string) => void;
   onEditRecord: (recordId: string) => void; onDeleteRecord: (recordId: string) => void;
   onAddRecord?: () => void;
+  onEditExperience?: () => void;
   detailLabel?: string;
 }
 
@@ -84,6 +85,7 @@ export function CollectionDetailView(props: Props) {
           {isCollection && <span className="rounded-full bg-coral-100 px-3 py-1.5 text-coral-500">これから {pending.length}件</span>}
           <span className="rounded-full bg-gold-100 px-3 py-1.5 text-[#936b25]">記録 {records.length}件</span>
         </div>
+        {props.onEditExperience && <button type="button" onClick={props.onEditExperience} className="mt-4 min-h-11 w-full rounded-full border border-green-200 bg-paper px-3 text-sm font-bold text-green-800">リスト情報を編集</button>}
         {isCollection && <button type="button" onClick={() => openForm("new")} className="mt-4 min-h-11 w-full rounded-full border border-coral-300 bg-paper px-3 text-sm font-bold text-coral-500">＋ 項目を追加</button>}
       </div>
     </header>

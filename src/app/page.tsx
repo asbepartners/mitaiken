@@ -258,6 +258,13 @@ export default function Home() {
               setEditingRecordId(recordId);
             }}
             onDeleteRecord={deleteRecord}
+            onUpdateOriginal={async (id, draft, targets) => {
+              await updateExperience(id, draft);
+              for (const target of targets) addTarget(id, target);
+            }}
+            searchMasters={searchMasters.masters}
+            searchMastersLoading={searchMasters.loading}
+            searchMastersError={searchMasters.error}
             onAddTarget={addTarget}
             onUpdateTarget={updateTarget}
             onRemoveTarget={removeTarget}
