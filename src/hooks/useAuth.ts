@@ -96,6 +96,26 @@ export function useAuth() {
     return { error: error ? "ログアウトできませんでした。" : null };
   }, [supabase]);
 
+  const deleteAccount = useCallback(async () => {
+    if (!supabase) return { error: "Supabaseに接続できませんでした。" };
+
+    const { data, error } = await supabase.functions.invoke<{ error?: string }>("delete-account");
+    if (error) {
+      let message = "アカウントを削除できませんでした。もう一度お試しください。";
+      try {
+        const body = await (error as { context?: Response }).context?.json();
+        if (typeof body?.error === "string") message = body.error;
+      } catch {}
+      return { error: message };
+    }
+    if (data?.error) return { error: data.error };
+
+    // The account is already gone server-side; best-effort clear the local
+    // session so the UI doesn't keep showing a cached "logged in" state.
+    await supabase.auth.signOut().catch(() => {});
+    return { error: null };
+  }, [supabase]);
+
   return {
     user,
     loading,
@@ -105,5 +125,6 @@ export function useAuth() {
     getLegalAcceptanceStatus,
     recordCurrentLegalAcceptance,
     signOut,
+    deleteAccount,
   };
 }

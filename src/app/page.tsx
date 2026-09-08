@@ -185,6 +185,15 @@ export default function Home() {
     return result;
   }
 
+  async function handleDeleteAccount() {
+    const result = await auth.deleteAccount();
+    if (!result.error) {
+      clearLocalUserData();
+      window.location.reload();
+    }
+    return result;
+  }
+
   function handleConfirmRecord(record: MemoryRecordDraft) {
     if (!auth.user) {
       requireAuth(() => handleConfirmRecord(record));
@@ -332,6 +341,7 @@ export default function Home() {
               setAuthOpen(true);
             }}
             onSignOut={handleSignOut}
+            onDeleteAccount={handleDeleteAccount}
             hiddenItems={experiences.filter((experience) => hiddenIds.includes(experience.id))}
             onRestoreHidden={restoreExperience}
           />

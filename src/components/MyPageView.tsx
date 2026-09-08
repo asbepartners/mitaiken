@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Experience } from "@/data/experiences";
+import { DeleteAccountSheet } from "./DeleteAccountSheet";
 
 interface MyPageViewProps {
   user: User | null;
@@ -11,6 +12,7 @@ interface MyPageViewProps {
   configured: boolean;
   onLogin: () => void;
   onSignOut: () => Promise<{ error: string | null }>;
+  onDeleteAccount: () => Promise<{ error: string | null }>;
   hiddenItems: Experience[];
   onRestoreHidden: (id: string) => void;
 }
@@ -29,6 +31,16 @@ function SettingsIcon() {
     <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-coral-500" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="3" />
       <path d="M19 12a7.4 7.4 0 0 0-.08-1l2-1.55-2-3.45-2.45 1a7.6 7.6 0 0 0-1.72-1L14.4 3.4h-4.8L9.25 6a7.6 7.6 0 0 0-1.72 1L5.08 6l-2 3.45 2 1.55A7.4 7.4 0 0 0 5 12c0 .34.03.67.08 1l-2 1.55 2 3.45 2.45-1a7.6 7.6 0 0 0 1.72 1l.35 2.6h4.8l.35-2.6a7.6 7.6 0 0 0 1.72-1l2.45 1 2-3.45-2-1.55c.05-.33.08-.66.08-1Z" />
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-coral-500" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4.5 21 19.5H3Z" />
+      <path d="M12 10v4" />
+      <path d="M12 16.75h.01" />
     </svg>
   );
 }
@@ -53,9 +65,10 @@ function MenuLink({ href, children, external = false }: { href: string; children
   return external ? <a href={href} className={className}>{body}</a> : <Link href={href} className={className}>{body}</Link>;
 }
 
-export function MyPageView({ user, loading, configured, onLogin, onSignOut, hiddenItems, onRestoreHidden }: MyPageViewProps) {
+export function MyPageView({ user, loading, configured, onLogin, onSignOut, onDeleteAccount, hiddenItems, onRestoreHidden }: MyPageViewProps) {
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
 
   async function handleSignOut() {
     if (signingOut) return;
@@ -126,10 +139,22 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, hidd
       </section>
 
       {user && (
-        <section className="mt-7 px-1">
-          <h2 className="text-sm font-bold text-ink-soft">アカウント管理</h2>
-          <p className="mt-3 text-sm text-ink-soft">アカウントの削除は、次の実装ステップで安全な確認画面と削除処理を追加します。</p>
+        <section className="mt-5 rounded-3xl border border-green-100 bg-paper p-5">
+          <SectionTitle icon={<WarningIcon />}>アカウント管理</SectionTitle>
+          <p className="mt-3 text-sm leading-6 text-ink-soft">
+            アカウントを削除すると、体験記録・写真・メモを含むすべてのデータが削除され、元に戻すことはできません。
+            <br />
+            バックアップには削除後も一定期間情報が残る場合がありますが、復元にはご利用いただけません。
+          </p>
+          <button type="button" onClick={() => setDeleteSheetOpen(true)} className="mt-4 w-full rounded-full border border-coral-400 px-5 py-2.5 text-sm font-bold text-coral-500">アカウントを削除する</button>
         </section>
+      )}
+
+      {deleteSheetOpen && (
+        <DeleteAccountSheet
+          onCancel={() => setDeleteSheetOpen(false)}
+          onConfirm={onDeleteAccount}
+        />
       )}
     </div>
   );
