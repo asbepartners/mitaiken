@@ -21,7 +21,9 @@ import { useSearchMasters } from "@/hooks/useSearchMasters";
 import { clearLocalUserData } from "@/lib/localUserData";
 import { InitialAppScreen } from "@/components/InitialAppScreen";
 import { ConnectivityNotice } from "@/components/ConnectivityNotice";
+import { MaintenanceNotice } from "@/components/MaintenanceNotice";
 import { useConnectivity } from "@/hooks/useConnectivity";
+import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
 const TAB_ORDER: Tab[] = ["tried", "wishlist", "explore", "mypage"];
 
@@ -34,8 +36,10 @@ export default function Home() {
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
+  const [maintenanceNoticeOpen, setMaintenanceNoticeOpen] = useState(false);
   const pendingAuthAction = useRef<(() => void) | null>(null);
   const connectivity = useConnectivity();
+  const maintenance = useMaintenanceMode();
   const { experiences: catalogExperiences, loading: catalogLoading } = useExperienceCatalog();
   const { customExperiences, loading: customExperiencesLoading, error: customExperiencesError, createExperience, updateExperience } = useCustomExperiences();
   const searchMasters = useSearchMasters();
@@ -140,10 +144,7 @@ export default function Home() {
   }
 
   function requireAuth(action: () => void) {
-    if (!connectivity.online) {
-      setConnectivityNoticeOpen(true);
-      return;
-    }
+    if (!canSave()) return;
     if (auth.user) {
       action();
       return;
@@ -153,9 +154,15 @@ export default function Home() {
   }
 
   function canSave() {
-    if (connectivity.online) return true;
-    setConnectivityNoticeOpen(true);
-    return false;
+    if (maintenance.enabled) {
+      setMaintenanceNoticeOpen(true);
+      return false;
+    }
+    if (!connectivity.online) {
+      setConnectivityNoticeOpen(true);
+      return false;
+    }
+    return true;
   }
 
   function closeAuth() {
@@ -381,6 +388,7 @@ export default function Home() {
       )}
 
       {connectivityNoticeOpen && <ConnectivityNotice onClose={() => setConnectivityNoticeOpen(false)} />}
+      {maintenanceNoticeOpen && <MaintenanceNotice message={maintenance.message} onClose={() => setMaintenanceNoticeOpen(false)} />}
     </div>
   );
 }
