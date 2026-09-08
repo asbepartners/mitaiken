@@ -102,8 +102,10 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, onDe
         ) : (
           <>
             <p className="mt-3 text-base font-bold text-green-950">記録を大切に保存するために</p>
-            <p className="mt-2 text-sm leading-6 text-ink-soft">メールアドレスで登録・ログインすると、記録をあなたのアカウントに保存できます。</p>
-            <button type="button" disabled={!configured} onClick={onLogin} className="mt-5 w-full rounded-full bg-green-800 py-3 text-sm font-bold text-paper disabled:opacity-40">メールで登録・ログイン</button>
+            <p className="mt-2 text-sm leading-6 text-ink-soft">
+              メールアドレスでログインすると、記録をあなたのアカウントに保存できます。未登録の方も「メールアドレスでログイン」から登録できます。
+            </p>
+            <button type="button" disabled={!configured} onClick={onLogin} className="mt-5 w-full rounded-full bg-green-800 py-3 text-sm font-bold text-paper disabled:opacity-40">メールアドレスでログイン</button>
             {!configured && <p className="mt-3 text-xs text-coral-500">現在、ログイン機能を利用できません。</p>}
           </>
         )}

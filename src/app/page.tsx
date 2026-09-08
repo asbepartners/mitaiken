@@ -38,6 +38,7 @@ export default function Home() {
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
   const [maintenanceNoticeOpen, setMaintenanceNoticeOpen] = useState(false);
   const pendingAuthAction = useRef<(() => void) | null>(null);
+  const hasBootedRef = useRef(false);
   const connectivity = useConnectivity();
   const maintenance = useMaintenanceMode();
   const { experiences: catalogExperiences, loading: catalogLoading } = useExperienceCatalog();
@@ -219,9 +220,15 @@ export default function Home() {
     hasAuthenticatedUser && (experienceStatusError || customExperiencesError || targetsError)
   );
 
+  // Once the app has rendered once, later reloads (e.g. per-user data
+  // refetching right after a login) must not unmount the whole tree again —
+  // that would silently reset any open sheet (like AuthSheet) to its
+  // initial step.
+  if (!initialLoading) hasBootedRef.current = true;
+
   if (!connectivity.ready) return <InitialAppScreen state="loading" />;
   if (connectivity.offlineAtStartup) return <InitialAppScreen state="offline" />;
-  if (initialLoading) return <InitialAppScreen state="loading" />;
+  if (!hasBootedRef.current && initialLoading) return <InitialAppScreen state="loading" />;
   if (initialError) return <InitialAppScreen state="error" />;
 
   return (
@@ -337,6 +344,7 @@ export default function Home() {
             loading={auth.loading}
             configured={auth.configured}
             onLogin={() => {
+              if (auth.user) return;
               pendingAuthAction.current = null;
               setAuthOpen(true);
             }}

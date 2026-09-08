@@ -4,8 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/supabase";
 
-type AuthMode = "signup" | "login";
-
 export function useAuth() {
   const supabase = getSupabaseClient();
   const [user, setUser] = useState<User | null>(null);
@@ -33,11 +31,11 @@ export function useAuth() {
   }, [supabase]);
 
   const sendOtp = useCallback(
-    async (email: string, mode: AuthMode) => {
+    async (email: string) => {
       if (!supabase) return { error: "Supabaseに接続できませんでした。" };
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: mode === "signup" },
+        options: { shouldCreateUser: true },
       });
       return { error: error ? "確認コードを送信できませんでした。入力内容をご確認のうえ、再度お試しください。" : null };
     },
