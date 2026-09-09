@@ -18,6 +18,16 @@ export interface TriedRecord {
 
 export type RecordsMap = Record<string, TriedRecord[]>;
 
+export interface WishlistItemDetails {
+  plannedDate?: string;
+  place?: string;
+  companion?: string;
+  memo?: string;
+  relatedUrl?: string;
+}
+
+export type DetailsMap = Record<string, WishlistItemDetails>;
+
 export type StatusEntry =
   | { status: "wishlist" }
   | { status: "cleared"; timing: Timing; photoUrl?: string; memo?: string };
@@ -218,7 +228,7 @@ export function useExperienceStatus() {
   const [userId, setUserId] = useState<string | undefined>();
   const userIdRef = useRef<string | undefined>(undefined);
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
-  const [relatedUrlMap, setRelatedUrlMap] = useState<Record<string, string>>({});
+  const [detailsMap, setDetailsMap] = useState<DetailsMap>({});
   const [loading, setLoading] = useState(configured);
   const [error, setError] = useState(false);
   const statusMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -281,7 +291,7 @@ export function useExperienceStatus() {
 
     const { data: rows, error: rowsError } = await supabase
       .from("user_experiences")
-      .select("id, source_template_slug, client_key, wishlisted_at, related_url")
+      .select("id, source_template_slug, client_key, wishlisted_at, related_url, experience_memo, planned_date, place, companion")
       .eq("user_id", userId);
     if (rowsError) {
       console.error("Failed to load user experiences:", rowsError);
@@ -304,12 +314,19 @@ export function useExperienceStatus() {
     const byId = new Map((rows ?? []).map((row) => [row.id, row]));
     const nextStatus: StatusMap = {};
     const nextRecords: RecordsMap = {};
-    const nextRelatedUrls: Record<string, string> = {};
+    const nextDetails: DetailsMap = {};
 
     for (const row of rows ?? []) {
       const key = row.source_template_slug ?? row.client_key;
       if (!key) continue;
-      if (row.related_url) nextRelatedUrls[key] = row.related_url;
+      const details: WishlistItemDetails = {
+        plannedDate: row.planned_date ?? undefined,
+        place: row.place ?? undefined,
+        companion: row.companion ?? undefined,
+        memo: row.experience_memo ?? undefined,
+        relatedUrl: row.related_url ?? undefined,
+      };
+      if (Object.values(details).some((value) => value !== undefined)) nextDetails[key] = details;
       if (row.wishlisted_at) nextStatus[key] = { status: "wishlist" };
     }
 
@@ -341,7 +358,7 @@ export function useExperienceStatus() {
     }
 
     writeRecordsMap(nextRecords);
-    setRelatedUrlMap(nextRelatedUrls);
+    setDetailsMap(nextDetails);
     writeStatusMap(nextStatus);
     return true;
   }, [userId, writeRecordsMap]);
@@ -418,6 +435,27 @@ export function useExperienceStatus() {
       })();
     }
   }, [userId]);
+
+  const updateWishlistDetails = useCallback(async (slug: string, details: WishlistItemDetails) => {
+    if (!userId) return false;
+    const supabase = getSupabaseClient();
+    if (!supabase) return false;
+    const id = await ensureUserExperience(userId, slug);
+    if (!id) return false;
+    const { error: updateError } = await supabase
+      .from("user_experiences")
+      .update({
+        planned_date: details.plannedDate ?? null,
+        place: details.place ?? null,
+        companion: details.companion ?? null,
+        experience_memo: details.memo ?? null,
+        related_url: details.relatedUrl ?? null,
+      })
+      .eq("id", id);
+    if (updateError) return false;
+    await reload();
+    return true;
+  }, [userId, reload]);
 
   const markTried = useCallback((slug: string, record: MemoryRecordDraft) => {
     const localRecord: TriedRecord = {
@@ -603,7 +641,7 @@ export function useExperienceStatus() {
   return {
     statusMap,
     recordsMap,
-    relatedUrlMap,
+    detailsMap,
     loading,
     error,
     toggleWishlist,
@@ -612,5 +650,7 @@ export function useExperienceStatus() {
     deleteRecord,
     undoTried,
     removeStatus,
+    updateWishlistDetails,
+    reload,
   };
 }

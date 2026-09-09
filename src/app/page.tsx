@@ -10,6 +10,7 @@ import { InitialTabSync } from "@/components/InitialTabSync";
 import { MemoryRecordDraft, MemoryRecordSheet } from "@/components/MemoryRecordSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
+import { WishlistItemDetailsSheet } from "@/components/WishlistItemDetailsSheet";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
@@ -34,6 +35,7 @@ export default function Home() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
+  const [detailsPromptId, setDetailsPromptId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
   const [maintenanceNoticeOpen, setMaintenanceNoticeOpen] = useState(false);
@@ -48,7 +50,7 @@ export default function Home() {
   const {
     statusMap,
     recordsMap,
-    relatedUrlMap,
+    detailsMap,
     loading: experienceStatusLoading,
     error: experienceStatusError,
     toggleWishlist,
@@ -57,6 +59,8 @@ export default function Home() {
     deleteRecord,
     undoTried,
     removeStatus,
+    updateWishlistDetails,
+    reload: reloadExperienceStatus,
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
   const { targetsMap, loading: targetsLoading, error: targetsError, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
@@ -247,8 +251,15 @@ export default function Home() {
             onHide={hideExperience}
             onToggleWishlist={(id) => requireAuth(() => {
               if (!canSave()) return;
-              if (!statusMap[id]) void initializeTargets(id);
+              const adding = !statusMap[id];
+              if (adding) void initializeTargets(id);
               toggleWishlist(id);
+              if (adding) {
+                const experience = experiences.find((item) => item.id === id);
+                if (experience && !id.startsWith("custom-") && !experience.exampleTargets) {
+                  setDetailsPromptId(id);
+                }
+              }
             })}
             onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
             onUndoTried={(id) => requireAuth(() => { if (canSave()) undoTried(id); })}
@@ -272,6 +283,8 @@ export default function Home() {
             }}
             targetsMap={targetsMap}
             recordsMap={recordsMap}
+            detailsMap={detailsMap}
+            onUpdateWishlistDetails={(id, details) => canSave() ? updateWishlistDetails(id, details) : Promise.resolve(false)}
             onRequestTargetRecord={(parentId, target) => {
               requireAuth(() => {
                 setPendingTarget(target);
@@ -291,12 +304,14 @@ export default function Home() {
               const id = await createExperience(draft);
               for (const target of targets) addTarget(id, target);
               toggleWishlist(id);
+              await reloadExperienceStatus();
               return true;
             }}
             onUpdateOriginal={async (id, draft, targets) => {
               if (!canSave()) return false;
               await updateExperience(id, draft);
               for (const target of targets) addTarget(id, target);
+              await reloadExperienceStatus();
               return true;
             }}
             searchMasters={searchMasters.masters}
@@ -366,7 +381,7 @@ export default function Home() {
               : `new-${pendingExperience?.id}`
           }
           experienceTitle={pendingTarget?.title ?? editingTarget?.title ?? (editingExperience ?? pendingExperience)!.title}
-          relatedUrl={pendingTarget?.relatedUrl ?? editingTarget?.relatedUrl ?? relatedUrlMap[(editingExperience ?? pendingExperience)!.id]}
+          relatedUrl={pendingTarget?.relatedUrl ?? editingTarget?.relatedUrl ?? detailsMap[(editingExperience ?? pendingExperience)!.id]?.relatedUrl}
           initialRecord={
             editingRecord
               ? {
@@ -382,7 +397,17 @@ export default function Home() {
                     timing: { type: "date", value: new Date().toISOString().slice(0, 10) },
                     targetId: pendingTarget.id,
                   }
-                : undefined
+                : pendingExperience
+                  ? {
+                      timing: {
+                        type: "date",
+                        value: detailsMap[pendingExperience.id]?.plannedDate ?? new Date().toISOString().slice(0, 10),
+                      },
+                      place: detailsMap[pendingExperience.id]?.place,
+                      companion: detailsMap[pendingExperience.id]?.companion,
+                      memo: detailsMap[pendingExperience.id]?.memo,
+                    }
+                  : undefined
           }
           onCancel={() => {
             setPendingId(null);
@@ -391,6 +416,18 @@ export default function Home() {
             setPendingTarget(null);
           }}
           onConfirm={handleConfirmRecord}
+        />
+      )}
+
+      {detailsPromptId && (
+        <WishlistItemDetailsSheet
+          experienceTitle={experiences.find((item) => item.id === detailsPromptId)?.title ?? ""}
+          initialDetails={detailsMap[detailsPromptId]}
+          onCancel={() => setDetailsPromptId(null)}
+          onConfirm={async (details) => {
+            if (!canSave()) return;
+            if (await updateWishlistDetails(detailsPromptId, details)) setDetailsPromptId(null);
+          }}
         />
       )}
 

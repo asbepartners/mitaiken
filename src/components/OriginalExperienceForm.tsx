@@ -55,6 +55,10 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
         : "fixed";
   const [peopleMode, setPeopleMode] = useState<"unset" | "solo" | "group" | "fixed">(initialPeopleMode);
   const [fixedPeople, setFixedPeople] = useState(initialPeopleMode === "fixed" ? initialExperience?.minPeople ?? 4 : 4);
+  const [plannedDate, setPlannedDate] = useState(initialExperience?.plannedDate ?? "");
+  const [companion, setCompanion] = useState(initialExperience?.companion ?? "");
+  const [memo, setMemo] = useState(initialExperience?.memo ?? "");
+  const [relatedUrl, setRelatedUrl] = useState(initialExperience?.relatedUrl ?? "");
   const [withTargets, setWithTargets] = useState(false);
   const [targets, setTargets] = useState<ExperienceTargetDraft[]>([emptyTarget()]);
   const [saving, setSaving] = useState(false);
@@ -67,6 +71,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
   const validTargets = targets.filter((target) => target.title.trim());
   const targetDuplicate = new Set(validTargets.map((target) => target.title.trim().toLocaleLowerCase("ja"))).size !== validTargets.length;
   const conditionCount = [locationOptionId, durationOptionId, budgetOptionId, peopleMode !== "unset"].filter(Boolean).length;
+  const detailCount = [plannedDate, companion.trim(), memo.trim(), relatedUrl.trim()].filter(Boolean).length;
 
   async function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -105,6 +110,10 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
       budgetMaxYen: budget?.maxYen ?? undefined,
       minPeople,
       maxPeople,
+      plannedDate: plannedDate || undefined,
+      companion: companion.trim() || undefined,
+      memo: memo.trim() || undefined,
+      relatedUrl: relatedUrl.trim() || undefined,
     }, withTargets ? validTargets : []);
     setSaving(false);
   }
@@ -158,6 +167,15 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
               </div>
               {peopleMode === "fixed" && <label className="mt-3 flex items-center gap-3 text-sm font-medium text-green-950"><input type="number" inputMode="numeric" min={1} max={99} value={fixedPeople} onChange={(e) => setFixedPeople(Math.max(1, Math.min(99, Number(e.target.value) || 1)))} className="w-24 rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" />人で行う</label>}
             </fieldset>
+          </div>
+        </details>
+        <details className="mt-5 rounded-3xl border border-green-100 bg-paper p-5 shadow-sm">
+          <summary className="cursor-pointer font-bold text-green-950">予定日やメモを追加 <span className="text-sm font-normal text-ink-soft">（任意）{detailCount > 0 && ` ${detailCount}件入力済み`}</span></summary>
+          <div className="mt-5 space-y-5">
+            <label className="block text-sm font-bold text-green-950">予定日 <span className="font-normal text-ink-soft">（任意）</span><input type="date" value={plannedDate} onChange={(e) => setPlannedDate(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
+            <label className="block text-sm font-bold text-green-950">一緒に行く人 <span className="font-normal text-ink-soft">（任意）</span><input type="text" value={companion} maxLength={80} placeholder="○○さん、ひとり…など" onChange={(e) => setCompanion(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
+            <label className="block text-sm font-bold text-green-950">メモ <span className="font-normal text-ink-soft">（任意）</span><textarea value={memo} maxLength={100} rows={3} placeholder="行きたい理由や気になっていることなど。" onChange={(e) => setMemo(e.target.value)} className="mt-2 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
+            <label className="block text-sm font-bold text-green-950">参考URL <span className="font-normal text-ink-soft">（任意）</span><input type="url" value={relatedUrl} placeholder="https://" onChange={(e) => setRelatedUrl(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
           </div>
         </details>
         {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、複数の行き先や項目がありますか？</legend>

@@ -27,6 +27,10 @@ export interface CustomExperienceDraft {
   budgetMaxYen?: number;
   minPeople?: number;
   maxPeople?: number;
+  plannedDate?: string;
+  companion?: string;
+  memo?: string;
+  relatedUrl?: string;
 }
 
 const STORAGE_KEY = "mitaiken-zone:custom-experiences";
@@ -230,6 +234,10 @@ export function useCustomExperiences() {
           budget_option_id: draft.budgetOptionId ?? null,
           min_people: draft.minPeople ?? null,
           max_people: draft.maxPeople ?? null,
+          planned_date: draft.plannedDate ?? null,
+          companion: draft.companion ?? null,
+          experience_memo: draft.memo ?? null,
+          related_url: draft.relatedUrl ?? null,
           wishlisted_at: new Date().toISOString(),
         });
       }
@@ -260,6 +268,10 @@ export function useCustomExperiences() {
           budget_option_id: draft.budgetOptionId ?? null,
           min_people: draft.minPeople ?? null,
           max_people: draft.maxPeople ?? null,
+          planned_date: draft.plannedDate ?? null,
+          companion: draft.companion ?? null,
+          experience_memo: draft.memo ?? null,
+          related_url: draft.relatedUrl ?? null,
         }).eq("user_id", userId).eq("client_key", id);
       }
     }

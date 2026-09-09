@@ -12,10 +12,11 @@ import {
   SearchIcon,
 } from "./ExperienceSearchScreen";
 import { BookmarkIcon } from "./RecordIcons";
-import type { RecordsMap } from "@/hooks/useExperienceStatus";
+import type { DetailsMap, RecordsMap, WishlistItemDetails } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget, ExperienceTargetDraft, TargetsMap } from "@/hooks/useExperienceTargets";
 import { CollectionDetailView } from "./CollectionDetailView";
 import { OriginalExperienceForm } from "./OriginalExperienceForm";
+import { WishlistItemDetailsSheet } from "./WishlistItemDetailsSheet";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import { imageSource } from "@/lib/imageSource";
 import type { SearchMasters } from "@/hooks/useSearchMasters";
@@ -31,6 +32,8 @@ interface WishlistViewProps {
   onRemove: (id: string) => void;
   targetsMap: TargetsMap;
   recordsMap: RecordsMap;
+  detailsMap: DetailsMap;
+  onUpdateWishlistDetails: (id: string, details: WishlistItemDetails) => Promise<boolean>;
   onRequestTargetRecord: (parentId: string, target: ExperienceTarget) => void;
   onAddTarget: (parentId: string, draft: ExperienceTargetDraft) => boolean;
   onUpdateTarget: (parentId: string, id: string, draft: ExperienceTargetDraft) => boolean;
@@ -54,6 +57,8 @@ export function WishlistView({
   onRemove,
   targetsMap,
   recordsMap,
+  detailsMap,
+  onUpdateWishlistDetails,
   onRequestTargetRecord,
   onAddTarget,
   onUpdateTarget,
@@ -74,6 +79,7 @@ export function WishlistView({
   const [selectedDetailId, setSelectedDetailId] = useState<string | null>(null);
   const [creatingOriginal, setCreatingOriginal] = useState(false);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
+  const [editingDetailsId, setEditingDetailsId] = useState<string | null>(null);
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const activeFilterCount = countExperienceFilters(filters);
 
@@ -97,7 +103,21 @@ export function WishlistView({
 
   const selectedDetail = items.find((item) => item.id === selectedDetailId);
   if (selectedDetail) {
-    return <CollectionDetailView experience={selectedDetail} targets={targetsMap[selectedDetail.id] ?? []} records={recordsMap[selectedDetail.id] ?? []} onBack={() => setSelectedDetailId(null)} backLabel="やってみたいリストに戻る" detailLabel="やってみたいの詳細" onMarkTried={(target) => onRequestTargetRecord(selectedDetail.id, target)} onAddTarget={(draft) => onAddTarget(selectedDetail.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedDetail.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedDetail.id, id)} onEditRecord={(recordId) => onEditRecord(selectedDetail.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedDetail.id, recordId)} onAddRecord={() => onRequestMarkTried(selectedDetail.id)} />;
+    const isSelectedCollection = Boolean(selectedDetail.exampleTargets);
+    const isSelectedCustom = selectedDetail.id.startsWith("custom-");
+    return (
+      <>
+        <CollectionDetailView experience={selectedDetail} targets={targetsMap[selectedDetail.id] ?? []} records={recordsMap[selectedDetail.id] ?? []} onBack={() => setSelectedDetailId(null)} backLabel="やってみたいリストに戻る" detailLabel="やってみたいの詳細" onMarkTried={(target) => onRequestTargetRecord(selectedDetail.id, target)} onAddTarget={(draft) => onAddTarget(selectedDetail.id, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedDetail.id, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedDetail.id, id)} onEditRecord={(recordId) => onEditRecord(selectedDetail.id, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedDetail.id, recordId)} onAddRecord={() => onRequestMarkTried(selectedDetail.id)} onEditExperience={!isSelectedCustom && !isSelectedCollection ? () => setEditingDetailsId(selectedDetail.id) : undefined} />
+        {editingDetailsId && (
+          <WishlistItemDetailsSheet
+            experienceTitle={selectedDetail.title}
+            initialDetails={detailsMap[editingDetailsId]}
+            onCancel={() => setEditingDetailsId(null)}
+            onConfirm={async (details) => { if (await onUpdateWishlistDetails(editingDetailsId, details)) setEditingDetailsId(null); }}
+          />
+        )}
+      </>
+    );
   }
 
   return (
@@ -228,7 +248,7 @@ export function WishlistView({
                 </button>}
                 <div className="flex items-center gap-1">
                   {isCustom && <button type="button" onClick={() => setEditingOriginalId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button>}
-                  {!isCustom && !isCollection && <button type="button" onClick={() => setSelectedDetailId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">詳細</button>}
+                  {!isCustom && !isCollection && <button type="button" onClick={() => setSelectedDetailId(experience.id)} className="min-h-8 rounded-full bg-green-100 px-2.5 text-xs font-bold text-green-800">編集</button>}
                   <button
                     type="button"
                     onClick={() => setOpenMenuId((current) => current === experience.id ? null : experience.id)}
@@ -303,6 +323,10 @@ export function WishlistView({
             budgetMaxYen: experience.budgetMaxYen,
             minPeople: experience.minPeople,
             maxPeople: experience.maxPeople,
+            plannedDate: detailsMap[editingOriginalId]?.plannedDate,
+            companion: detailsMap[editingOriginalId]?.companion,
+            memo: detailsMap[editingOriginalId]?.memo,
+            relatedUrl: detailsMap[editingOriginalId]?.relatedUrl,
           }}
           masters={searchMasters}
           mastersLoading={searchMastersLoading}
