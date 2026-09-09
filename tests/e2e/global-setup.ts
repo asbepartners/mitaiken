@@ -1,5 +1,5 @@
 import { chromium, type FullConfig } from "@playwright/test";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import {
   createAdminClient,
@@ -10,7 +10,6 @@ import {
 
 const AUTH_DIR = path.join(__dirname, "..", "..", "playwright", ".auth");
 const STORAGE_STATE_PATH = path.join(AUTH_DIR, "user.json");
-const TEST_USER_PATH = path.join(AUTH_DIR, "test-user.json");
 
 export default async function globalSetup(config: FullConfig) {
   const admin = createAdminClient();
@@ -53,6 +52,4 @@ export default async function globalSetup(config: FullConfig) {
   await mkdir(AUTH_DIR, { recursive: true });
   await context.storageState({ path: STORAGE_STATE_PATH });
   await browser.close();
-
-  await writeFile(TEST_USER_PATH, JSON.stringify({ userId: data.user.id }));
 }

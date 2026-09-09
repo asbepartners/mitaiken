@@ -11,7 +11,6 @@ export default defineConfig({
   // recompile on first navigation to each route easily exceed the 30s default.
   timeout: 90_000,
   globalSetup: "./tests/e2e/global-setup.ts",
-  globalTeardown: "./tests/e2e/global-teardown.ts",
   use: {
     baseURL: "http://localhost:3000",
     storageState: path.join(__dirname, "playwright", ".auth", "user.json"),

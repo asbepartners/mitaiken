@@ -13,7 +13,10 @@ async function removeFromWishlistIfPresent(page: import("@playwright/test").Page
   await page.goto("/");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: COLLECTION_TITLE });
-  if (!(await row.isVisible().catch(() => false))) return;
+  // wait (not just an instant check) for the wishlist data to finish
+  // loading, so a not-yet-rendered row isn't mistaken for "not present"
+  const present = await row.waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false);
+  if (!present) return;
   await row.getByRole("button", { name: `${COLLECTION_TITLE}のメニュー` }).click();
   await page.getByRole("button", { name: "リストから外す" }).click();
 }
@@ -51,7 +54,7 @@ test.describe("親子構造アイテム(コレクション)の既存機能の回
     await expect(targetRow).toBeVisible();
 
     // 項目の編集
-    await targetRow.getByRole("button", { name: "編集" }).click();
+    await targetRow.getByRole("button", { name: "編集", exact: true }).click();
     await page.getByLabel("気になった理由・覚えておきたいこと", { exact: false }).fill(UPDATED_TARGET_MEMO);
     await page.getByRole("button", { name: "保存" }).click();
     await expect(page.locator("li", { hasText: TARGET_TITLE })).toContainText(UPDATED_TARGET_MEMO);

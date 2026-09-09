@@ -15,7 +15,10 @@ async function removeFromWishlistIfPresent(page: import("@playwright/test").Page
   await page.goto("/");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: ITEM_TITLE });
-  if (!(await row.isVisible().catch(() => false))) return;
+  // wait (not just an instant check) for the wishlist data to finish
+  // loading, so a not-yet-rendered row isn't mistaken for "not present"
+  const present = await row.waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false);
+  if (!present) return;
   await row.getByRole("button", { name: `${ITEM_TITLE}のメニュー` }).click();
   await page.getByRole("button", { name: "リストから外す" }).click();
 }
@@ -57,7 +60,9 @@ test.describe("マスタ由来の単一アイテムのやってみたい詳細",
     await page.getByLabel("メモ", { exact: false }).fill(MEMO);
     await page.getByLabel("参考URL").fill(RELATED_URL);
     await page.getByRole("button", { name: "決定" }).click();
-    await expect(page.getByLabel("予定日")).not.toBeVisible();
+    // ensureUserExperience + update + reload is a sequential real network
+    // round trip against the live backend, so give this more than the default 5s
+    await expect(page.getByLabel("予定日")).not.toBeVisible({ timeout: 15000 });
 
     // リロード後も保持されていることを確認
     await page.reload();

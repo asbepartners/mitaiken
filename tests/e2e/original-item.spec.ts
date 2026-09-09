@@ -15,7 +15,10 @@ async function removeFromWishlistIfPresent(page: import("@playwright/test").Page
   await page.goto("/");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: ITEM_TITLE });
-  if (!(await row.isVisible().catch(() => false))) return;
+  // wait (not just an instant check) for the wishlist data to finish
+  // loading, so a not-yet-rendered row isn't mistaken for "not present"
+  const present = await row.waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false);
+  if (!present) return;
   await row.getByRole("button", { name: `${ITEM_TITLE}のメニュー` }).click();
   await page.getByRole("button", { name: "リストから外す" }).click();
 }
@@ -42,7 +45,9 @@ test.describe("オリジナルアイテムの予定日・メモ・参考URL・�
     await page.getByLabel("参考URL").fill(RELATED_URL);
 
     await page.getByRole("button", { name: "やってみたいに追加" }).click();
-    await expect(page.getByText("体験を作る")).not.toBeVisible();
+    // create + toggleWishlist + reload are sequential real network round
+    // trips against the live backend, so give this more than the default 5s
+    await expect(page.getByText("体験を作る")).not.toBeVisible({ timeout: 15000 });
 
     const row = page.locator("li", { hasText: ITEM_TITLE });
     await expect(row).toBeVisible();
@@ -58,7 +63,7 @@ test.describe("オリジナルアイテムの予定日・メモ・参考URL・�
     // 編集して保存
     await page.getByLabel("メモ", { exact: false }).fill(UPDATED_MEMO);
     await page.getByRole("button", { name: "変更を保存" }).click();
-    await expect(page.getByText("体験を編集")).not.toBeVisible();
+    await expect(page.getByText("体験を編集")).not.toBeVisible({ timeout: 15000 });
 
     // リロード後も編集内容が保持されていることを確認
     await page.reload();
