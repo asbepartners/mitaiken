@@ -7,7 +7,6 @@ import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import type { SearchMasters } from "@/hooks/useSearchMasters";
 
 interface Props {
-  existingTitles: string[];
   initialExperience?: CustomExperienceDraft;
   initialCategoryCode?: string;
   masters: SearchMasters;
@@ -31,7 +30,7 @@ async function resizeImage(file: File) {
   return canvas.toDataURL("image/jpeg", 0.78);
 }
 
-export function OriginalExperienceForm({ existingTitles, initialExperience, initialCategoryCode, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
+export function OriginalExperienceForm({ initialExperience, initialCategoryCode, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
   const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const editing = Boolean(initialExperience);
   const [step, setStep] = useState<"experience" | "targets">("experience");
@@ -67,7 +66,6 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
     || masters.categories.find(({ code }) => code === initialExperience?.categoryCode)?.id
     || masters.categories.find(({ code }) => code === initialCategoryCode)?.id
     || "";
-  const duplicate = existingTitles.some((value) => value.trim().toLocaleLowerCase("ja") === title.trim().toLocaleLowerCase("ja"));
   const validTargets = targets.filter((target) => target.title.trim());
   const targetDuplicate = new Set(validTargets.map((target) => target.title.trim().toLocaleLowerCase("ja"))).size !== validTargets.length;
   const conditionCount = [locationOptionId, durationOptionId, budgetOptionId, peopleMode !== "unset"].filter(Boolean).length;
@@ -80,7 +78,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
 
   async function save() {
     const category = masters.categories.find(({ id }) => id === effectiveCategoryId);
-    if (!title.trim() || !category || duplicate || (withTargets && (!validTargets.length || targetDuplicate))) return;
+    if (!title.trim() || !category || (withTargets && (!validTargets.length || targetDuplicate))) return;
     const location = masters.locations.find(({ id }) => id === locationOptionId);
     const duration = masters.durations.find(({ id }) => id === durationOptionId);
     const budget = masters.budgets.find(({ id }) => id === budgetOptionId);
@@ -120,7 +118,7 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
 
   function handlePrimaryAction() {
     setShowRequiredErrors(true);
-    if (!title.trim() || !effectiveCategoryId || duplicate || mastersLoading || mastersError) return;
+    if (!title.trim() || !effectiveCategoryId || mastersLoading || mastersError) return;
     if (withTargets && allowAddingTargets) {
       setStep("targets");
       return;
@@ -144,7 +142,6 @@ export function OriginalExperienceForm({ existingTitles, initialExperience, init
           <div className="space-y-5 p-5">
             <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" aria-invalid={showRequiredErrors && !title.trim()} onChange={(e) => setTitle(e.target.value)} className={`mt-2 w-full rounded-2xl border bg-ivory px-4 py-3 text-base font-normal ${showRequiredErrors && !title.trim() ? "border-coral-500" : "border-green-100"}`} /></label>
             {showRequiredErrors && !title.trim() && <p className="-mt-3 text-sm font-bold text-coral-500">体験名を入力してください。</p>}
-            {duplicate && <p className="-mt-3 text-sm font-bold text-coral-500">同じ名前の体験がすでにあります。</p>}
             <label className="block text-sm font-bold text-green-950">説明 <span className="font-normal text-ink-soft">（任意）</span><textarea value={description} maxLength={120} rows={3} placeholder="どんな体験にしたいか、ひとこと" onChange={(e) => setDescription(e.target.value)} className="mt-2 w-full resize-none rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
             <label className="block text-sm font-bold text-green-950">カテゴリ <span className="text-coral-500">＊</span><select value={effectiveCategoryId} onChange={(e) => setCategoryId(e.target.value)} disabled={mastersLoading || mastersError} aria-invalid={showRequiredErrors && !effectiveCategoryId} className={`mt-2 w-full rounded-2xl border bg-ivory px-4 py-3 text-base font-normal disabled:opacity-60 ${showRequiredErrors && !effectiveCategoryId ? "border-coral-500" : "border-green-100"}`}><option value="">選択してください</option>{masters.categories.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}</select></label>
             {showRequiredErrors && !effectiveCategoryId && !mastersLoading && !mastersError && <p className="-mt-3 text-sm font-bold text-coral-500">カテゴリを選択してください。</p>}

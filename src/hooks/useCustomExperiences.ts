@@ -132,7 +132,15 @@ export function useCustomExperiences() {
     let active = true;
     void (async () => {
       try {
+      // Only migrate custom experiences that don't have a DB row yet (e.g.
+      // created while signed out). Re-upserting an already-synced item here
+      // would stomp on wishlisted_at every time this effect re-runs (every
+      // fresh page load), silently re-adding it to the wishlist even after
+      // the user explicitly removed it.
+      const { data: existingRows } = await supabase.from("user_experiences").select("client_key").eq("user_id", userId).not("client_key", "is", null);
+      const existingKeys = new Set((existingRows ?? []).map((row) => row.client_key as string));
       for (const item of readStored()) {
+        if (existingKeys.has(item.id)) continue;
         const categoryCode = item.categoryCode ?? categorySlug(item.category);
         const { data: category } = item.categoryId
           ? { data: undefined }

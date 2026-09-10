@@ -47,13 +47,13 @@ export function useHiddenExperiences() {
     })();
   }, [userId]);
 
-  const hideExperience = useCallback((slug: string) => {
+  const hideExperience = useCallback(async (slug: string) => {
     const current = getSnapshot(); if (!current.includes(slug)) writeIds([...current, slug]);
-    if (userId) void (async () => { const id = await ensureRow(userId, slug); const s = getSupabaseClient(); if (id && s) await s.from("user_experiences").update({ hidden_at: new Date().toISOString() }).eq("id", id); })();
+    if (userId) { const id = await ensureRow(userId, slug); const s = getSupabaseClient(); if (id && s) await s.from("user_experiences").update({ hidden_at: new Date().toISOString() }).eq("id", id); }
   }, [userId]);
-  const restoreExperience = useCallback((slug: string) => {
+  const restoreExperience = useCallback(async (slug: string) => {
     writeIds(getSnapshot().filter((id) => id !== slug));
-    if (userId) { const s = getSupabaseClient(); if (s) void s.from("user_experiences").update({ hidden_at: null }).eq("user_id", userId).eq("source_template_slug", slug); }
+    if (userId) { const s = getSupabaseClient(); if (s) await s.from("user_experiences").update({ hidden_at: null }).eq("user_id", userId).eq("source_template_slug", slug); }
   }, [userId]);
   return { hiddenIds, hideExperience, restoreExperience };
 }

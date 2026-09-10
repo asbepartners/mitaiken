@@ -12,8 +12,8 @@ import { PhotoLightbox } from "./PhotoLightbox";
 interface Props {
   experience: Experience; targets: ExperienceTarget[]; records: TriedRecord[]; onBack: () => void;
   backLabel: string;
-  onMarkTried: (target: ExperienceTarget) => void; onAddTarget: (draft: ExperienceTargetDraft) => boolean;
-  onUpdateTarget: (id: string, draft: ExperienceTargetDraft) => boolean; onRemoveTarget: (id: string) => void;
+  onMarkTried: (target: ExperienceTarget) => void; onAddTarget: (draft: ExperienceTargetDraft) => Promise<boolean>;
+  onUpdateTarget: (id: string, draft: ExperienceTargetDraft) => Promise<boolean>; onRemoveTarget: (id: string) => void;
   onEditRecord: (recordId: string) => void; onDeleteRecord: (recordId: string) => void;
   onAddRecord?: () => void;
   onEditExperience?: () => void;
@@ -43,7 +43,7 @@ export function CollectionDetailView(props: Props) {
   }, [experience.id]);
 
   function openForm(target: ExperienceTarget | "new") { setEditing(target); setDraft(target === "new" ? { title: "", memo: "", relatedUrl: "" } : { title: target.title, memo: target.memo, relatedUrl: target.relatedUrl }); }
-  function save() { const ok = editing === "new" ? props.onAddTarget(draft) : editing ? props.onUpdateTarget(editing.id, draft) : false; if (ok) setEditing(null); }
+  async function save() { const ok = editing === "new" ? await props.onAddTarget(draft) : editing ? await props.onUpdateTarget(editing.id, draft) : false; if (ok) setEditing(null); }
   function mark(target: ExperienceTarget) { if (markingId) return; setMarkingId(target.id); window.setTimeout(() => { setMarkingId(null); props.onMarkTried(target); }, 340); }
   function markSingle() { if (markingId) return; setMarkingId(experience.id); window.setTimeout(() => { setMarkingId(null); props.onAddRecord?.(); }, 340); }
 
@@ -57,7 +57,7 @@ export function CollectionDetailView(props: Props) {
       description: selectedTarget.memo || experience.description,
       exampleTargets: undefined,
     };
-    return <CollectionDetailView experience={targetExperience} targets={[]} records={targetRecords} onBack={() => setSelectedTargetId(null)} backLabel={`${experience.title}に戻る`} detailLabel="項目の詳細" onMarkTried={() => {}} onAddTarget={() => false} onUpdateTarget={() => false} onRemoveTarget={() => {}} onEditRecord={props.onEditRecord} onDeleteRecord={props.onDeleteRecord} onAddRecord={() => props.onMarkTried(selectedTarget)} />;
+    return <CollectionDetailView experience={targetExperience} targets={[]} records={targetRecords} onBack={() => setSelectedTargetId(null)} backLabel={`${experience.title}に戻る`} detailLabel="項目の詳細" onMarkTried={() => {}} onAddTarget={() => Promise.resolve(false)} onUpdateTarget={() => Promise.resolve(false)} onRemoveTarget={() => {}} onEditRecord={props.onEditRecord} onDeleteRecord={props.onDeleteRecord} onAddRecord={() => props.onMarkTried(selectedTarget)} />;
   }
 
   return <div className="px-4 pb-6">

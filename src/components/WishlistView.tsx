@@ -35,8 +35,8 @@ interface WishlistViewProps {
   detailsMap: DetailsMap;
   onUpdateWishlistDetails: (id: string, details: WishlistItemDetails) => Promise<boolean>;
   onRequestTargetRecord: (parentId: string, target: ExperienceTarget) => void;
-  onAddTarget: (parentId: string, draft: ExperienceTargetDraft) => boolean;
-  onUpdateTarget: (parentId: string, id: string, draft: ExperienceTargetDraft) => boolean;
+  onAddTarget: (parentId: string, draft: ExperienceTargetDraft) => Promise<boolean>;
+  onUpdateTarget: (parentId: string, id: string, draft: ExperienceTargetDraft) => Promise<boolean>;
   onRemoveTarget: (parentId: string, id: string) => void;
   onEditRecord: (parentId: string, recordId: string) => void;
   onDeleteRecord: (parentId: string, recordId: string) => void;
@@ -265,7 +265,7 @@ export function WishlistView({
                 <div className="absolute bottom-2 right-12 z-20 rounded-xl border border-green-100 bg-paper p-1.5 shadow-lg">
                   <button
                     type="button"
-                    onClick={() => { onRemove(experience.id); setOpenMenuId(null); }}
+                    onClick={async () => { await onRemove(experience.id); setOpenMenuId(null); }}
                     className="whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium text-coral-500 hover:bg-coral-100"
                   >
                     リストから外す
@@ -294,12 +294,11 @@ export function WishlistView({
           }}
         />
       )}
-      {creatingOriginal && <OriginalExperienceForm existingTitles={items.map((item) => item.title)} initialCategoryCode={category === "all" ? undefined : category} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { if (await onCreateOriginal(draft, targets)) setCreatingOriginal(false); }} />}
+      {creatingOriginal && <OriginalExperienceForm initialCategoryCode={category === "all" ? undefined : category} masters={searchMasters} mastersLoading={searchMastersLoading} mastersError={searchMastersError} onClose={() => setCreatingOriginal(false)} onSubmit={async (draft, targets) => { if (await onCreateOriginal(draft, targets)) setCreatingOriginal(false); }} />}
       {editingOriginalId && (() => {
         const experience = items.find((item) => item.id === editingOriginalId);
         if (!experience) return null;
         return <OriginalExperienceForm
-          existingTitles={items.filter((item) => item.id !== editingOriginalId).map((item) => item.title)}
           initialExperience={{
             title: experience.title,
             description: experience.description,

@@ -177,32 +177,32 @@ export function useExperienceTargets() {
       write({ ...latest, [parentId]: storedTargets });
     }
   }
-  function addTarget(parentId: string, draft: ExperienceTargetDraft) {
+  async function addTarget(parentId: string, draft: ExperienceTargetDraft) {
     const title = draft.title.trim();
     if (!title) return false;
     const current = readStoredTargets(); const targets = current[parentId] ?? [];
     if (targets.some((target) => target.title.toLocaleLowerCase("ja") === title.toLocaleLowerCase("ja"))) return false;
     const target = { id: newId(), title, memo: draft.memo?.trim() || undefined, relatedUrl: draft.relatedUrl?.trim() || undefined };
     write({ ...current, [parentId]: [...targets, target] });
-    if (userId) void saveTarget(userId, parentId, target, targets.length);
+    if (userId) await saveTarget(userId, parentId, target, targets.length);
     return true;
   }
-  function updateTarget(parentId: string, id: string, draft: ExperienceTargetDraft) {
+  async function updateTarget(parentId: string, id: string, draft: ExperienceTargetDraft) {
     if (!draft.title.trim()) return false;
     const current = readStoredTargets();
     const targets = (current[parentId] ?? []).map((target) => target.id === id ? { ...target, title: draft.title.trim(), memo: draft.memo?.trim() || undefined, relatedUrl: draft.relatedUrl?.trim() || undefined } : target);
     write({ ...current, [parentId]: targets });
     const index = targets.findIndex((target) => target.id === id);
-    if (userId && index >= 0) void saveTarget(userId, parentId, targets[index], index);
+    if (userId && index >= 0) await saveTarget(userId, parentId, targets[index], index);
     return true;
   }
-  function removeTarget(parentId: string, id: string) {
+  async function removeTarget(parentId: string, id: string) {
     const current = readStoredTargets(); write({ ...current, [parentId]: (current[parentId] ?? []).filter((target) => target.id !== id) });
-    const supabase = getSupabaseClient(); if (userId && supabase) void supabase.from("user_experience_items").delete().eq("id", id);
+    const supabase = getSupabaseClient(); if (userId && supabase) await supabase.from("user_experience_items").delete().eq("id", id);
   }
-  function clearTargets(parentId: string) {
+  async function clearTargets(parentId: string) {
     const current = readStoredTargets(); const removedIds = (current[parentId] ?? []).map((target) => target.id); const next = { ...current }; delete next[parentId]; write(next);
-    const supabase = getSupabaseClient(); if (userId && supabase && removedIds.length) void supabase.from("user_experience_items").delete().in("id", removedIds);
+    const supabase = getSupabaseClient(); if (userId && supabase && removedIds.length) await supabase.from("user_experience_items").delete().in("id", removedIds);
   }
   return { targetsMap, loading, error, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets };
 }

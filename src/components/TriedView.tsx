@@ -34,8 +34,8 @@ interface TriedViewProps {
   onAddRecord: (experienceId: string) => void;
   onEditRecord: (experienceId: string, recordId: string) => void;
   onDeleteRecord: (experienceId: string, recordId: string) => void;
-  onAddTarget: (experienceId: string, draft: ExperienceTargetDraft) => boolean;
-  onUpdateTarget: (experienceId: string, id: string, draft: ExperienceTargetDraft) => boolean;
+  onAddTarget: (experienceId: string, draft: ExperienceTargetDraft) => Promise<boolean>;
+  onUpdateTarget: (experienceId: string, id: string, draft: ExperienceTargetDraft) => Promise<boolean>;
   onRemoveTarget: (experienceId: string, id: string) => void;
   targetsMap: TargetsMap;
   onRequestTargetRecord: (experienceId: string, target: ExperienceTarget) => void;
@@ -212,7 +212,6 @@ export function TriedView({
     return <>
       <CollectionDetailView experience={selectedExperience} targets={targetsMap[selectedExperienceId] ?? []} records={selectedRecords} onBack={closeExperienceDetail} backLabel="はじめてリストに戻る" onMarkTried={(target) => onRequestTargetRecord(selectedExperienceId, target)} onAddTarget={(draft) => onAddTarget(selectedExperienceId, draft)} onUpdateTarget={(id, draft) => onUpdateTarget(selectedExperienceId, id, draft)} onRemoveTarget={(id) => onRemoveTarget(selectedExperienceId, id)} onEditRecord={(recordId) => onEditRecord(selectedExperienceId, recordId)} onDeleteRecord={(recordId) => onDeleteRecord(selectedExperienceId, recordId)} onAddRecord={() => onAddRecord(selectedExperienceId)} onEditExperience={selectedExperience.id.startsWith("custom-") ? () => setEditingOriginalId(selectedExperienceId) : undefined} />
       {editingOriginal && <OriginalExperienceForm
-        existingTitles={items.filter(({ experience }) => experience.id !== selectedExperienceId).map(({ experience }) => experience.title)}
         initialExperience={{
           title: selectedExperience.title,
           description: selectedExperience.description,

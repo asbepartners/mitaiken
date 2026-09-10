@@ -412,7 +412,7 @@ export function useExperienceStatus() {
     return () => { active = false; };
   }, [userId, reload]);
 
-  const toggleWishlist = useCallback((slug: string) => {
+  const toggleWishlist = useCallback(async (slug: string) => {
     const current = getSnapshot();
     if (current[slug]?.status === "cleared") return;
 
@@ -423,16 +423,14 @@ export function useExperienceStatus() {
     writeStatusMap(next);
 
     if (userId) {
-      void (async () => {
-        const id = await ensureUserExperience(userId, slug);
-        const supabase = getSupabaseClient();
-        if (id && supabase) {
-          await supabase
-            .from("user_experiences")
-            .update({ wishlisted_at: adding ? new Date().toISOString() : null })
-            .eq("id", id);
-        }
-      })();
+      const id = await ensureUserExperience(userId, slug);
+      const supabase = getSupabaseClient();
+      if (id && supabase) {
+        await supabase
+          .from("user_experiences")
+          .update({ wishlisted_at: adding ? new Date().toISOString() : null })
+          .eq("id", id);
+      }
     }
   }, [userId]);
 
@@ -457,7 +455,7 @@ export function useExperienceStatus() {
     return true;
   }, [userId, reload]);
 
-  const markTried = useCallback((slug: string, record: MemoryRecordDraft) => {
+  const markTried = useCallback(async (slug: string, record: MemoryRecordDraft) => {
     const localRecord: TriedRecord = {
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       ...record,
@@ -480,36 +478,34 @@ export function useExperienceStatus() {
     });
 
     if (userId) {
-      void (async () => {
-        const id = await ensureUserExperience(userId, slug);
-        const supabase = getSupabaseClient();
-        if (!id || !supabase) return;
+      const id = await ensureUserExperience(userId, slug);
+      const supabase = getSupabaseClient();
+      if (!id || !supabase) return;
 
-        const storedTargetId = record.targetId
-          ? await ensureStoredTargetInDatabase(userId, slug, record.targetId)
-          : null;
+      const storedTargetId = record.targetId
+        ? await ensureStoredTargetInDatabase(userId, slug, record.targetId)
+        : null;
 
-        const experience = await supabase.from("user_experiences").select("title").eq("id", id).single();
-        const itemId = record.targetId
-          ? storedTargetId
-          : await ensurePrimaryItem(id, experience.data?.title ?? slug);
-        if (!itemId) return;
-        await supabase.from("experience_logs").insert({
-          user_experience_id: id,
-          user_experience_item_id: itemId,
-          ...timingToDb(record.timing),
-          place: record.place ?? null,
-          companion: record.companion ?? null,
-          memo: record.memo ?? null,
-          photo_path: record.photoUrl ?? null,
-        });
-        await supabase.from("user_experiences").update({ wishlisted_at: null }).eq("id", id);
-        await reload();
-      })();
+      const experience = await supabase.from("user_experiences").select("title").eq("id", id).single();
+      const itemId = record.targetId
+        ? storedTargetId
+        : await ensurePrimaryItem(id, experience.data?.title ?? slug);
+      if (!itemId) return;
+      await supabase.from("experience_logs").insert({
+        user_experience_id: id,
+        user_experience_item_id: itemId,
+        ...timingToDb(record.timing),
+        place: record.place ?? null,
+        companion: record.companion ?? null,
+        memo: record.memo ?? null,
+        photo_path: record.photoUrl ?? null,
+      });
+      await supabase.from("user_experiences").update({ wishlisted_at: null }).eq("id", id);
+      await reload();
     }
   }, [userId, reload, writeRecordsMap]);
 
-  const updateRecord = useCallback((slug: string, recordId: string, record: MemoryRecordDraft) => {
+  const updateRecord = useCallback(async (slug: string, recordId: string, record: MemoryRecordDraft) => {
     const current = readRecordsStorage();
     const nextRecords = (current[slug] ?? []).map((item) =>
       item.id === recordId ? { id: item.id, ...record } : item
@@ -532,31 +528,29 @@ export function useExperienceStatus() {
     }
 
     if (userId && !recordId.startsWith("local-") && !recordId.startsWith("legacy-")) {
-      void (async () => {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        const userExperienceId = await ensureUserExperience(userId, slug);
-        if (!userExperienceId) return;
-        const experience = await supabase.from("user_experiences").select("title").eq("id", userExperienceId).single();
-        const itemId = record.targetId ?? await ensurePrimaryItem(userExperienceId, experience.data?.title ?? slug);
-        if (!itemId) return;
-        await supabase
-          .from("experience_logs")
-          .update({
-            ...timingToDb(record.timing),
-            place: record.place ?? null,
-            companion: record.companion ?? null,
-            memo: record.memo ?? null,
-            photo_path: record.photoUrl ?? null,
-            user_experience_item_id: itemId,
-          })
-          .eq("id", recordId);
-        await reload();
-      })();
+      const supabase = getSupabaseClient();
+      if (!supabase) return;
+      const userExperienceId = await ensureUserExperience(userId, slug);
+      if (!userExperienceId) return;
+      const experience = await supabase.from("user_experiences").select("title").eq("id", userExperienceId).single();
+      const itemId = record.targetId ?? await ensurePrimaryItem(userExperienceId, experience.data?.title ?? slug);
+      if (!itemId) return;
+      await supabase
+        .from("experience_logs")
+        .update({
+          ...timingToDb(record.timing),
+          place: record.place ?? null,
+          companion: record.companion ?? null,
+          memo: record.memo ?? null,
+          photo_path: record.photoUrl ?? null,
+          user_experience_item_id: itemId,
+        })
+        .eq("id", recordId);
+      await reload();
     }
   }, [userId, reload, writeRecordsMap]);
 
-  const deleteRecord = useCallback((slug: string, recordId: string) => {
+  const deleteRecord = useCallback(async (slug: string, recordId: string) => {
     const current = readRecordsStorage();
     const remaining = (current[slug] ?? []).filter((record) => record.id !== recordId);
     const nextRecords = { ...current, [slug]: remaining };
@@ -580,25 +574,23 @@ export function useExperienceStatus() {
     }
 
     if (userId && !recordId.startsWith("local-") && !recordId.startsWith("legacy-")) {
-      void (async () => {
-        const supabase = getSupabaseClient();
-        if (!supabase) return;
-        await supabase.from("experience_logs").delete().eq("id", recordId);
-        if (remaining.length === 0) {
-          const id = await ensureUserExperience(userId, slug);
-          if (id) {
-            await supabase
-              .from("user_experiences")
-              .update({ wishlisted_at: new Date().toISOString() })
-              .eq("id", id);
-          }
+      const supabase = getSupabaseClient();
+      if (!supabase) return;
+      await supabase.from("experience_logs").delete().eq("id", recordId);
+      if (remaining.length === 0) {
+        const id = await ensureUserExperience(userId, slug);
+        if (id) {
+          await supabase
+            .from("user_experiences")
+            .update({ wishlisted_at: new Date().toISOString() })
+            .eq("id", id);
         }
-        await reload();
-      })();
+      }
+      await reload();
     }
   }, [userId, reload, writeRecordsMap]);
 
-  const undoTried = useCallback((slug: string) => {
+  const undoTried = useCallback(async (slug: string) => {
     const current = getSnapshot();
     if (current[slug]?.status !== "cleared") return;
 
@@ -607,34 +599,30 @@ export function useExperienceStatus() {
     writeRecordsMap({ ...currentRecords, [slug]: [] });
 
     if (userId) {
-      void (async () => {
-        const id = await ensureUserExperience(userId, slug);
-        const supabase = getSupabaseClient();
-        if (id && supabase) {
-          await supabase.from("experience_logs").delete().eq("user_experience_id", id);
-          await supabase
-            .from("user_experiences")
-            .update({ wishlisted_at: new Date().toISOString() })
-            .eq("id", id);
-        }
-      })();
+      const id = await ensureUserExperience(userId, slug);
+      const supabase = getSupabaseClient();
+      if (id && supabase) {
+        await supabase.from("experience_logs").delete().eq("user_experience_id", id);
+        await supabase
+          .from("user_experiences")
+          .update({ wishlisted_at: new Date().toISOString() })
+          .eq("id", id);
+      }
     }
   }, [userId, writeRecordsMap]);
 
-  const removeStatus = useCallback((slug: string) => {
+  const removeStatus = useCallback(async (slug: string) => {
     const next = { ...getSnapshot() };
     delete next[slug];
     writeStatusMap(next);
 
     if (userId) {
-      void (async () => {
-        const supabase = getSupabaseClient();
-        if (supabase) {
-          const query = supabase.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId);
-          if (slug.startsWith("custom-")) await query.eq("client_key", slug);
-          else await query.eq("source_template_slug", slug);
-        }
-      })();
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const query = supabase.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId);
+        if (slug.startsWith("custom-")) await query.eq("client_key", slug);
+        else await query.eq("source_template_slug", slug);
+      }
     }
   }, [userId]);
 

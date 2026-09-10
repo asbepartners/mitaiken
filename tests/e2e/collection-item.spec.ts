@@ -18,7 +18,17 @@ async function removeFromWishlistIfPresent(page: import("@playwright/test").Page
   const present = await row.waitFor({ state: "visible", timeout: 5000 }).then(() => true).catch(() => false);
   if (!present) return;
   await row.getByRole("button", { name: `${COLLECTION_TITLE}のメニュー` }).click();
-  await page.getByRole("button", { name: "リストから外す" }).click();
+  const removeButton = page.getByRole("button", { name: "リストから外す" });
+  await removeButton.click();
+  // the menu only closes once the awaited Supabase write resolves, so
+  // waiting for it to disappear here means the write has actually landed
+  // (as opposed to reloading immediately and racing an in-flight request)
+  await expect(removeButton).not.toBeVisible();
+
+  // reload and re-check against the real backend as a final confirmation
+  await page.reload();
+  await goToWishlistTab(page);
+  await expect(row).not.toBeVisible();
 }
 
 test.describe("親子構造アイテム(コレクション)の既存機能の回帰確認", () => {

@@ -206,13 +206,16 @@ export default function Home() {
     }
     if (!canSave()) return;
     if (editingId && editingRecordId) {
-      updateRecord(editingId, editingRecordId, record);
+      // updateRecord already updates local state synchronously and awaits
+      // its own Supabase write before resolving; the sheet can close as
+      // soon as the (optimistically-reflected) update is requested.
+      void updateRecord(editingId, editingRecordId, record);
       setEditingId(null);
       setEditingRecordId(null);
       return;
     }
 
-    if (pendingId) markTried(pendingId, record);
+    if (pendingId) void markTried(pendingId, record);
     setPendingId(null);
     setPendingTarget(null);
   }
@@ -249,11 +252,11 @@ export default function Home() {
             hiddenIds={hiddenIds}
             statusMap={hasAuthenticatedUser ? statusMap : {}}
             onHide={hideExperience}
-            onToggleWishlist={(id) => requireAuth(() => {
+            onToggleWishlist={(id) => requireAuth(async () => {
               if (!canSave()) return;
               const adding = !statusMap[id];
               if (adding) void initializeTargets(id);
-              toggleWishlist(id);
+              await toggleWishlist(id);
               if (adding) {
                 const experience = experiences.find((item) => item.id === id);
                 if (experience && !id.startsWith("custom-") && !experience.exampleTargets) {
@@ -262,7 +265,7 @@ export default function Home() {
               }
             })}
             onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
-            onUndoTried={(id) => requireAuth(() => { if (canSave()) undoTried(id); })}
+            onUndoTried={(id) => requireAuth(async () => { if (canSave()) await undoTried(id); })}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
             searchMastersError={searchMasters.error}
@@ -276,10 +279,10 @@ export default function Home() {
             onExplore={() => setTab("explore")}
             onRequireAuth={requireAuth}
             onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
-            onRemove={(id) => {
+            onRemove={async (id) => {
               if (!canSave()) return;
-              removeStatus(id);
-              clearTargets(id);
+              await removeStatus(id);
+              await clearTargets(id);
             }}
             targetsMap={targetsMap}
             recordsMap={recordsMap}
@@ -291,26 +294,26 @@ export default function Home() {
                 setPendingId(parentId);
               });
             }}
-            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : false}
-            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : false}
-            onRemoveTarget={(parentId, id) => { if (canSave()) removeTarget(parentId, id); }}
+            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : Promise.resolve(false)}
+            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : Promise.resolve(false)}
+            onRemoveTarget={async (parentId, id) => { if (canSave()) await removeTarget(parentId, id); }}
             onEditRecord={(experienceId, recordId) => {
               setEditingId(experienceId);
               setEditingRecordId(recordId);
             }}
-            onDeleteRecord={(experienceId, recordId) => { if (canSave()) deleteRecord(experienceId, recordId); }}
+            onDeleteRecord={async (experienceId, recordId) => { if (canSave()) await deleteRecord(experienceId, recordId); }}
             onCreateOriginal={async (draft, targets) => {
               if (!canSave()) return false;
               const id = await createExperience(draft);
-              for (const target of targets) addTarget(id, target);
-              toggleWishlist(id);
+              for (const target of targets) await addTarget(id, target);
+              await toggleWishlist(id);
               await reloadExperienceStatus();
               return true;
             }}
             onUpdateOriginal={async (id, draft, targets) => {
               if (!canSave()) return false;
               await updateExperience(id, draft);
-              for (const target of targets) addTarget(id, target);
+              for (const target of targets) await addTarget(id, target);
               await reloadExperienceStatus();
               return true;
             }}
@@ -331,19 +334,19 @@ export default function Home() {
               setEditingId(experienceId);
               setEditingRecordId(recordId);
             }}
-            onDeleteRecord={(experienceId, recordId) => { if (canSave()) deleteRecord(experienceId, recordId); }}
+            onDeleteRecord={async (experienceId, recordId) => { if (canSave()) await deleteRecord(experienceId, recordId); }}
             onUpdateOriginal={async (id, draft, targets) => {
               if (!canSave()) return false;
               await updateExperience(id, draft);
-              for (const target of targets) addTarget(id, target);
+              for (const target of targets) await addTarget(id, target);
               return true;
             }}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
             searchMastersError={searchMasters.error}
-            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : false}
-            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : false}
-            onRemoveTarget={(parentId, id) => { if (canSave()) removeTarget(parentId, id); }}
+            onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : Promise.resolve(false)}
+            onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : Promise.resolve(false)}
+            onRemoveTarget={async (parentId, id) => { if (canSave()) await removeTarget(parentId, id); }}
             targetsMap={targetsMap}
             onRequestTargetRecord={(parentId, target) => {
               requireAuth(() => {
