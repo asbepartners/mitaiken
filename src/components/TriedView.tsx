@@ -19,6 +19,7 @@ import type { CategoryOption, SearchMasters } from "@/hooks/useSearchMasters";
 import { OriginalExperienceForm } from "./OriginalExperienceForm";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import { PhotoLightbox } from "./PhotoLightbox";
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 
 export interface TriedExperience {
   experience: Experience;
@@ -107,7 +108,6 @@ export function TriedView({
     view: "firsts",
     year: "all",
   });
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const currentYear = String(new Date().getFullYear());
   const selectedExperience = items.find(({ experience }) => experience.id === selectedExperienceId)?.experience;
 

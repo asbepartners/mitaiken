@@ -8,6 +8,7 @@ import { ExperienceRecordTimeline } from "./ExperienceRecordTimeline";
 import { ExperienceConditions } from "./ExperienceConditions";
 import { imageSource } from "@/lib/imageSource";
 import { PhotoLightbox } from "./PhotoLightbox";
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 
 interface Props {
   experience: Experience; targets: ExperienceTarget[]; records: TriedRecord[]; onBack: () => void;
@@ -22,7 +23,6 @@ interface Props {
 
 export function CollectionDetailView(props: Props) {
   const { experience, targets, records } = props;
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const [editing, setEditing] = useState<ExperienceTarget | "new" | null>(null);
   const [draft, setDraft] = useState<ExperienceTargetDraft>({ title: "", memo: "", relatedUrl: "" });
   const [menuId, setMenuId] = useState<string | null>(null);

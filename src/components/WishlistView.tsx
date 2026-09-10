@@ -21,6 +21,7 @@ import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import { imageSource } from "@/lib/imageSource";
 import type { SearchMasters } from "@/hooks/useSearchMasters";
 import { ExperienceConditions } from "./ExperienceConditions";
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 
 interface WishlistViewProps {
   items: Experience[];
@@ -80,7 +81,6 @@ export function WishlistView({
   const [creatingOriginal, setCreatingOriginal] = useState(false);
   const [editingOriginalId, setEditingOriginalId] = useState<string | null>(null);
   const [editingDetailsId, setEditingDetailsId] = useState<string | null>(null);
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const activeFilterCount = countExperienceFilters(filters);
 
   const filtered = useMemo(

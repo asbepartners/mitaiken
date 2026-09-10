@@ -12,7 +12,7 @@ async function goToWishlistTab(page: import("@playwright/test").Page) {
 }
 
 async function removeFromWishlistIfPresent(page: import("@playwright/test").Page) {
-  await page.goto("/");
+  await page.goto("/app");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: ITEM_TITLE });
   // wait (not just an instant check) for the wishlist data to finish
@@ -41,7 +41,7 @@ test.describe("オリジナルアイテムの予定日・メモ・参考URL・�
   test("作成→編集→保存→やってみた記録へのデフォルト反映", async ({ page }) => {
     await removeFromWishlistIfPresent(page);
 
-    await page.goto("/");
+    await page.goto("/app");
     await goToWishlistTab(page);
     await page.getByRole("button", { name: "＋ オリジナルのはじめてを追加" }).click();
 

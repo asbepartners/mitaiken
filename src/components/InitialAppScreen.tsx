@@ -1,11 +1,12 @@
 "use client";
 
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
+
 interface Props {
   state: "loading" | "offline" | "error";
 }
 
 export function InitialAppScreen({ state }: Props) {
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   return (
     <main className="flex min-h-dvh w-full items-center justify-center overflow-hidden bg-ivory bg-paper-texture px-5 py-10">
       <div className="flex w-full max-w-md flex-col items-center text-center">

@@ -6,6 +6,7 @@ import type { TriedRecord } from "@/hooks/useExperienceStatus";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import type { Timing } from "@/lib/timing";
 import { imageSource } from "@/lib/imageSource";
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 import { TimelineDate } from "./TimelineDate";
 
 interface Props {
@@ -38,7 +39,6 @@ export function ExperienceRecordTimeline({
   onOpenTarget,
   onPreviewPhoto,
 }: Props) {
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const isCollection = Boolean(experience.exampleTargets);
   const sorted = [...records].sort((a, b) =>
     timingSortKey(b.timing).localeCompare(timingSortKey(a.timing))

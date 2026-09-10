@@ -5,6 +5,7 @@ import { categoryFromCode } from "@/data/experiences";
 import type { ExperienceTargetDraft } from "@/hooks/useExperienceTargets";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import type { SearchMasters } from "@/hooks/useSearchMasters";
+import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 
 interface Props {
   initialExperience?: CustomExperienceDraft;
@@ -31,7 +32,6 @@ async function resizeImage(file: File) {
 }
 
 export function OriginalExperienceForm({ initialExperience, initialCategoryCode, masters, mastersLoading, mastersError, allowAddingTargets = true, onClose, onSubmit }: Props) {
-  const assetBase = process.env.NODE_ENV === "production" ? "/mitaiken" : "";
   const editing = Boolean(initialExperience);
   const [step, setStep] = useState<"experience" | "targets">("experience");
   const [title, setTitle] = useState(initialExperience?.title ?? "");

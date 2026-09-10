@@ -12,7 +12,7 @@ async function goToWishlistTab(page: import("@playwright/test").Page) {
 }
 
 async function removeFromWishlistIfPresent(page: import("@playwright/test").Page) {
-  await page.goto("/");
+  await page.goto("/app");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: ITEM_TITLE });
   // wait (not just an instant check) for the wishlist data to finish
@@ -42,7 +42,7 @@ test.describe("マスタ由来の単一アイテムのやってみたい詳細",
     await removeFromWishlistIfPresent(page);
 
     // 探す画面からマスタ単一アイテムを追加する
-    await page.goto("/");
+    await page.goto("/app");
     await page.locator("nav").getByText("みつける", { exact: true }).click();
     const card = page.locator("div.snap-center").filter({ hasText: ITEM_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();

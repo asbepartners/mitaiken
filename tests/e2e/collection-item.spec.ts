@@ -10,7 +10,7 @@ async function goToWishlistTab(page: import("@playwright/test").Page) {
 }
 
 async function removeFromWishlistIfPresent(page: import("@playwright/test").Page) {
-  await page.goto("/");
+  await page.goto("/app");
   await goToWishlistTab(page);
   const row = page.locator("li", { hasText: COLLECTION_TITLE });
   // wait (not just an instant check) for the wishlist data to finish
@@ -39,7 +39,7 @@ test.describe("親子構造アイテム(コレクション)の既存機能の回
   test("項目の追加・編集・やってみた記録が引き続き機能し、単一アイテム向け機能が混入していない", async ({ page }) => {
     await removeFromWishlistIfPresent(page);
 
-    await page.goto("/");
+    await page.goto("/app");
     await page.locator("nav").getByText("みつける", { exact: true }).click();
     const card = page.locator("div.snap-center").filter({ hasText: COLLECTION_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();

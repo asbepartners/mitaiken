@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "わたしのはじめて帖",
   description: "まだ知らない「やってみたい」を見つけて、未来の楽しみとして貯めるノート。",
   applicationName: "わたしのはじめて帖",
-  manifest: "/mitaiken/manifest.webmanifest",
+  manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
