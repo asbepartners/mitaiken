@@ -38,7 +38,7 @@ export const viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ja" className="h-full antialiased">
+    <html lang="ja" className="h-dvh antialiased">
       <body className="min-h-full flex flex-col bg-ivory font-body">{children}</body>
     </html>
   );
