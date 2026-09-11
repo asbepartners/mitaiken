@@ -137,7 +137,7 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, onDe
         <div className="py-2"><SectionTitle icon={<InfoIcon />}>このアプリについて</SectionTitle></div>
         <MenuLink href="/terms">利用規約</MenuLink>
         <MenuLink href="/privacy">プライバシーポリシー</MenuLink>
-        <MenuLink href="mailto:contact@hajimetecho.jp" external>お問い合わせ</MenuLink>
+        <MenuLink href="/contact">お問い合わせ</MenuLink>
       </section>
 
       {user && (

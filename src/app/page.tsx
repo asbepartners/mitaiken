@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ASSET_BASE } from "@/lib/assetBase";
 
 export const metadata: Metadata = {
@@ -317,7 +318,8 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-green-800/10 bg-ivory px-6 py-8 text-center text-xs tracking-[0.08em] text-green-800/60">
-        © 2026 わたしのはじめて帖
+        <Link href="/contact" className="underline underline-offset-4">お問い合わせ</Link>
+        <p className="mt-3">© 2026 わたしのはじめて帖</p>
       </footer>
     </div>
   );
