@@ -116,6 +116,30 @@ function ValueIcon({ name }: { name: string }) {
   );
 }
 
+function ClosingMessage({ align }: { align: "center" | "right" }) {
+  const alignClass = align === "right" ? "ml-auto text-right" : "mx-auto text-center";
+  return (
+    <div className={`max-w-xl ${alignClass}`}>
+      <h2 className="text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
+        いつか振り返ったとき、
+        <br />
+        「なかなか楽しかったな」と思えるように。
+      </h2>
+      <p className="mt-7 text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
+        わたしのはじめて帖は、ただいま準備中です。
+        <br />
+        あなたの「はじめて」をひらける日まで、もう少しお待ちください。
+      </p>
+      <Link
+        href="/app"
+        className="mt-10 inline-flex rounded-full border border-green-800/15 bg-paper px-7 py-4 text-sm font-semibold tracking-[0.12em] text-green-800 shadow-sm transition hover:bg-ivory"
+      >
+        アプリを見る
+      </Link>
+    </div>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-hidden bg-ivory text-green-950">
@@ -129,7 +153,7 @@ export default function LandingPage() {
             href="/app"
             className="rounded-full border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm transition hover:bg-paper"
           >
-            ただいま準備中
+            アプリを見る
           </Link>
         </div>
       </header>
@@ -153,13 +177,13 @@ export default function LandingPage() {
               <br className="hidden sm:block" />
               いつか振り返るための、わたしだけの小さな記録です。
             </p>
-            <a
-              href="#story"
+            <Link
+              href="/app"
               className="mt-8 inline-flex items-center gap-3 rounded-full bg-coral-500 px-7 py-4 text-sm font-semibold tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(232,111,114,0.22)] transition hover:-translate-y-0.5 hover:bg-coral-400"
             >
-              このアプリに込めた想い
-              <span aria-hidden="true">↓</span>
-            </a>
+              アプリを見る
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
           <div className="relative mt-auto h-[270px] w-full sm:h-[340px] lg:h-[390px]">
@@ -171,7 +195,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="story" className="bg-paper px-6 py-24 sm:px-10 sm:py-32">
+        <section className="bg-paper px-6 py-24 sm:px-10 sm:py-32">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm tracking-[0.2em] text-[#b67c18]">このアプリをつくった理由</p>
             <h2 className="mt-5 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
@@ -275,32 +299,34 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="relative bg-ivory px-6 py-24 text-center sm:px-10 sm:py-32">
-          <div className="mx-auto max-w-3xl">
-            <div className="mx-auto max-w-md overflow-hidden rounded-[2rem] bg-paper shadow-[0_24px_70px_rgba(45,74,60,0.08)]">
-              <img
-                src={`${ASSET_BASE}/header-tried-v1.png`}
-                alt="丘の上で自分の帖をひらく女性のイラスト"
-                className="aspect-[4/3] h-full w-full object-cover object-[32%_100%]"
-              />
-            </div>
-            <p className="mt-10 text-2xl text-[#d99a25]" aria-hidden="true">✦</p>
-            <h2 className="mt-6 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
-              いつか振り返ったとき、
-              <br />
-              「なかなか楽しかったな」と思えるように。
-            </h2>
-            <p className="mx-auto mt-7 max-w-xl text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
-              わたしのはじめて帖は、ただいま準備中です。
-              <br />
-              あなたの「はじめて」をひらける日まで、もう少しお待ちください。
-            </p>
-            <Link
-              href="/app"
-              className="mx-auto mt-10 inline-flex rounded-full border border-green-800/15 bg-paper px-7 py-4 text-sm font-semibold tracking-[0.12em] text-green-800 shadow-sm transition hover:bg-ivory"
-            >
-              わたしのはじめて帖　準備中
-            </Link>
+        {/* Mobile: the 2.33:1 illustration would always show its full height at
+            phone width (no room to crop the girl out from under the text), so
+            stack image then text instead of overlaying them. */}
+        <section className="sm:hidden">
+          <div style={{ backgroundColor: "#fcf6ed" }}>
+            <img
+              src={`${ASSET_BASE}/header-tried-v1.png`}
+              alt="丘の上で自分の帖をひらく女性のイラスト"
+              className="h-auto w-full"
+            />
+          </div>
+          <div className="bg-ivory px-6 py-16 text-center">
+            <ClosingMessage align="center" />
+          </div>
+        </section>
+
+        {/* sm and up: enough width to run the illustration full-bleed with the
+            message beside the girl instead of on top of her. */}
+        <section className="relative hidden min-h-[680px] items-center overflow-hidden px-10 py-32 sm:flex lg:px-12">
+          <img
+            src={`${ASSET_BASE}/header-tried-v1.png`}
+            alt="丘の上で自分の帖をひらく女性のイラスト"
+            className="absolute inset-0 h-full w-full object-cover object-[15%_15%]"
+          />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-paper to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-ivory to-transparent" />
+          <div className="relative z-[1] mx-auto w-full max-w-6xl">
+            <ClosingMessage align="right" />
           </div>
         </section>
       </main>
