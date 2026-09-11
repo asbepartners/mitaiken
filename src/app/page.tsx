@@ -135,7 +135,10 @@ export default function LandingPage() {
       </header>
 
       <main>
-        <section className="relative flex min-h-[760px] flex-col bg-paper-texture pt-28 sm:min-h-[820px] lg:min-h-[760px] lg:pt-36">
+        <section
+          className="relative flex min-h-[760px] flex-col bg-paper-texture pt-28 sm:min-h-[820px] lg:min-h-[760px] lg:pt-36"
+          style={{ backgroundColor: "#fef9f0" }} // matches header-explore-v4.png's own background so the seam above it doesn't show
+        >
           <div className="relative z-[1] mx-auto w-full max-w-6xl px-6 text-center sm:px-10 lg:px-12">
             <p className="mb-5 text-sm tracking-[0.2em] text-green-700 sm:text-base">
               人生の「はじめて」を、わたしの手元に。
