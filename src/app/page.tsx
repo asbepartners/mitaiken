@@ -122,11 +122,15 @@ export default function LandingPage() {
       <header className="absolute inset-x-0 top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 sm:px-10 lg:px-12">
           <p className="text-sm font-semibold tracking-[0.12em] sm:text-base">
-            わたしのはじめて帖<span className="ml-1 text-[#d99a25]">✦</span>
+            わたしのはじめて帖<sup className="ml-0.5 text-[0.6em] font-normal">™</sup>
+            <span className="ml-1 text-[#d99a25]">✦</span>
           </p>
-          <span className="rounded-full border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm">
+          <Link
+            href="/app"
+            className="rounded-full border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm transition hover:bg-paper"
+          >
             ただいま準備中
-          </span>
+          </Link>
         </div>
       </header>
 
@@ -268,38 +272,16 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="bg-paper px-6 py-24 sm:px-10 sm:py-32">
-          <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
-            <div className="overflow-hidden rounded-[2rem] bg-ivory shadow-[0_24px_70px_rgba(45,74,60,0.08)]">
+        <section className="relative bg-ivory px-6 py-24 text-center sm:px-10 sm:py-32">
+          <div className="mx-auto max-w-3xl">
+            <div className="mx-auto max-w-md overflow-hidden rounded-[2rem] bg-paper shadow-[0_24px_70px_rgba(45,74,60,0.08)]">
               <img
                 src={`${ASSET_BASE}/header-tried-v1.png`}
                 alt="丘の上で自分の帖をひらく女性のイラスト"
                 className="aspect-[4/3] h-full w-full object-cover object-[32%_100%]"
               />
             </div>
-            <div>
-              <p className="text-sm tracking-[0.2em] text-[#b67c18]">少し余白ができた日に</p>
-              <h2 className="mt-5 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
-                人生には、まだまだ
-                <br />
-                知らないことがある。
-              </h2>
-              <div className="mt-7 space-y-5 text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
-                <p>
-                  仕事や子育てに追われる日々が、少し落ち着いたとき。自分のために使える時間が、ほんの少しできたとき。
-                </p>
-                <p>
-                  行ったことのない場所へ出かけたり、作ったことのないものに挑戦したり。大きな冒険でなくても、新しい経験は、これからの日々を少し楽しみに変えてくれます。
-                </p>
-                <p>急がなくて大丈夫。気になった「はじめて」から、ひとつずつ。</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative bg-ivory px-6 py-24 text-center sm:px-10 sm:py-32">
-          <div className="mx-auto max-w-3xl">
-            <p className="text-2xl text-[#d99a25]" aria-hidden="true">✦</p>
+            <p className="mt-10 text-2xl text-[#d99a25]" aria-hidden="true">✦</p>
             <h2 className="mt-6 text-[1.75rem] font-semibold leading-[1.6] tracking-[0.05em] sm:text-[2.75rem]">
               いつか振り返ったとき、
               <br />
@@ -310,9 +292,12 @@ export default function LandingPage() {
               <br />
               あなたの「はじめて」をひらける日まで、もう少しお待ちください。
             </p>
-            <div className="mx-auto mt-10 inline-flex rounded-full border border-green-800/15 bg-paper px-7 py-4 text-sm font-semibold tracking-[0.12em] text-green-800 shadow-sm">
+            <Link
+              href="/app"
+              className="mx-auto mt-10 inline-flex rounded-full border border-green-800/15 bg-paper px-7 py-4 text-sm font-semibold tracking-[0.12em] text-green-800 shadow-sm transition hover:bg-ivory"
+            >
               わたしのはじめて帖　準備中
-            </div>
+            </Link>
           </div>
         </section>
       </main>
