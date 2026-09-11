@@ -132,7 +132,7 @@ function ClosingMessage({ align }: { align: "center" | "right" }) {
       </p>
       <Link
         href="/app"
-        className="mt-10 inline-flex rounded-full border border-green-800/15 bg-paper px-7 py-4 text-sm font-semibold tracking-[0.12em] text-green-800 shadow-sm transition hover:bg-ivory"
+        className="mt-10 inline-flex rounded-2xl bg-coral-500 px-7 py-4 text-sm font-semibold tracking-[0.12em] text-white shadow-[0_10px_30px_rgba(232,111,114,0.22)] transition hover:bg-coral-400"
       >
         アプリを見る
       </Link>
@@ -151,7 +151,7 @@ export default function LandingPage() {
           </p>
           <Link
             href="/app"
-            className="rounded-full border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm transition hover:bg-paper"
+            className="rounded-2xl border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm transition hover:bg-paper"
           >
             アプリを見る
           </Link>
@@ -179,10 +179,9 @@ export default function LandingPage() {
             </p>
             <Link
               href="/app"
-              className="mt-8 inline-flex items-center gap-3 rounded-full bg-coral-500 px-7 py-4 text-sm font-semibold tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(232,111,114,0.22)] transition hover:-translate-y-0.5 hover:bg-coral-400"
+              className="mt-8 inline-flex items-center gap-3 rounded-2xl bg-coral-500 px-7 py-4 text-sm font-semibold tracking-[0.08em] text-white shadow-[0_10px_30px_rgba(232,111,114,0.22)] transition hover:-translate-y-0.5 hover:bg-coral-400"
             >
               アプリを見る
-              <span aria-hidden="true">→</span>
             </Link>
           </div>
 
