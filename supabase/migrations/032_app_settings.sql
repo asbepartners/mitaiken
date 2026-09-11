@@ -10,12 +10,16 @@ begin;
 -- Supabase's hosted SQL editor doesn't allow `alter database ... set
 -- app.settings.x` (permission denied), which is what 031 originally
 -- assumed. This table replaces that plan.
-create table public.app_settings (
+--
+-- Named notify_secrets rather than the more obvious app_settings: an
+-- unrelated table already named app_settings exists in the project (with a
+-- different shape), so app_settings is taken.
+create table public.notify_secrets (
   key text primary key,
   value text not null
 );
 
-alter table public.app_settings enable row level security;
+alter table public.notify_secrets enable row level security;
 
 create or replace function public.notify_contact_message()
 returns trigger
@@ -27,7 +31,7 @@ declare
   ntfy_topic text;
   summary text := left(new.message, 200) || case when new.image is not null then E'\n（画像添付あり）' else '' end;
 begin
-  select value into ntfy_topic from public.app_settings where key = 'ntfy_topic';
+  select value into ntfy_topic from public.notify_secrets where key = 'ntfy_topic';
 
   if ntfy_topic is not null and ntfy_topic <> '' then
     begin
