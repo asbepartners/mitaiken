@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseClient } from "@/lib/supabase";
 import { resizeImage } from "@/lib/resizeImage";
@@ -22,7 +22,19 @@ export function ContactPage() {
   const [website, setWebsite] = useState(""); // honeypot: real users never fill this in
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const [sentEmail, setSentEmail] = useState<string | null>(null);
+  const sent = sentEmail !== null;
+  const emailPrefilled = useRef(false);
+
+  // Fill in the logged-in user's email once (not on every render), so it's
+  // visible and editable rather than a hidden default -- if they clear it,
+  // that's a deliberate "don't reply" choice, not something to override.
+  useEffect(() => {
+    if (!emailPrefilled.current && user?.email) {
+      setEmail(user.email);
+      emailPrefilled.current = true;
+    }
+  }, [user]);
 
   async function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -35,7 +47,7 @@ export function ContactPage() {
 
     if (website.trim()) {
       // Likely a bot: pretend it worked without writing anything.
-      setSent(true);
+      setSentEmail(email.trim() || "");
       return;
     }
 
@@ -51,7 +63,7 @@ export function ContactPage() {
 
     const { error: insertError } = await supabase.from("contact_messages").insert({
       user_id: user?.id ?? null,
-      email: email.trim() || user?.email || null,
+      email: email.trim() || null,
       category,
       message: message.trim(),
       image: image ?? null,
@@ -62,7 +74,7 @@ export function ContactPage() {
       setError("送信できませんでした。通信状況をご確認のうえ、もう一度お試しください。");
       return;
     }
-    setSent(true);
+    setSentEmail(email.trim() || "");
   }
 
   return (
@@ -81,9 +93,14 @@ export function ContactPage() {
         </header>
 
         {sent ? (
-          <p className="rounded-2xl border border-green-100 bg-green-100/45 px-5 py-6 text-center text-sm leading-7 text-green-800">
-            送信しました。ありがとうございます。
-          </p>
+          <div className="rounded-2xl border border-green-100 bg-green-100/45 px-5 py-6 text-center text-sm leading-7 text-green-800">
+            <p>送信しました。ありがとうございます。</p>
+            {sentEmail && (
+              <p className="mt-2">
+                ご入力いただいたメールアドレス「{sentEmail}」宛にご返信します。間違っている場合は、恐れ入りますがもう一度送信してください。
+              </p>
+            )}
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <label className="block text-sm font-bold text-green-950">
@@ -101,11 +118,14 @@ export function ContactPage() {
               </select>
             </label>
             <label className="block text-sm font-bold text-green-950">
-              メールアドレス <span className="font-normal text-ink-soft">（任意・返信が必要な場合）</span>
+              メールアドレス{" "}
+              <span className="font-normal text-ink-soft">
+                （任意・返信が必要な場合。ログイン中はご利用のメールアドレスが自動で入ります。返信不要なら空欄にしてください）
+              </span>
               <input
                 type="email"
                 value={email}
-                placeholder={user?.email ?? "example@example.com"}
+                placeholder="example@example.com"
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal"
               />
