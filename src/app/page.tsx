@@ -126,9 +126,9 @@ function ClosingMessage({ align }: { align: "center" | "right" }) {
         「なかなか楽しかったな」と思えるように。
       </h2>
       <p className="mt-7 text-base leading-9 text-ink-soft sm:text-lg sm:leading-10">
-        わたしのはじめて帖は、ただいま準備中です。
+        わたしのはじめて帖は、公開中です。
         <br />
-        あなたの「はじめて」をひらける日まで、もう少しお待ちください。
+        まだ知らない「はじめて」を、今すぐ見つけにいきましょう。
       </p>
       <Link
         href="/app"
@@ -144,17 +144,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen overflow-hidden bg-ivory text-green-950">
       <header className="absolute inset-x-0 top-0 z-10">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 sm:px-10 lg:px-12">
+        <div className="mx-auto flex max-w-6xl items-center px-6 py-6 sm:px-10 lg:px-12">
           <p className="text-sm font-semibold tracking-[0.12em] sm:text-base">
             わたしのはじめて帖<sup className="ml-0.5 text-[0.6em] font-normal">™</sup>
             <span className="ml-1 text-[#d99a25]">✦</span>
           </p>
-          <Link
-            href="/app"
-            className="rounded-2xl border border-green-800/15 bg-paper/80 px-4 py-2 text-xs tracking-[0.12em] text-green-800 shadow-sm backdrop-blur-sm transition hover:bg-paper"
-          >
-            アプリを見る
-          </Link>
         </div>
       </header>
 
