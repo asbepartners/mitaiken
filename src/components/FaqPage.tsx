@@ -4,6 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ASSET_BASE } from "@/lib/assetBase";
 
+function Question({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="flex items-start gap-3 text-lg font-bold text-green-900">
+      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-coral-100 text-sm font-bold text-coral-500">Q</span>
+      {children}
+    </h2>
+  );
+}
+
 function Step({ text, image, alt }: { text: string; image?: string; alt?: string }) {
   return (
     <li className="space-y-3">
@@ -39,7 +48,7 @@ export function FaqPage() {
         </header>
 
         <section className="space-y-6">
-          <h2 className="text-lg font-bold text-green-900">ホーム画面に追加するにはどうすればいいですか？</h2>
+          <Question>ホーム画面に追加するにはどうすればいいですか？</Question>
           <p className="text-base leading-7 text-ink-soft">
             ホーム画面に追加しておくと、次からはアイコンをタップするだけで「わたしのはじめて帖」を開けます。
           </p>
@@ -119,7 +128,7 @@ export function FaqPage() {
         </section>
 
         <section className="mt-10 space-y-3 border-t border-green-100 pt-8">
-          <h2 className="text-lg font-bold text-green-900">マスタにないやりたいことがあります</h2>
+          <Question>マスタにないやりたいことがあります</Question>
           <p className="text-base leading-7 text-ink-soft">
             「やってみたい」画面の「＋ オリジナルのはじめてを追加」から、自分だけのオリジナル体験を追加できます。
           </p>
