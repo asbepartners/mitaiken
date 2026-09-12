@@ -165,11 +165,11 @@ export function OriginalExperienceForm({ initialExperience, initialCategoryCode,
             <label className="block text-sm font-bold text-green-950">参考URL <span className="font-normal text-ink-soft">（任意）</span><input type="url" value={relatedUrl} placeholder="https://" onChange={(e) => setRelatedUrl(e.target.value)} className="mt-2 w-full rounded-2xl border border-green-100 bg-ivory px-4 py-3 text-base font-normal" /></label>
           </div>
         </details>
-        {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">この体験に、複数の行き先や項目がありますか？</legend>
-          <p className="mt-1 text-sm leading-6 text-ink-soft">例：「行きたい国に旅行する」の中に、ノルウェーやスペインを登録する</p>
+        {allowAddingTargets && <fieldset className="mt-6"><legend className="text-base font-bold leading-7 text-green-950">行きたい場所やお店を、リストにして1つずつ記録しますか？</legend>
+          <p className="mt-1 text-sm leading-6 text-ink-soft">例：「行きたい国に旅行する」の中に、ノルウェーやスペインを1つずつ登録する</p>
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="accent-[#e87871]" /><strong className="text-green-950">いいえ</strong></label>
-            <label className={`flex min-h-12 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="accent-[#e87871]" /><strong className="text-green-950">はい</strong></label>
+            <label className={`flex min-h-16 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm ${!withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={!withTargets} onChange={() => setWithTargets(false)} className="accent-[#e87871]" /><strong className="text-green-950">ひとつの体験として登録</strong></label>
+            <label className={`flex min-h-16 cursor-pointer items-center gap-2 rounded-2xl border px-4 py-3 text-sm ${withTargets ? "border-coral-400 bg-coral-100" : "border-green-100 bg-paper"}`}><input type="radio" checked={withTargets} onChange={() => setWithTargets(true)} className="accent-[#e87871]" /><strong className="text-green-950">候補をリストにして登録</strong></label>
           </div>
         </fieldset>}
         <button type="button" onClick={handlePrimaryAction} disabled={saving || mastersLoading || mastersError} className="mt-7 min-h-12 w-full rounded-full bg-coral-500 px-6 font-bold text-paper disabled:opacity-40">{withTargets && allowAddingTargets ? "行き先・項目の入力へ" : (editing ? "変更を保存" : "やってみたいに追加")}</button>
