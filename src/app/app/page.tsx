@@ -79,6 +79,18 @@ export default function Home() {
     categoryLabel: categoryLabels.get(experience.categoryCode ?? experience.category) ?? experience.categoryLabel,
   })), [catalogExperiences, categoryLabels, customExperiences, hasAuthenticatedUser, targetsMap]);
 
+  // "みつける" (explore) is for discovering the curated catalog -- an
+  // original/custom experience is something the user already decided they
+  // want to try, so it belongs only in "やってみたい" (wishlist), not mixed
+  // into the discovery feed.
+  const exploreItems = useMemo(
+    () => catalogExperiences.map((experience) => ({
+      ...experience,
+      categoryLabel: categoryLabels.get(experience.categoryCode ?? experience.category) ?? experience.categoryLabel,
+    })),
+    [catalogExperiences, categoryLabels]
+  );
+
   const wishlistItems = useMemo(
     () => hasAuthenticatedUser ? experiences.filter((experience) => {
       if (statusMap[experience.id]?.status === "wishlist") return true;
@@ -248,7 +260,7 @@ export default function Home() {
       >
         {tab === "explore" && (
           <ExploreView
-            items={experiences}
+            items={exploreItems}
             hiddenIds={hiddenIds}
             statusMap={hasAuthenticatedUser ? statusMap : {}}
             onHide={hideExperience}
