@@ -135,7 +135,7 @@ export function MyPageView({ user, loading, configured, onLogin, onSignOut, onDe
 
       <section className="mt-5 rounded-3xl border border-green-100 bg-paper px-5 py-3">
         <div className="py-2"><SectionTitle icon={<InfoIcon />}>このアプリについて</SectionTitle></div>
-        <MenuLink href="/">トップページを見る</MenuLink>
+        <MenuLink href="/faq">よくある質問</MenuLink>
         <MenuLink href="/terms">利用規約</MenuLink>
         <MenuLink href="/privacy">プライバシーポリシー</MenuLink>
         <MenuLink href="/contact">お問い合わせ</MenuLink>

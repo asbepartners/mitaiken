@@ -325,7 +325,10 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-green-800/10 bg-ivory px-6 py-8 text-center text-xs tracking-[0.08em] text-green-800/60">
-        <Link href="/contact" className="underline underline-offset-4">お問い合わせ</Link>
+        <p className="flex items-center justify-center gap-4">
+          <Link href="/faq" className="underline underline-offset-4">よくある質問</Link>
+          <Link href="/contact" className="underline underline-offset-4">お問い合わせ</Link>
+        </p>
         <p className="mt-3">© 2026 わたしのはじめて帖</p>
       </footer>
     </div>
