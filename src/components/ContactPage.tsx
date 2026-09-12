@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -14,6 +14,7 @@ const CATEGORIES = [
 ] as const;
 
 export function ContactPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [category, setCategory] = useState<string>("");
   const [email, setEmail] = useState("");
@@ -81,9 +82,13 @@ export function ContactPage() {
     <main className="min-h-screen bg-ivory bg-paper-texture px-4 py-8 font-body sm:py-12">
       <article className="mx-auto max-w-3xl rounded-3xl border border-green-100 bg-paper px-5 py-8 shadow-[0_2px_10px_rgba(44,38,32,0.05)] sm:px-10 sm:py-10">
         <header className="mb-9 border-b border-green-100 pb-6">
-          <Link href="/" className="text-sm font-bold text-coral-500">
-            ← トップに戻る
-          </Link>
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            className="text-sm font-bold text-coral-500"
+          >
+            ← 戻る
+          </button>
           <h1 className="mt-3 text-2xl font-bold tracking-wide text-green-950 sm:text-3xl">
             お問い合わせ
           </h1>
