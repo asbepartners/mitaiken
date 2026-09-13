@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { logClientError } from "@/lib/logClientError";
 
 export default function ErrorPage({
   error,
@@ -12,6 +13,7 @@ export default function ErrorPage({
 }) {
   useEffect(() => {
     console.error(error);
+    logClientError(error);
   }, [error]);
 
   return (
