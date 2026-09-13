@@ -1,0 +1,59 @@
+name: Health Check
+
+on:
+  schedule:
+    # Daily, well within Supabase Free plan's 7-day inactivity pause window.
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+    steps:
+      - name: Check site availability
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://hajimetecho.jp/app/")
+          echo "Site status: $status"
+          if [ "$status" != "200" ]; then
+            echo "SITE_STATUS=$status" >> "$GITHUB_ENV"
+          fi
+
+      # A plain HTTP check above only confirms the static export is served.
+      # This app calls Supabase from client-side JS after the page loads, so
+      # curling the static HTML never reaches Supabase. A direct REST request
+      # is required both to detect a Supabase-side outage and to keep the
+      # Free plan project from auto-pausing after 7 days without API activity.
+      - name: Check Supabase availability
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/categories?select=id&limit=1")
+          echo "Supabase status: $status"
+          if [ "$status" != "200" ]; then
+            echo "SUPABASE_STATUS=$status" >> "$GITHUB_ENV"
+          fi
+
+      - name: Notify on failure
+        if: env.SITE_STATUS != '' || env.SUPABASE_STATUS != ''
+        run: |
+          message="死活監視で異常を検知しました。"
+          if [ -n "${SITE_STATUS:-}" ]; then
+            message="$message"$'\n'"hajimetecho.jp が応答しません（status: ${SITE_STATUS}）"
+          fi
+          if [ -n "${SUPABASE_STATUS:-}" ]; then
+            message="$message"$'\n'"Supabase APIが応答しません（status: ${SUPABASE_STATUS}）"
+          fi
+          echo "$message"
+          if [ -n "${NTFY_TOPIC:-}" ]; then
+            curl -s -X POST "https://ntfy.sh/${NTFY_TOPIC}" \
+              -H "Title: わたしのはじめて帖: 死活監視アラート" \
+              -H "Tags: warning" \
+              --data-binary "$message"
+          else
+            echo "NTFY_TOPIC secret not set; skipping ntfy notification."
+          fi
