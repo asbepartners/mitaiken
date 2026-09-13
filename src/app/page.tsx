@@ -177,10 +177,14 @@ export default function LandingPage() {
             >
               アプリを見る
             </Link>
-            <p className="mt-4 text-xs text-ink-soft">
-              今すぐブラウザでお使いいただけます。ホーム画面に追加すると、アプリのようにご利用いただけます（
+            <p className="mt-4 text-xs leading-6 text-ink-soft">
+              今すぐブラウザでお使いいただけます。
+              <br />
+              ホーム画面に追加すると、アプリのようにご利用いただけます（
               <Link href="/faq" className="underline underline-offset-4">追加方法はこちら</Link>
-              ）。スマートフォンアプリ版も準備中です。
+              ）。
+              <br />
+              スマートフォンアプリ版も準備中です。
             </p>
           </div>
 
