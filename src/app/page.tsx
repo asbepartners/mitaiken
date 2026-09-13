@@ -178,9 +178,9 @@ export default function LandingPage() {
               アプリを見る
             </Link>
             <p className="mt-4 text-xs text-ink-soft">
-              スマートフォンでホーム画面にアイコンを追加する方法は
-              <Link href="/faq" className="underline underline-offset-4">FAQ</Link>
-              でご案内しています
+              今すぐブラウザでお使いいただけます。ホーム画面に追加すると、アプリのようにご利用いただけます（
+              <Link href="/faq" className="underline underline-offset-4">追加方法はこちら</Link>
+              ）。スマートフォンアプリ版も準備中です。
             </p>
           </div>
 
