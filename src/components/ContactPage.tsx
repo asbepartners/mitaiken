@@ -68,6 +68,7 @@ export function ContactPage() {
       category,
       message: message.trim(),
       image: image ?? null,
+      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
     });
 
     setSending(false);
