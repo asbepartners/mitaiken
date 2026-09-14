@@ -1,0 +1,7 @@
+# 証明書・プロビジョニングプロファイルの暗号化ストレージ。
+# mitaiken-backups と同様に、専用のprivateリポジトリで管理する想定。
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+type("appstore")
+app_identifier([ENV["APP_IDENTIFIER"] || "jp.hajimetecho.app"])
+username(ENV["APPLE_ID"])

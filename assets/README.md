@@ -14,6 +14,7 @@
 | `icon-foreground.png` | 1024x1024, 透過 | Android adaptive iconの前景（セーフゾーン66%に収めて中央配置） |
 | `icon-background.png` | 1024x1024, 不透明（`#faf5e9`） | Android adaptive iconの背景 |
 | `splash.png` | 2732x2732 | 起動スプラッシュ画面のソース（背景 `#faf5e9`、中央にマーク） |
+| `splash-dark.png` | 2732x2732 | ダークモード用スプラッシュ（本アプリはダークテーマ未対応のため`splash.png`と同一） |
 
 ## 注意
 

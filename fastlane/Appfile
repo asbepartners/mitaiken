@@ -1,0 +1,6 @@
+# 個人情報・アカウント固有の値はリポジトリにハードコードせず、
+# すべてGitHub Secrets経由の環境変数から読む。
+app_identifier(ENV["APP_IDENTIFIER"] || "jp.hajimetecho.app")
+apple_id(ENV["APPLE_ID"])
+team_id(ENV["APPLE_TEAM_ID"])
+itc_team_id(ENV["APP_STORE_CONNECT_TEAM_ID"])
