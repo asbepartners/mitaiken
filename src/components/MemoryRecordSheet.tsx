@@ -1,7 +1,8 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Timing, UNKNOWN_TIMING, todayTiming } from "@/lib/timing";
+import { isNativePlatform, pickNativePhoto } from "@/lib/nativePhoto";
 import { BookmarkIcon } from "./RecordIcons";
 
 export interface MemoryRecordDraft {
@@ -78,6 +79,8 @@ export function MemoryRecordSheet({
   const [memo, setMemo] = useState(initialRecord?.memo ?? "");
   const [photoUrl, setPhotoUrl] = useState<string | undefined>(initialRecord?.photoUrl);
   const [processingPhoto, setProcessingPhoto] = useState(false);
+  const [nativePlatform] = useState(() => isNativePlatform());
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const body = document.body;
@@ -113,6 +116,22 @@ export function MemoryRecordSheet({
     } finally {
       setProcessingPhoto(false);
       event.target.value = "";
+    }
+  }
+
+  async function openPhotoPicker() {
+    if (!nativePlatform) {
+      photoInputRef.current?.click();
+      return;
+    }
+    setProcessingPhoto(true);
+    try {
+      const photo = await pickNativePhoto();
+      if (photo) setPhotoUrl(photo);
+    } catch {
+      // ユーザーがキャンセルした場合など。何もしない。
+    } finally {
+      setProcessingPhoto(false);
     }
   }
 
@@ -204,11 +223,11 @@ export function MemoryRecordSheet({
                 <button type="button" onClick={()=>setPhotoUrl(undefined)} aria-label="写真を削除" className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-paper/95 text-sm font-bold text-green-950 shadow">×</button>
               </div>
             ) : (
-              <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-green-300 bg-ivory text-center text-green-800">
+              <button type="button" onClick={openPhotoPicker} disabled={processingPhoto} className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-green-300 bg-ivory text-center text-green-800">
                 <span className="text-2xl leading-none">▧＋</span>
                 <span className="mt-1 text-xs font-medium">{processingPhoto ? "処理中…":"写真を追加"}</span>
-                <input type="file" accept="image/*" className="sr-only" disabled={processingPhoto} onChange={handlePhotoChange}/>
-              </label>
+                <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" disabled={processingPhoto} onChange={handlePhotoChange}/>
+              </button>
             )}
           </div>
         </div>

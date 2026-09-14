@@ -66,5 +66,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>「やってみた」の記録に写真を追加するために使用します。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>「やってみた」の記録に写真を追加するために使用します。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>撮影した写真をカメラロールに保存するために使用します。</string>
 </dict>
 </plist>

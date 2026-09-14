@@ -1,12 +1,13 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useRef, useState } from "react";
 import { categoryFromCode } from "@/data/experiences";
 import type { ExperienceTargetDraft } from "@/hooks/useExperienceTargets";
 import type { CustomExperienceDraft } from "@/hooks/useCustomExperiences";
 import type { SearchMasters } from "@/hooks/useSearchMasters";
 import { ASSET_BASE as assetBase } from "@/lib/assetBase";
 import { resizeImage } from "@/lib/resizeImage";
+import { isNativePlatform, pickNativePhoto } from "@/lib/nativePhoto";
 
 interface Props {
   initialExperience?: CustomExperienceDraft;
@@ -32,6 +33,8 @@ export function OriginalExperienceForm({ initialExperience, initialCategoryCode,
     ?? "";
   const [categoryId, setCategoryId] = useState(initialCategoryId);
   const [image, setImage] = useState<string | undefined>(initialExperience?.image);
+  const [nativePlatform] = useState(() => isNativePlatform());
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [locationOptionId, setLocationOptionId] = useState(initialExperience?.locationOptionId ?? "");
   const [durationOptionId, setDurationOptionId] = useState(initialExperience?.durationOptionId ?? "");
   const [budgetOptionId, setBudgetOptionId] = useState(initialExperience?.budgetOptionId ?? "");
@@ -64,6 +67,19 @@ export function OriginalExperienceForm({ initialExperience, initialCategoryCode,
   async function chooseImage(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (file) setImage(await resizeImage(file));
+  }
+
+  async function openImagePicker() {
+    if (!nativePlatform) {
+      imageInputRef.current?.click();
+      return;
+    }
+    try {
+      const photo = await pickNativePhoto();
+      if (photo) setImage(photo);
+    } catch {
+      // ユーザーがキャンセルした場合など。何もしない。
+    }
   }
 
   async function save() {
@@ -127,7 +143,7 @@ export function OriginalExperienceForm({ initialExperience, initialCategoryCode,
           <div className="relative flex h-36 items-center justify-center bg-green-100">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image ?? `${assetBase}/experiences/noimage.svg`} alt={image ? "選択した見出し" : "共通の見出しイラスト"} className="h-full w-full object-cover" />
-            <label className="absolute bottom-3 right-3 cursor-pointer rounded-full bg-paper px-4 py-2 text-sm font-bold text-green-800 shadow"><input type="file" accept="image/*" className="sr-only" onChange={chooseImage} />{image ? "画像を変更" : "写真を選ぶ"}</label>
+            <button type="button" onClick={openImagePicker} className="absolute bottom-3 right-3 cursor-pointer rounded-full bg-paper px-4 py-2 text-sm font-bold text-green-800 shadow"><input ref={imageInputRef} type="file" accept="image/*" className="sr-only" onChange={chooseImage} />{image ? "画像を変更" : "写真を選ぶ"}</button>
           </div>
           <div className="space-y-5 p-5">
             <label className="block text-sm font-bold text-green-950">体験名 <span className="text-coral-500">＊</span><input value={title} maxLength={60} placeholder="例：屋形船に乗る" aria-invalid={showRequiredErrors && !title.trim()} onChange={(e) => setTitle(e.target.value)} className={`mt-2 w-full rounded-2xl border bg-ivory px-4 py-3 text-base font-normal ${showRequiredErrors && !title.trim() ? "border-coral-500" : "border-green-100"}`} /></label>
