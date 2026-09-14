@@ -104,11 +104,13 @@
   letter-spacing: 0.06em;
 }
 
-.coverImageWrap { height: 820px; margin-top: 112px; overflow: hidden; background: #f1e9d6; }
-.coverImage { width: 100%; height: 100%; object-fit: cover; }
-.coverCopy { height: 418px; padding: 58px 74px; background: #fffdf7; }
+.coverFrame { margin: 140px 64px 0; height: 794px; padding: 22px; box-sizing: border-box; background: #faf5e9; border-radius: 22px; box-shadow: 0 16px 40px rgba(44, 38, 32, 0.15); }
+.coverImageInner { width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #f1e9d6; }
+.coverImage { width: 100%; height: 100%; object-fit: cover; display: block; }
+.coverCopy { display: flex; align-items: flex-end; gap: 30px; margin-top: 20px; padding: 0 74px; }
+.coverGirl { width: 190px; height: auto; flex-shrink: 0; transform: rotate(-4deg); filter: drop-shadow(0 8px 12px rgba(44, 38, 32, 0.14)); }
 .category { display: inline-block; padding: 10px 24px; border-radius: 999px; background: #e3ebe4; color: #2d4a3c; font-size: 24px; font-weight: 700; }
-.coverCopy h2 { max-width: 920px; margin-top: 24px; white-space: pre-line; line-height: 1.32; letter-spacing: 0.02em; font-weight: 700; }
+.coverCopy h2 { max-width: 700px; margin-top: 24px; white-space: pre-line; line-height: 1.32; letter-spacing: 0.02em; font-weight: 700; }
 
 .noteCard,
 .detailsCard {
@@ -119,29 +121,29 @@
 
 .noteCopy,
 .detailsCopy { position: relative; z-index: 2; padding: 210px 94px 80px; }
-.eyebrow { color: #e86f72; font-size: 28px; font-weight: 700; letter-spacing: 0.12em; }
+.eyebrow { color: #e86f72; font-size: 34px; font-weight: 700; letter-spacing: 0.1em; }
 .noteCopy h2,
-.detailsCopy h2 { margin-top: 34px; max-width: 820px; white-space: pre-line; line-height: 1.42; font-weight: 700; }
-.description { max-width: 790px; margin-top: 68px; white-space: pre-line; font-size: 39px; line-height: 1.95; }
+.detailsCopy h2 { margin-top: 30px; max-width: 820px; white-space: pre-line; line-height: 1.42; font-weight: 700; }
+.description { max-width: 790px; margin-top: 60px; white-space: pre-line; font-size: 45px; line-height: 1.75; }
 
-.detailsCopy h2 { margin-top: 28px; font-size: 48px; line-height: 1.55; }
-.details { width: 710px; margin-top: 66px; display: grid; gap: 24px; }
+.detailsCopy h2 { margin-top: 28px; }
+.details { width: 710px; margin-top: 52px; display: grid; gap: 24px; }
 .details div { display: grid; grid-template-columns: 150px 1fr; align-items: center; min-height: 105px; padding: 0 32px; background: rgba(250, 245, 233, 0.94); border: 2px solid #eee3d2; border-radius: 18px; }
-.details dt { color: #e86f72; font-size: 28px; font-weight: 700; }
-.details dd { font-size: 34px; font-weight: 700; }
+.details dt { color: #e86f72; font-size: 30px; font-weight: 700; }
+.details dd { font-size: 42px; font-weight: 700; }
 
 .cornerImageWrap { position: absolute; right: -55px; bottom: -45px; width: 390px; height: 390px; border-radius: 50% 0 0 0; overflow: hidden; opacity: 0.92; }
 .cornerImageWrap img { width: 100%; height: 100%; object-fit: cover; }
 
 .ctaCard { background: #faf5e9; }
-.ctaCopy { padding: 290px 92px 0; text-align: center; }
+.ctaCopy { padding: 200px 92px 0; text-align: center; }
 .ctaCopy > p:first-child { font-size: 39px; letter-spacing: 0.08em; }
 .ctaCopy h2 { margin-top: 14px; color: #e86f72; font-size: 70px; font-weight: 700; }
-.ctaRule { width: 76px; height: 4px; margin: 64px auto; background: #d9ae64; }
+.ctaRule { width: 76px; height: 4px; margin: 56px auto; background: #d9ae64; }
 .ctaText { font-size: 31px; }
-.ctaCopy strong { display: block; margin-top: 92px; color: #2d4a3c; font-size: 52px; }
-.ctaCopy span { display: block; margin-top: 18px; color: #6f786f; font-size: 28px; letter-spacing: 0.08em; }
-.sparkles { position: absolute; bottom: 118px; width: 100%; color: #d9ae64; text-align: center; font-size: 38px; letter-spacing: 0.4em; }
+.ctaCopy strong { display: block; margin-top: 64px; color: #2d4a3c; font-size: 52px; }
+.ctaCopy span { display: block; margin-top: 16px; color: #6f786f; font-size: 28px; letter-spacing: 0.08em; }
+.ctaIllustration { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; display: block; }
 .emptyState { min-height: 100vh; display: grid; place-items: center; }
 
 @media (max-width: 1240px) {

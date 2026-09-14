@@ -106,13 +106,19 @@ export default function InstagramStudio() {
   const cards = [
     <article className={`${styles.card} ${styles.coverCard}`} key="cover">
       <BrandHeader page={1} />
-      <div className={styles.coverImageWrap}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-        <img alt="" className={styles.coverImage} crossOrigin="anonymous" src={image} style={{ objectPosition: `50% ${imagePosition}%` }} />
+      <div className={styles.coverFrame}>
+        <div className={styles.coverImageInner}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+          <img alt="" className={styles.coverImage} crossOrigin="anonymous" src={image} style={{ objectPosition: `50% ${imagePosition}%` }} />
+        </div>
       </div>
       <div className={styles.coverCopy}>
-        <span className={styles.category}>{category}</span>
-        <h2 style={{ fontSize: titleSize }}>{title}</h2>
+        {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+        <img alt="" className={styles.coverGirl} src="/instagram-studio/girl.png" />
+        <div>
+          <span className={styles.category}>{category}</span>
+          <h2 style={{ fontSize: titleSize }}>{title}</h2>
+        </div>
       </div>
     </article>,
     <article className={`${styles.card} ${styles.noteCard}`} key="description">
@@ -128,7 +134,7 @@ export default function InstagramStudio() {
       <BrandHeader page={3} />
       <div className={styles.detailsCopy}>
         <p className={styles.eyebrow}>やってみやすさ</p>
-        <h2>{title}</h2>
+        <h2 style={{ fontSize: Math.max(48, titleSize - 10) }}>{title}</h2>
         <dl className={styles.details}>
           <div><dt>場所</dt><dd>{location}</dd></div>
           <div><dt>時間</dt><dd>{duration}</dd></div>
@@ -147,7 +153,8 @@ export default function InstagramStudio() {
         <strong>わたしのはじめて帖</strong>
         <span>hajimetecho.jp</span>
       </div>
-      <div className={styles.sparkles}>✦　·　✦</div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+      <img alt="" className={styles.ctaIllustration} src="/instagram-studio/cta-hill.webp" />
     </article>,
   ];
 
