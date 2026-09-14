@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 
-async function canReachServer(timeoutMs = 3000) {
-  if (!window.navigator.onLine) return false;
+async function pingServer(timeoutMs: number) {
   const supabase = getSupabaseClient();
   if (!supabase) return true;
 
@@ -15,6 +14,19 @@ async function canReachServer(timeoutMs = 3000) {
     })(),
     new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), timeoutMs)),
   ]);
+}
+
+// A single slow response (e.g. a cold Supabase connection on startup)
+// shouldn't be enough to declare the device offline, so give it a few
+// attempts before giving up.
+async function canReachServer(timeoutMs = 3000, attempts = 3) {
+  if (!window.navigator.onLine) return false;
+  if (!getSupabaseClient()) return true;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (await pingServer(timeoutMs)) return true;
+  }
+  return false;
 }
 
 export function useConnectivity() {
