@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import "@/lib/resetDevelopmentTestData";
-import { TouchEvent, useMemo, useRef, useState } from "react";
+import { TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 import { BottomNav, Tab } from "@/components/BottomNav";
 import { AuthSheet } from "@/components/AuthSheet";
 import { ExploreView } from "@/components/ExploreView";
@@ -19,7 +19,7 @@ import { useExperienceTargets } from "@/hooks/useExperienceTargets";
 import { useCustomExperiences } from "@/hooks/useCustomExperiences";
 import type { ExperienceTarget } from "@/hooks/useExperienceTargets";
 import { useSearchMasters } from "@/hooks/useSearchMasters";
-import { clearLocalUserData } from "@/lib/localUserData";
+import { clearLocalUserData, reconcileLocalUserData } from "@/lib/localUserData";
 import { InitialAppScreen } from "@/components/InitialAppScreen";
 import { ConnectivityNotice } from "@/components/ConnectivityNotice";
 import { MaintenanceNotice } from "@/components/MaintenanceNotice";
@@ -48,6 +48,22 @@ export default function Home() {
   const { customExperiences, loading: customExperiencesLoading, error: customExperiencesError, createExperience, updateExperience } = useCustomExperiences();
   const searchMasters = useSearchMasters();
   const auth = useAuth();
+
+  // The wishlist/tried tabs now render straight from local storage without
+  // requiring a live session, so a device that was signed into an account
+  // before (its local cache still mirroring that account's data) must not
+  // keep showing that data once the session is gone for any reason -- not
+  // just an explicit ログアウト tap, but also e.g. a session that quietly
+  // expired. Otherwise, on a shared computer, whoever picks the device up
+  // next sees the previous person's real records with no login prompt to
+  // explain why. See asbepartners/mitaiken#54 and its follow-up.
+  useEffect(() => {
+    if (auth.loading) return;
+    if (reconcileLocalUserData(auth.user?.id ?? null)) {
+      window.location.reload();
+    }
+  }, [auth.loading, auth.user]);
+
   const {
     statusMap,
     recordsMap,

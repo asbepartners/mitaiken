@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
+import { markLocalDataSyncedTo } from "@/lib/localUserData";
 import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
 import { ensureStoredTargetInDatabase } from "@/hooks/useExperienceTargets";
 
@@ -409,6 +410,7 @@ export function useExperienceStatus() {
           window.localStorage.setItem(marker, "1");
         }
         const loaded = await reload();
+        if (loaded) markLocalDataSyncedTo(userId);
         if (active) setError(!loaded);
       } catch (loadError) {
         console.error("Failed to prepare user experience data:", loadError);
