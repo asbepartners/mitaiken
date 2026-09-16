@@ -142,7 +142,18 @@ export function MemoryRecordSheet({
 
   return (
     <div className="fixed inset-0 z-30 flex max-w-full items-end justify-center overflow-hidden overscroll-none sm:items-center">
-      <button type="button" aria-label="閉じる" onClick={onCancel} className="absolute inset-0 bg-ink/30" />
+      {/*
+        backdrop-blur (not just the usual bg-ink/30) is deliberate here: this
+        sheet can open right after marking an item やったことある from 探す,
+        which immediately removes that card from the carousel (see
+        ExploreView's searchableItems filter) -- so without the blur, the
+        *next* card would be clearly visible/readable behind this sheet's
+        translucent overlay, reading as "wait, is this a different item?"
+        even though the sheet's own title is correct. The blur keeps that
+        shift from being legible instead of preventing the shift itself.
+        See asbepartners/mitaiken#59.
+      */}
+      <button type="button" aria-label="閉じる" onClick={onCancel} className="absolute inset-0 bg-ink/30 backdrop-blur-sm" />
       <div
         className="relative box-border max-h-[92dvh] min-w-0 w-full max-w-sm touch-pan-y overflow-x-hidden overflow-y-auto overscroll-x-none overscroll-y-contain rounded-t-3xl bg-paper px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-4px_24px_rgba(44,38,32,0.15)] sm:rounded-3xl"
         onScroll={(event) => {
