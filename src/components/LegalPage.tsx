@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function LegalPage({
   title,
@@ -13,13 +16,19 @@ export function LegalPage({
   counterpartHref: string;
   counterpartLabel: string;
 }) {
+  const router = useRouter();
+
   return (
     <main className="min-h-screen bg-ivory bg-paper-texture px-4 py-8 font-body sm:py-12">
       <article className="mx-auto max-w-3xl rounded-3xl border border-green-100 bg-paper px-5 py-8 shadow-[0_2px_10px_rgba(44,38,32,0.05)] sm:px-10 sm:py-10">
         <header className="mb-9 border-b border-green-100 pb-6">
-          <Link href="/app?tab=mypage" className="text-sm font-bold text-coral-500">
-            ← マイページに戻る
-          </Link>
+          <button
+            type="button"
+            onClick={() => (window.history.length > 1 ? router.back() : router.push("/"))}
+            className="text-sm font-bold text-coral-500"
+          >
+            ← 戻る
+          </button>
           <h1 className="mt-3 text-2xl font-bold tracking-wide text-green-950 sm:text-3xl">{title}</h1>
           <p className="mt-3 text-sm text-ink-soft">{updated}</p>
         </header>
