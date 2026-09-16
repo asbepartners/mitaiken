@@ -17,7 +17,7 @@ export interface MemoryRecordDraft {
 interface MemoryRecordSheetProps {
   experienceTitle: string;
   relatedUrl?: string;
-  initialRecord?: MemoryRecordDraft;
+  initialRecord?: Partial<MemoryRecordDraft>;
   onCancel: () => void;
   onConfirm: (record: MemoryRecordDraft) => void;
 }

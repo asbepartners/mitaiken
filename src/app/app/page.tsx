@@ -423,15 +423,13 @@ export default function Home() {
                 }
               : pendingTarget
                 ? {
-                    timing: { type: "date", value: new Date().toISOString().slice(0, 10) },
                     targetId: pendingTarget.id,
                   }
                 : pendingExperience
                   ? {
-                      timing: {
-                        type: "date",
-                        value: detailsMap[pendingExperience.id]?.plannedDate ?? new Date().toISOString().slice(0, 10),
-                      },
+                      timing: detailsMap[pendingExperience.id]?.plannedDate
+                        ? { type: "date", value: detailsMap[pendingExperience.id]!.plannedDate! }
+                        : undefined,
                       place: detailsMap[pendingExperience.id]?.place,
                       companion: detailsMap[pendingExperience.id]?.companion,
                       memo: detailsMap[pendingExperience.id]?.memo,
