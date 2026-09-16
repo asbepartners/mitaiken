@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
+import { isFreshSignUp } from "@/lib/authFreshSignUp";
 import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
 import { ensureStoredTargetInDatabase } from "@/hooks/useExperienceTargets";
 
@@ -227,6 +228,7 @@ export function useExperienceStatus() {
   const configured = Boolean(getSupabaseClient());
   const [userId, setUserId] = useState<string | undefined>();
   const userIdRef = useRef<string | undefined>(undefined);
+  const isNewSignUpRef = useRef(false);
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
   const [detailsMap, setDetailsMap] = useState<DetailsMap>({});
   const [loading, setLoading] = useState(configured);
@@ -279,7 +281,10 @@ export function useExperienceStatus() {
       setUserId(nextUserId);
       setError(false);
       if (!nextUserId) setLoading(false);
-      else if (userChanged) setLoading(true);
+      else if (userChanged) {
+        isNewSignUpRef.current = isFreshSignUp(session);
+        setLoading(true);
+      }
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -371,35 +376,41 @@ export function useExperienceStatus() {
     let active = true;
     void (async () => {
       try {
-        if (window.localStorage.getItem(marker) !== "1") {
-        for (const [slug, entry] of Object.entries(local)) {
-          const id = await ensureUserExperience(userId, slug);
-          const supabase = getSupabaseClient();
-          if (!id || !supabase) continue;
+        // Only merge this device's locally-tapped (pre-login) data into the
+        // account on a brand-new sign-up. Signing into an *existing* account
+        // (e.g. on a shared computer where a previous, different person
+        // tapped around anonymously) must not attribute that local data to
+        // this account -- reload() below still loads the account's real
+        // data and overwrites local storage with it either way.
+        if (isNewSignUpRef.current && window.localStorage.getItem(marker) !== "1") {
+          for (const [slug, entry] of Object.entries(local)) {
+            const id = await ensureUserExperience(userId, slug);
+            const supabase = getSupabaseClient();
+            if (!id || !supabase) continue;
 
-          if (entry.status === "wishlist") {
-            await supabase
-              .from("user_experiences")
-              .update({ wishlisted_at: new Date().toISOString() })
-              .eq("id", id);
-          } else {
-            const { count } = await supabase
-              .from("experience_logs")
-              .select("id", { count: "exact", head: true })
-              .eq("user_experience_id", id);
+            if (entry.status === "wishlist") {
+              await supabase
+                .from("user_experiences")
+                .update({ wishlisted_at: new Date().toISOString() })
+                .eq("id", id);
+            } else {
+              const { count } = await supabase
+                .from("experience_logs")
+                .select("id", { count: "exact", head: true })
+                .eq("user_experience_id", id);
 
-            if (!count) {
-              await supabase.from("experience_logs").insert({
-                user_experience_id: id,
-                ...timingToDb(entry.timing),
-                memo: entry.memo ?? null,
-                photo_path: entry.photoUrl ?? null,
-              });
+              if (!count) {
+                await supabase.from("experience_logs").insert({
+                  user_experience_id: id,
+                  ...timingToDb(entry.timing),
+                  memo: entry.memo ?? null,
+                  photo_path: entry.photoUrl ?? null,
+                });
+              }
             }
           }
+          window.localStorage.setItem(marker, "1");
         }
-        window.localStorage.setItem(marker, "1");
-      }
         const loaded = await reload();
         if (active) setError(!loaded);
       } catch (loadError) {

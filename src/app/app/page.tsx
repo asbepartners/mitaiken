@@ -39,7 +39,6 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
   const [maintenanceNoticeOpen, setMaintenanceNoticeOpen] = useState(false);
-  const pendingAuthAction = useRef<(() => void) | null>(null);
   const hasBootedRef = useRef(false);
   const connectivity = useConnectivity();
   const maintenance = useMaintenanceMode();
@@ -64,20 +63,17 @@ export default function Home() {
   } = useExperienceStatus();
   const { hiddenIds, hideExperience, restoreExperience } = useHiddenExperiences();
   const { targetsMap, loading: targetsLoading, error: targetsError, initializeTargets, addTarget, updateTarget, removeTarget, clearTargets } = useExperienceTargets();
-  const hasAuthenticatedUser = Boolean(auth.user);
   const categoryLabels = useMemo(
     () => new Map(searchMasters.masters.categories.map(({ code, label }) => [code, label])),
     [searchMasters.masters.categories]
   );
   const experiences = useMemo(() => [
     ...catalogExperiences,
-    ...(hasAuthenticatedUser
-      ? customExperiences.map((experience) => (targetsMap[experience.id]?.length ? { ...experience, exampleTargets: [] } : experience))
-      : []),
+    ...customExperiences.map((experience) => (targetsMap[experience.id]?.length ? { ...experience, exampleTargets: [] } : experience)),
   ].map((experience) => ({
     ...experience,
     categoryLabel: categoryLabels.get(experience.categoryCode ?? experience.category) ?? experience.categoryLabel,
-  })), [catalogExperiences, categoryLabels, customExperiences, hasAuthenticatedUser, targetsMap]);
+  })), [catalogExperiences, categoryLabels, customExperiences, targetsMap]);
 
   // "みつける" (explore) is for discovering the curated catalog -- an
   // original/custom experience is something the user already decided they
@@ -92,22 +88,22 @@ export default function Home() {
   );
 
   const wishlistItems = useMemo(
-    () => hasAuthenticatedUser ? experiences.filter((experience) => {
+    () => experiences.filter((experience) => {
       if (statusMap[experience.id]?.status === "wishlist") return true;
       if (!experience.exampleTargets || !(targetsMap[experience.id]?.length)) return false;
       const completed = new Set((recordsMap[experience.id] ?? []).flatMap((record) => record.place ? [record.place] : []));
       return targetsMap[experience.id].some((target) => !(recordsMap[experience.id] ?? []).some((record) => record.targetId === target.id || (!record.targetId && completed.has(target.title))));
-    }) : [],
-    [experiences, hasAuthenticatedUser, recordsMap, statusMap, targetsMap]
+    }),
+    [experiences, recordsMap, statusMap, targetsMap]
   );
 
   const triedItems = useMemo(
     () =>
-      hasAuthenticatedUser ? experiences.flatMap((experience) => {
+      experiences.flatMap((experience) => {
         const records = recordsMap[experience.id] ?? [];
         return records.length ? [{ experience, records }] : [];
-      }) : [],
-    [experiences, hasAuthenticatedUser, recordsMap]
+      }),
+    [experiences, recordsMap]
   );
 
   const pendingExperience = experiences.find((experience) => experience.id === pendingId);
@@ -160,16 +156,6 @@ export default function Home() {
     }
   }
 
-  function requireAuth(action: () => void) {
-    if (!canSave()) return;
-    if (auth.user) {
-      action();
-      return;
-    }
-    pendingAuthAction.current = action;
-    setAuthOpen(true);
-  }
-
   function canSave() {
     if (maintenance.enabled) {
       setMaintenanceNoticeOpen(true);
@@ -183,14 +169,7 @@ export default function Home() {
   }
 
   function closeAuth() {
-    pendingAuthAction.current = null;
     setAuthOpen(false);
-  }
-
-  function resumeAfterAuthentication() {
-    const action = pendingAuthAction.current;
-    pendingAuthAction.current = null;
-    if (action) window.setTimeout(action, 0);
   }
 
   async function handleSignOut() {
@@ -212,10 +191,6 @@ export default function Home() {
   }
 
   function handleConfirmRecord(record: MemoryRecordDraft) {
-    if (!auth.user) {
-      requireAuth(() => handleConfirmRecord(record));
-      return;
-    }
     if (!canSave()) return;
     if (editingId && editingRecordId) {
       // updateRecord already updates local state synchronously and awaits
@@ -232,21 +207,20 @@ export default function Home() {
     setPendingTarget(null);
   }
 
-  const initialLoading = !connectivity.ready || auth.loading || catalogLoading || searchMasters.loading || (
-    hasAuthenticatedUser && (experienceStatusLoading || customExperiencesLoading || targetsLoading)
-  );
-  const initialError = searchMasters.error || (
-    hasAuthenticatedUser && (experienceStatusError || customExperiencesError || targetsError)
-  );
+  const initialLoading = !connectivity.ready || auth.loading || catalogLoading || searchMasters.loading ||
+    experienceStatusLoading || customExperiencesLoading || targetsLoading;
+  const initialError = searchMasters.error || experienceStatusError || customExperiencesError || targetsError;
 
   // Once the app has rendered once, later reloads (e.g. per-user data
   // refetching right after a login) must not unmount the whole tree again —
   // that would silently reset any open sheet (like AuthSheet) to its
   // initial step.
+  // eslint-disable-next-line react-hooks/refs -- intentional latch, read/written in the same render pass so it stays in sync with initialLoading below
   if (!initialLoading) hasBootedRef.current = true;
 
   if (!connectivity.ready) return <InitialAppScreen state="loading" />;
   if (connectivity.offlineAtStartup) return <InitialAppScreen state="offline" />;
+  // eslint-disable-next-line react-hooks/refs -- see latch comment above
   if (!hasBootedRef.current && initialLoading) return <InitialAppScreen state="loading" />;
   if (initialError) return <InitialAppScreen state="error" />;
 
@@ -262,9 +236,9 @@ export default function Home() {
           <ExploreView
             items={exploreItems}
             hiddenIds={hiddenIds}
-            statusMap={hasAuthenticatedUser ? statusMap : {}}
+            statusMap={statusMap}
             onHide={hideExperience}
-            onToggleWishlist={(id) => requireAuth(async () => {
+            onToggleWishlist={async (id) => {
               if (!canSave()) return;
               const adding = !statusMap[id];
               if (adding) void initializeTargets(id);
@@ -275,9 +249,9 @@ export default function Home() {
                   setDetailsPromptId(id);
                 }
               }
-            })}
-            onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
-            onUndoTried={(id) => requireAuth(async () => { if (canSave()) await undoTried(id); })}
+            }}
+            onRequestMarkTried={(id) => setPendingId(id)}
+            onUndoTried={async (id) => { if (canSave()) await undoTried(id); }}
             searchMasters={searchMasters.masters}
             searchMastersLoading={searchMasters.loading}
             searchMastersError={searchMasters.error}
@@ -289,8 +263,7 @@ export default function Home() {
             triedCount={triedItems.length}
             markingId={pendingId}
             onExplore={() => setTab("explore")}
-            onRequireAuth={requireAuth}
-            onRequestMarkTried={(id) => requireAuth(() => setPendingId(id))}
+            onRequestMarkTried={(id) => setPendingId(id)}
             onRemove={async (id) => {
               if (!canSave()) return;
               await removeStatus(id);
@@ -301,10 +274,8 @@ export default function Home() {
             detailsMap={detailsMap}
             onUpdateWishlistDetails={(id, details) => canSave() ? updateWishlistDetails(id, details) : Promise.resolve(false)}
             onRequestTargetRecord={(parentId, target) => {
-              requireAuth(() => {
-                setPendingTarget(target);
-                setPendingId(parentId);
-              });
+              setPendingTarget(target);
+              setPendingId(parentId);
             }}
             onAddTarget={(parentId, draft) => canSave() ? addTarget(parentId, draft) : Promise.resolve(false)}
             onUpdateTarget={(parentId, id, draft) => canSave() ? updateTarget(parentId, id, draft) : Promise.resolve(false)}
@@ -341,7 +312,7 @@ export default function Home() {
             wishlistCount={wishlistItems.length}
             onExplore={() => setTab("explore")}
             onOpenWishlist={() => setTab("wishlist")}
-            onAddRecord={(id) => requireAuth(() => setPendingId(id))}
+            onAddRecord={(id) => setPendingId(id)}
             onEditRecord={(experienceId, recordId) => {
               setEditingId(experienceId);
               setEditingRecordId(recordId);
@@ -361,10 +332,8 @@ export default function Home() {
             onRemoveTarget={async (parentId, id) => { if (canSave()) await removeTarget(parentId, id); }}
             targetsMap={targetsMap}
             onRequestTargetRecord={(parentId, target) => {
-              requireAuth(() => {
-                setPendingTarget(target);
-                setPendingId(parentId);
-              });
+              setPendingTarget(target);
+              setPendingId(parentId);
             }}
           />
         )}
@@ -375,7 +344,6 @@ export default function Home() {
             configured={auth.configured}
             onLogin={() => {
               if (auth.user) return;
-              pendingAuthAction.current = null;
               setAuthOpen(true);
             }}
             onSignOut={handleSignOut}
@@ -449,7 +417,7 @@ export default function Home() {
       {authOpen && (
         <AuthSheet
           onClose={closeAuth}
-          onAuthenticated={resumeAfterAuthentication}
+          onAuthenticated={closeAuth}
           onSendOtp={auth.sendOtp}
           onVerifyOtp={auth.verifyOtp}
           onGetLegalAcceptanceStatus={auth.getLegalAcceptanceStatus}
