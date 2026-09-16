@@ -334,9 +334,19 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-green-800/10 bg-ivory px-6 py-8 text-center text-xs tracking-[0.08em] text-green-800/60">
-        <p className="flex items-center justify-center gap-4">
+        <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <Link href="/faq" className="underline underline-offset-4">よくある質問</Link>
           <Link href="/contact" className="underline underline-offset-4">お問い合わせ</Link>
+          <Link href="/terms" className="underline underline-offset-4">利用規約</Link>
+          <Link href="/privacy" className="underline underline-offset-4">プライバシーポリシー</Link>
+          <a
+            href="https://www.instagram.com/hajimetecho/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-4"
+          >
+            Instagram
+          </a>
         </p>
         <p className="mt-3">© 2026 わたしのはじめて帖</p>
       </footer>
