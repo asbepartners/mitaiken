@@ -65,13 +65,13 @@ export function MemoryRecordSheet({
 
   const [mode, setMode] = useState<TimingMode>(initialMode);
   const [dateValue, setDateValue] = useState(
-    initialTiming?.type === "date" ? initialTiming.value ?? "" : today.value ?? ""
+    initialTiming?.type === "date" ? initialTiming.value ?? "" : ""
   );
   const [monthValue, setMonthValue] = useState(
-    initialTiming?.type === "month" ? initialTiming.value ?? "" : today.value?.slice(0, 7) ?? ""
+    initialTiming?.type === "month" ? initialTiming.value ?? "" : ""
   );
   const [yearValue, setYearValue] = useState(
-    initialTiming?.type === "year" ? initialTiming.value ?? "" : String(currentYear)
+    initialTiming?.type === "year" ? initialTiming.value ?? "" : ""
   );
   const [unknown, setUnknown] = useState(initialTiming?.type === "unknown");
   const [place, setPlace] = useState(initialRecord?.place ?? "");
