@@ -52,10 +52,16 @@ test.describe("未ログインの利用", () => {
     await page.getByRole("button", { name: "戻る", exact: true }).click();
     await page.getByRole("button", { name: "やってみたいリストに戻る" }).click();
 
-    // リロードしても(ログインしていないので)ローカルに残っていること
+    // リロードしても(ログインしていないので)ローカルに残っていること -- アイテム
+    // 自体だけでなく、詳細(メモ)も引き続き保持されていることまで確認する
     await page.reload();
     await goToTab(page, "やってみたい");
     await expect(page.locator("li", { hasText: ITEM_TITLE })).toBeVisible();
+    await page.locator("li", { hasText: ITEM_TITLE }).getByRole("button", { name: "編集" }).click();
+    await page.getByRole("button", { name: "リスト情報を編集" }).click();
+    await expect(page.getByLabel("メモ", { exact: false })).toHaveValue(MEMO);
+    await page.getByRole("button", { name: "戻る", exact: true }).click();
+    await page.getByRole("button", { name: "やってみたいリストに戻る" }).click();
 
     // やったことある: フォームは自由に開いて入力できる -- ここでもログイン画面は出ない
     await page.locator("li", { hasText: ITEM_TITLE }).getByLabel(`${ITEM_TITLE}をやってみた`).click();

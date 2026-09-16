@@ -493,7 +493,7 @@ export function useExperienceStatus() {
       if (supabase) {
         const id = await ensureUserExperience(userId, slug);
         if (id) {
-          await supabase
+          const { error: updateError } = await supabase
             .from("user_experiences")
             .update({
               planned_date: details.plannedDate ?? null,
@@ -503,7 +503,11 @@ export function useExperienceStatus() {
               related_url: details.relatedUrl ?? null,
             })
             .eq("id", id);
-          await reload();
+          // reload() pulls server state back over the local write above and
+          // is only safe once the write has actually landed -- otherwise it
+          // would silently clobber the correct local value with the
+          // server's stale (pre-update) one.
+          if (!updateError) await reload();
         }
       }
     }
