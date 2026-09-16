@@ -23,6 +23,19 @@ const PERSONAL_STORAGE_KEY_PREFIXES = [
 // follow-up discussion.
 const SYNCED_USER_KEY = "mitaiken-zone:synced-user-id";
 
+// One-time cutover flag for devices that already had local personal data
+// *before* SYNCED_USER_KEY existed (i.e. before this reconciliation code
+// shipped). Such data has no marker to compare, which reconcileLocalUserData
+// would otherwise treat exactly like a casual anonymous visitor's own taps
+// and leave alone -- but on a device with no active session, unmarked local
+// data is at least as likely to be a stale mirror of somebody's real,
+// already-logged-in-before account (the far more common case, since
+// anonymous use only became possible with this same change) as it is to be
+// today's brand-new anonymous taps. Err toward wiping it once: real personal
+// records (photos, memos) outweigh losing a few hours of anonymous taps made
+// before this fix landed.
+const LEGACY_SWEEP_KEY = "mitaiken-zone:local-data-legacy-swept";
+
 export function clearLocalUserData() {
   for (const key of PERSONAL_STORAGE_KEYS) {
     window.localStorage.removeItem(key);
@@ -53,8 +66,21 @@ export function markLocalDataSyncedTo(userId: string) {
 // keep every hook's in-memory state consistent with the now-empty storage.
 export function reconcileLocalUserData(currentUserId: string | null): boolean {
   const syncedTo = window.localStorage.getItem(SYNCED_USER_KEY);
-  if (syncedTo && syncedTo !== currentUserId) {
+  if (syncedTo) {
+    if (syncedTo !== currentUserId) {
+      clearLocalUserData();
+      return true;
+    }
+    return false;
+  }
+
+  if (window.localStorage.getItem(LEGACY_SWEEP_KEY) === "1") return false;
+  window.localStorage.setItem(LEGACY_SWEEP_KEY, "1");
+  if (!currentUserId) {
     clearLocalUserData();
+    // clearLocalUserData() doesn't touch this key, but set it again in case
+    // that ever changes -- the sweep must only ever run once per device.
+    window.localStorage.setItem(LEGACY_SWEEP_KEY, "1");
     return true;
   }
   return false;
