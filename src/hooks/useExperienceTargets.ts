@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { DEFAULT_EXPERIENCE_TARGETS } from "@/data/experiences";
 import { getSupabaseClient } from "@/lib/supabase";
-import { isFreshSignUp } from "@/lib/authFreshSignUp";
 
 export interface ExperienceTarget { id: string; title: string; memo?: string; relatedUrl?: string; sourceTemplateItemId?: string; }
 export interface ExperienceTargetDraft { title: string; memo?: string; relatedUrl?: string; }
@@ -67,7 +66,6 @@ export function useExperienceTargets() {
   const [targetsMap, setTargetsMap] = useState<TargetsMap>({});
   const [userId, setUserId] = useState<string>();
   const userIdRef = useRef<string | undefined>(undefined);
-  const isNewSignUpRef = useRef(false);
   const [loading, setLoading] = useState(configured);
   const [error, setError] = useState(false);
   function write(next: TargetsMap) { setTargetsMap(next); window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
@@ -89,10 +87,7 @@ export function useExperienceTargets() {
       userIdRef.current = nextUserId;
       setUserId(nextUserId);
       if (!nextUserId) setLoading(false);
-      else if (userChanged) {
-        isNewSignUpRef.current = isFreshSignUp(session);
-        setLoading(true);
-      }
+      else if (userChanged) setLoading(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -129,24 +124,17 @@ export function useExperienceTargets() {
       let rows = parentIds.length
         ? (await supabase.from("user_experience_items").select("id, user_experience_id, source_template_item_id, title, memo, related_url, sort_order, is_primary").in("user_experience_id", parentIds).eq("is_primary", false).order("sort_order", { ascending: true })).data
         : [];
-      // Only push this device's locally-added targets (from before login) up
-      // to a brand-new account. On a sign-in to an *existing* account (e.g.
-      // a shared computer where a different person added targets
-      // anonymously), leave local-only targets out of both the account and
-      // the merged result below -- they are not this account's data.
-      if (isNewSignUpRef.current) {
-        const parentDbIdBySlug = new Map((parents ?? []).flatMap((parent) => { const key = parent.source_template_slug ?? parent.client_key; return key ? [[key as string, parent.id as string]] : []; }));
-        for (const [parentId, targets] of Object.entries(local)) {
-          const parentDbId = parentDbIdBySlug.get(parentId);
-          const existing = (rows ?? []).filter((row) => row.user_experience_id === parentDbId);
-          await Promise.all(targets.map((target, index) => {
-            const alreadyStored = existing.some((row) =>
-              (target.sourceTemplateItemId && row.source_template_item_id === target.sourceTemplateItemId) ||
-              (!target.sourceTemplateItemId && row.title.trim().toLocaleLowerCase("ja") === target.title.trim().toLocaleLowerCase("ja"))
-            );
-            return alreadyStored ? Promise.resolve(null) : saveTarget(userId, parentId, target, index);
-          }));
-        }
+      const parentDbIdBySlug = new Map((parents ?? []).flatMap((parent) => { const key = parent.source_template_slug ?? parent.client_key; return key ? [[key as string, parent.id as string]] : []; }));
+      for (const [parentId, targets] of Object.entries(local)) {
+        const parentDbId = parentDbIdBySlug.get(parentId);
+        const existing = (rows ?? []).filter((row) => row.user_experience_id === parentDbId);
+        await Promise.all(targets.map((target, index) => {
+          const alreadyStored = existing.some((row) =>
+            (target.sourceTemplateItemId && row.source_template_item_id === target.sourceTemplateItemId) ||
+            (!target.sourceTemplateItemId && row.title.trim().toLocaleLowerCase("ja") === target.title.trim().toLocaleLowerCase("ja"))
+          );
+          return alreadyStored ? Promise.resolve(null) : saveTarget(userId, parentId, target, index);
+        }));
       }
       ({ data: parents } = await supabase.from("user_experiences").select("id, source_template_slug, client_key").eq("user_id", userId));
       parentIds = (parents ?? []).map((parent) => parent.id);
@@ -161,7 +149,7 @@ export function useExperienceTargets() {
         if (!slug) continue;
         remote[slug] = [...(remote[slug] ?? []), { id: row.id, title: row.title, memo: row.memo ?? undefined, relatedUrl: row.related_url ?? undefined, sourceTemplateItemId: row.source_template_item_id ?? undefined }];
       }
-      write(isNewSignUpRef.current ? { ...local, ...remote } : remote);
+      write({ ...local, ...remote });
       } catch (loadError) {
         console.error("Failed to prepare experience items:", loadError);
         if (active) setError(true);

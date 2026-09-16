@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { categoryFromCode, type Category, type CostLevel, type Experience } from "@/data/experiences";
 import { getSupabaseClient } from "@/lib/supabase";
-import { isFreshSignUp } from "@/lib/authFreshSignUp";
 
 export interface CustomExperienceDraft {
   title: string;
@@ -92,7 +91,6 @@ export function useCustomExperiences() {
   const [items, setItems] = useState<Experience[]>([]);
   const [userId, setUserId] = useState<string>();
   const userIdRef = useRef<string | undefined>(undefined);
-  const isNewSignUpRef = useRef(false);
   const [loading, setLoading] = useState(configured);
   const [error, setError] = useState(false);
 
@@ -122,10 +120,7 @@ export function useCustomExperiences() {
       setUserId(nextUserId);
       setError(false);
       if (!nextUserId) setLoading(false);
-      else if (userChanged) {
-        isNewSignUpRef.current = isFreshSignUp(session);
-        setLoading(true);
-      }
+      else if (userChanged) setLoading(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -142,35 +137,28 @@ export function useCustomExperiences() {
       // would stomp on wishlisted_at every time this effect re-runs (every
       // fresh page load), silently re-adding it to the wishlist even after
       // the user explicitly removed it.
-      // Only push this device's locally-created originals (from before
-      // login) up to a brand-new account. On a sign-in to an *existing*
-      // account (e.g. a shared computer where a different person created
-      // originals anonymously), leave them out -- they are not this
-      // account's data.
-      if (isNewSignUpRef.current) {
-        const { data: existingRows } = await supabase.from("user_experiences").select("client_key").eq("user_id", userId).not("client_key", "is", null);
-        const existingKeys = new Set((existingRows ?? []).map((row) => row.client_key as string));
-        for (const item of readStored()) {
-          if (existingKeys.has(item.id)) continue;
-          const categoryCode = item.categoryCode ?? categorySlug(item.category);
-          const { data: category } = item.categoryId
-            ? { data: undefined }
-            : await supabase.from("categories").select("id").eq("slug", categoryCode).maybeSingle();
-          await supabase.from("user_experiences").upsert({
-            user_id: userId,
-            client_key: item.id,
-            title: item.title,
-            description: item.description,
-            category_id: item.categoryId ?? category?.id ?? null,
-            image_path: item.image ?? null,
-            location_option_id: item.locationOptionId ?? null,
-            duration_option_id: item.durationOptionId ?? null,
-            budget_option_id: item.budgetOptionId ?? null,
-            min_people: item.minPeople ?? null,
-            max_people: item.maxPeople ?? null,
-            wishlisted_at: new Date().toISOString(),
-          }, { onConflict: "user_id,client_key" });
-        }
+      const { data: existingRows } = await supabase.from("user_experiences").select("client_key").eq("user_id", userId).not("client_key", "is", null);
+      const existingKeys = new Set((existingRows ?? []).map((row) => row.client_key as string));
+      for (const item of readStored()) {
+        if (existingKeys.has(item.id)) continue;
+        const categoryCode = item.categoryCode ?? categorySlug(item.category);
+        const { data: category } = item.categoryId
+          ? { data: undefined }
+          : await supabase.from("categories").select("id").eq("slug", categoryCode).maybeSingle();
+        await supabase.from("user_experiences").upsert({
+          user_id: userId,
+          client_key: item.id,
+          title: item.title,
+          description: item.description,
+          category_id: item.categoryId ?? category?.id ?? null,
+          image_path: item.image ?? null,
+          location_option_id: item.locationOptionId ?? null,
+          duration_option_id: item.durationOptionId ?? null,
+          budget_option_id: item.budgetOptionId ?? null,
+          min_people: item.minPeople ?? null,
+          max_people: item.maxPeople ?? null,
+          wishlisted_at: new Date().toISOString(),
+        }, { onConflict: "user_id,client_key" });
       }
       const { data, error: loadError } = await supabase.from("user_experiences").select(`
         client_key,

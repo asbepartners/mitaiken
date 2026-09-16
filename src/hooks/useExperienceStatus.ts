@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Timing, UNKNOWN_TIMING, isValidTiming } from "@/lib/timing";
 import { getSupabaseClient } from "@/lib/supabase";
-import { isFreshSignUp } from "@/lib/authFreshSignUp";
 import type { MemoryRecordDraft } from "@/components/MemoryRecordSheet";
 import { ensureStoredTargetInDatabase } from "@/hooks/useExperienceTargets";
 
@@ -228,7 +227,6 @@ export function useExperienceStatus() {
   const configured = Boolean(getSupabaseClient());
   const [userId, setUserId] = useState<string | undefined>();
   const userIdRef = useRef<string | undefined>(undefined);
-  const isNewSignUpRef = useRef(false);
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
   const [detailsMap, setDetailsMap] = useState<DetailsMap>({});
   const [loading, setLoading] = useState(configured);
@@ -281,10 +279,7 @@ export function useExperienceStatus() {
       setUserId(nextUserId);
       setError(false);
       if (!nextUserId) setLoading(false);
-      else if (userChanged) {
-        isNewSignUpRef.current = isFreshSignUp(session);
-        setLoading(true);
-      }
+      else if (userChanged) setLoading(true);
     });
     return () => data.subscription.unsubscribe();
   }, []);
@@ -368,6 +363,14 @@ export function useExperienceStatus() {
     return true;
   }, [userId, writeRecordsMap]);
 
+  // Runs the same way on every login, whether the account is brand new or
+  // already existed -- deliberately not special-cased by new-vs-existing
+  // sign-in. Logging out already clears this device's local data
+  // (clearLocalUserData), and the app can't reach the sign-up form while
+  // still signed in, so by the time someone logs in there's nothing here
+  // that wasn't already visible/editable on screen to whoever is using the
+  // device. See asbepartners/mitaiken#54 for the fuller reasoning (a
+  // sign-in-only special case was tried and reverted).
   useEffect(() => {
     if (!userId) return;
     const local = readStorage();
@@ -376,13 +379,7 @@ export function useExperienceStatus() {
     let active = true;
     void (async () => {
       try {
-        // Only merge this device's locally-tapped (pre-login) data into the
-        // account on a brand-new sign-up. Signing into an *existing* account
-        // (e.g. on a shared computer where a previous, different person
-        // tapped around anonymously) must not attribute that local data to
-        // this account -- reload() below still loads the account's real
-        // data and overwrites local storage with it either way.
-        if (isNewSignUpRef.current && window.localStorage.getItem(marker) !== "1") {
+        if (window.localStorage.getItem(marker) !== "1") {
           for (const [slug, entry] of Object.entries(local)) {
             const id = await ensureUserExperience(userId, slug);
             const supabase = getSupabaseClient();

@@ -37,8 +37,10 @@ export default function Home() {
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
   const [detailsPromptId, setDetailsPromptId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
   const [maintenanceNoticeOpen, setMaintenanceNoticeOpen] = useState(false);
+  const pendingAuthAction = useRef<(() => void) | null>(null);
   const hasBootedRef = useRef(false);
   const connectivity = useConnectivity();
   const maintenance = useMaintenanceMode();
@@ -168,8 +170,32 @@ export default function Home() {
     return true;
   }
 
+  // Only the moment a "やったことある" record (with its date/place/photo/memo)
+  // is actually saved requires an account -- casual wishlist taps stay free.
+  // Gating here (rather than when the record sheet opens) lets someone fill
+  // the whole thing out and see its value before being asked to log in.
+  // See asbepartners/mitaiken#54 for the full discussion of why the line was
+  // drawn here (and not, e.g., on every wishlist tap as before).
+  function requireAuthToSaveRecord(action: () => void) {
+    if (!canSave()) return;
+    if (auth.user) {
+      action();
+      return;
+    }
+    pendingAuthAction.current = action;
+    setAuthReason("あなたの大切な記録を守るために、ログインが必要です。");
+    setAuthOpen(true);
+  }
+
   function closeAuth() {
+    pendingAuthAction.current = null;
     setAuthOpen(false);
+  }
+
+  function resumeAfterAuthentication() {
+    const action = pendingAuthAction.current;
+    pendingAuthAction.current = null;
+    if (action) window.setTimeout(action, 0);
   }
 
   async function handleSignOut() {
@@ -191,6 +217,10 @@ export default function Home() {
   }
 
   function handleConfirmRecord(record: MemoryRecordDraft) {
+    if (!auth.user) {
+      requireAuthToSaveRecord(() => handleConfirmRecord(record));
+      return;
+    }
     if (!canSave()) return;
     if (editingId && editingRecordId) {
       // updateRecord already updates local state synchronously and awaits
@@ -215,12 +245,10 @@ export default function Home() {
   // refetching right after a login) must not unmount the whole tree again —
   // that would silently reset any open sheet (like AuthSheet) to its
   // initial step.
-  // eslint-disable-next-line react-hooks/refs -- intentional latch, read/written in the same render pass so it stays in sync with initialLoading below
   if (!initialLoading) hasBootedRef.current = true;
 
   if (!connectivity.ready) return <InitialAppScreen state="loading" />;
   if (connectivity.offlineAtStartup) return <InitialAppScreen state="offline" />;
-  // eslint-disable-next-line react-hooks/refs -- see latch comment above
   if (!hasBootedRef.current && initialLoading) return <InitialAppScreen state="loading" />;
   if (initialError) return <InitialAppScreen state="error" />;
 
@@ -344,6 +372,8 @@ export default function Home() {
             configured={auth.configured}
             onLogin={() => {
               if (auth.user) return;
+              pendingAuthAction.current = null;
+              setAuthReason(undefined);
               setAuthOpen(true);
             }}
             onSignOut={handleSignOut}
@@ -417,11 +447,12 @@ export default function Home() {
       {authOpen && (
         <AuthSheet
           onClose={closeAuth}
-          onAuthenticated={closeAuth}
+          onAuthenticated={resumeAfterAuthentication}
           onSendOtp={auth.sendOtp}
           onVerifyOtp={auth.verifyOtp}
           onGetLegalAcceptanceStatus={auth.getLegalAcceptanceStatus}
           onRecordLegalAcceptance={auth.recordCurrentLegalAcceptance}
+          reason={authReason}
         />
       )}
 

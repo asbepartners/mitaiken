@@ -10,9 +10,14 @@ interface AuthSheetProps {
   onVerifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
   onGetLegalAcceptanceStatus: () => Promise<{ requiresAcceptance: boolean; reason: string | null; error: string | null }>;
   onRecordLegalAcceptance: () => Promise<{ error: string | null }>;
+  // Short context on *why* login is being asked for right now (e.g. "saving
+  // a record"), shown above the form so the prompt doesn't feel like it came
+  // out of nowhere. Omit for a generic/self-initiated login (e.g. from the
+  // マイページ login button, where the reason is already obvious).
+  reason?: string;
 }
 
-export function AuthSheet({ onClose, onAuthenticated, onSendOtp, onVerifyOtp, onGetLegalAcceptanceStatus, onRecordLegalAcceptance }: AuthSheetProps) {
+export function AuthSheet({ onClose, onAuthenticated, onSendOtp, onVerifyOtp, onGetLegalAcceptanceStatus, onRecordLegalAcceptance, reason }: AuthSheetProps) {
   const [step, setStep] = useState<"email" | "code" | "consent">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -137,6 +142,12 @@ export function AuthSheet({ onClose, onAuthenticated, onSendOtp, onVerifyOtp, on
                 ? "利用規約・プライバシーポリシーの確認"
                 : "確認コードを入力"}
         </h2>
+
+        {!legalView && reason && step === "email" && (
+          <p className="mt-3 rounded-2xl bg-gold-100 px-4 py-3 text-sm leading-6 text-green-900">
+            {reason}
+          </p>
+        )}
 
         {legalView ? (
           <div className="mt-5">
