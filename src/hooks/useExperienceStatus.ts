@@ -37,6 +37,7 @@ type StatusMap = Record<string, StatusEntry>;
 
 const STORAGE_KEY = "mitaiken-zone:status";
 const RECORDS_STORAGE_KEY = "mitaiken-zone:records";
+const DETAILS_STORAGE_KEY = "mitaiken-zone:wishlist-details";
 const EMPTY_STATUS_MAP: StatusMap = {};
 const MIGRATION_KEY_PREFIX = "mitaiken-zone:status-migrated:";
 let cachedSnapshot: StatusMap | null = null;
@@ -100,6 +101,30 @@ function readRecordsStorage(): RecordsMap {
         }];
       });
       if (records.length) next[slug] = records;
+    }
+    return next;
+  } catch {
+    return {};
+  }
+}
+
+function readDetailsStorage(): DetailsMap {
+  try {
+    const raw = window.localStorage.getItem(DETAILS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return {};
+    const next: DetailsMap = {};
+    for (const [slug, value] of Object.entries(parsed)) {
+      if (!value || typeof value !== "object") continue;
+      const candidate = value as Record<string, unknown>;
+      next[slug] = {
+        plannedDate: typeof candidate.plannedDate === "string" ? candidate.plannedDate : undefined,
+        place: typeof candidate.place === "string" ? candidate.place : undefined,
+        companion: typeof candidate.companion === "string" ? candidate.companion : undefined,
+        memo: typeof candidate.memo === "string" ? candidate.memo : undefined,
+        relatedUrl: typeof candidate.relatedUrl === "string" ? candidate.relatedUrl : undefined,
+      };
     }
     return next;
   } catch {
@@ -229,7 +254,7 @@ export function useExperienceStatus() {
   const [userId, setUserId] = useState<string | undefined>();
   const userIdRef = useRef<string | undefined>(undefined);
   const [recordsMap, setRecordsMapState] = useState<RecordsMap>({});
-  const [detailsMap, setDetailsMap] = useState<DetailsMap>({});
+  const [detailsMap, setDetailsMapState] = useState<DetailsMap>({});
   const [loading, setLoading] = useState(configured);
   const [error, setError] = useState(false);
   const statusMap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
@@ -239,6 +264,22 @@ export function useExperienceStatus() {
     try {
       window.localStorage.setItem(RECORDS_STORAGE_KEY, JSON.stringify(next));
     } catch {}
+  }, []);
+
+  const writeDetailsMap = useCallback((next: DetailsMap) => {
+    setDetailsMapState(next);
+    try {
+      window.localStorage.setItem(DETAILS_STORAGE_KEY, JSON.stringify(next));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const stored = readDetailsStorage();
+    if (Object.keys(stored).length > 0) {
+      // Initial hydration from the browser's persisted wishlist details.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setDetailsMapState(stored);
+    }
   }, []);
 
   useEffect(() => {
@@ -359,10 +400,10 @@ export function useExperienceStatus() {
     }
 
     writeRecordsMap(nextRecords);
-    setDetailsMap(nextDetails);
+    writeDetailsMap(nextDetails);
     writeStatusMap(nextStatus);
     return true;
-  }, [userId, writeRecordsMap]);
+  }, [userId, writeRecordsMap, writeDetailsMap]);
 
   // Runs the same way on every login, whether the account is brand new or
   // already existed -- deliberately not special-cased by new-vs-existing
@@ -445,25 +486,29 @@ export function useExperienceStatus() {
   }, [userId]);
 
   const updateWishlistDetails = useCallback(async (slug: string, details: WishlistItemDetails) => {
-    if (!userId) return false;
-    const supabase = getSupabaseClient();
-    if (!supabase) return false;
-    const id = await ensureUserExperience(userId, slug);
-    if (!id) return false;
-    const { error: updateError } = await supabase
-      .from("user_experiences")
-      .update({
-        planned_date: details.plannedDate ?? null,
-        place: details.place ?? null,
-        companion: details.companion ?? null,
-        experience_memo: details.memo ?? null,
-        related_url: details.relatedUrl ?? null,
-      })
-      .eq("id", id);
-    if (updateError) return false;
-    await reload();
+    writeDetailsMap({ ...readDetailsStorage(), [slug]: details });
+
+    if (userId) {
+      const supabase = getSupabaseClient();
+      if (supabase) {
+        const id = await ensureUserExperience(userId, slug);
+        if (id) {
+          await supabase
+            .from("user_experiences")
+            .update({
+              planned_date: details.plannedDate ?? null,
+              place: details.place ?? null,
+              companion: details.companion ?? null,
+              experience_memo: details.memo ?? null,
+              related_url: details.relatedUrl ?? null,
+            })
+            .eq("id", id);
+          await reload();
+        }
+      }
+    }
     return true;
-  }, [userId, reload]);
+  }, [userId, reload, writeDetailsMap]);
 
   const markTried = useCallback(async (slug: string, record: MemoryRecordDraft) => {
     const localRecord: TriedRecord = {
