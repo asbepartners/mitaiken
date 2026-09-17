@@ -62,11 +62,9 @@ test.describe("単一アイテムの記録がはじめて帖に表示される",
     await goToTab(page, "みつける");
     const card = page.locator("div.snap-center").filter({ hasText: ITEM_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();
-
-    // 追加直後の詳細シートはスキップする(このテストの主眼ではない)
-    await expect(page.getByText("やってみたいの詳細を編集")).toBeVisible({ timeout: 5000 });
-    await page.getByRole("button", { name: "閉じる" }).last().click();
-    await expect(page.getByText("やってみたいの詳細を編集")).not.toBeVisible();
+    // 1.5秒の確定タイマー後にトグルが実行される。追加が完了すると、みつける
+    // の候補から外れてカード自体が消えるので、それを待ってから次に進む
+    await expect(card).not.toBeVisible({ timeout: 5000 });
 
     await goToTab(page, "やってみたい");
     const row = page.locator("li", { hasText: ITEM_TITLE });

@@ -38,20 +38,18 @@ test.describe("マスタ由来の単一アイテムのやってみたい詳細",
     await removeFromWishlistIfPresent(page);
   });
 
-  test("追加→スキップ→編集→保存→やってみた記録へのデフォルト反映", async ({ page }) => {
+  test("追加→編集→保存→やってみた記録へのデフォルト反映", async ({ page }) => {
     await removeFromWishlistIfPresent(page);
 
-    // 探す画面からマスタ単一アイテムを追加する
+    // 探す画面からマスタ単一アイテムを追加する(詳細シートは自動で開かず、
+    // やってみたいリストから「編集」で開く導線に一本化されている)
     await page.goto("/app");
     await page.locator("nav").getByText("みつける", { exact: true }).click();
     const card = page.locator("div.snap-center").filter({ hasText: ITEM_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();
-
-    // 1.5秒の確定タイマー後にトグルが実行され、追加直後の詳細シートが開く
-    await expect(page.getByText("やってみたいの詳細を編集")).toBeVisible({ timeout: 5000 });
-    // スキップできることを確認(×ボタンで閉じる。背景タップ用のボタンは
-    // シート本体と画面中央で重なるため、こちらの明示的な×ボタンを使う)
-    await page.getByRole("button", { name: "閉じる" }).last().click();
+    // 1.5秒の確定タイマー後にトグルが実行される。追加が完了すると、みつける
+    // の候補から外れてカード自体が消えるので、それを待ってから次に進む
+    await expect(card).not.toBeVisible({ timeout: 5000 });
     await expect(page.getByText("やってみたいの詳細を編集")).not.toBeVisible();
 
     // やってみたいリストから編集導線をたどる

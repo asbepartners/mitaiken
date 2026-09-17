@@ -72,9 +72,9 @@ test.describe("複数の記録があるアイテムのはじめて帖表示", ()
     await goToTab(page, "みつける");
     const card = page.locator("div.snap-center").filter({ hasText: ITEM_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();
-    await expect(page.getByText("やってみたいの詳細を編集")).toBeVisible({ timeout: 5000 });
-    await page.getByRole("button", { name: "閉じる" }).last().click();
-    await expect(page.getByText("やってみたいの詳細を編集")).not.toBeVisible();
+    // 1.5秒の確定タイマー後にトグルが実行される。追加が完了すると、みつける
+    // の候補から外れてカード自体が消えるので、それを待ってから次に進む
+    await expect(card).not.toBeVisible({ timeout: 5000 });
 
     // 1回目の記録(あとで日付順を確認するため、あえて古い日付にする)
     await goToTab(page, "やってみたい");

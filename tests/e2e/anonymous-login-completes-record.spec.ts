@@ -66,10 +66,9 @@ test.describe("未ログイン→ログイン完了→保留記録の自動保�
     await goToTab(page, "みつける");
     const card = page.locator("div.snap-center").filter({ hasText: ITEM_TITLE });
     await card.getByRole("button", { name: "やってみたい" }).click();
-
-    await expect(page.getByText("やってみたいの詳細を編集")).toBeVisible({ timeout: 5000 });
-    await page.getByRole("button", { name: "閉じる" }).last().click();
-    await expect(page.getByText("やってみたいの詳細を編集")).not.toBeVisible();
+    // 1.5秒の確定タイマー後にトグルが実行される。追加が完了すると、みつける
+    // の候補から外れてカード自体が消えるので、それを待ってから次に進む
+    await expect(card).not.toBeVisible({ timeout: 5000 });
 
     await goToTab(page, "やってみたい");
     await page.locator("li", { hasText: ITEM_TITLE }).getByLabel(`${ITEM_TITLE}をやってみた`).click();

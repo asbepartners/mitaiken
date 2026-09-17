@@ -10,7 +10,6 @@ import { InitialTabSync } from "@/components/InitialTabSync";
 import { MemoryRecordDraft, MemoryRecordSheet } from "@/components/MemoryRecordSheet";
 import { TriedView } from "@/components/TriedView";
 import { WishlistView } from "@/components/WishlistView";
-import { WishlistItemDetailsSheet } from "@/components/WishlistItemDetailsSheet";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
@@ -35,7 +34,6 @@ export default function Home() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
   const [pendingTarget, setPendingTarget] = useState<ExperienceTarget | null>(null);
-  const [detailsPromptId, setDetailsPromptId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [authReason, setAuthReason] = useState<string | undefined>(undefined);
   const [connectivityNoticeOpen, setConnectivityNoticeOpen] = useState(false);
@@ -287,12 +285,6 @@ export default function Home() {
               const adding = !statusMap[id];
               if (adding) void initializeTargets(id);
               await toggleWishlist(id);
-              if (adding) {
-                const experience = experiences.find((item) => item.id === id);
-                if (experience && !id.startsWith("custom-") && !experience.exampleTargets) {
-                  setDetailsPromptId(id);
-                }
-              }
             }}
             onRequestMarkTried={(id) => setPendingId(id)}
             onUndoTried={async (id) => { if (canSave()) await undoTried(id); }}
@@ -443,18 +435,6 @@ export default function Home() {
             setPendingTarget(null);
           }}
           onConfirm={handleConfirmRecord}
-        />
-      )}
-
-      {detailsPromptId && (
-        <WishlistItemDetailsSheet
-          experienceTitle={experiences.find((item) => item.id === detailsPromptId)?.title ?? ""}
-          initialDetails={detailsMap[detailsPromptId]}
-          onCancel={() => setDetailsPromptId(null)}
-          onConfirm={async (details) => {
-            if (!canSave()) return;
-            if (await updateWishlistDetails(detailsPromptId, details)) setDetailsPromptId(null);
-          }}
         />
       )}
 

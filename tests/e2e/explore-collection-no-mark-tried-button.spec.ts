@@ -10,7 +10,7 @@ import { test, expect } from "@playwright/test";
 // リスト経由の子項目選択に一本化)。この読み取り専用のテストは、その分岐
 // が両方のアイテム種別で正しく効いていることを確認する(状態変更なしの
 // ため後片付けは不要)。
-const SINGLE_ITEM_TITLE = "銭湯めぐりをする";
+const SINGLE_ITEM_TITLE = "陶芸で自分のお茶碗を作る";
 const COLLECTION_ITEM_TITLE = "まだ行ったことのない都道府県に行く";
 
 test.describe("みつける画面の「やったことある」ボタン表示", () => {
