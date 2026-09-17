@@ -28,7 +28,14 @@ async function deleteAllRecords(page: import("@playwright/test").Page) {
     const card = page.locator("li", { hasText: ITEM_TITLE }).first();
     const present = await card.waitFor({ state: "visible", timeout: 3000 }).then(() => true).catch(() => false);
     if (!present) break;
-    await card.getByRole("button", { name: `${ITEM_TITLE}のその他の操作` }).click();
+    const menuButton = card.getByRole("button", { name: `${ITEM_TITLE}のその他の操作` });
+    // scrollIntoViewIfNeeded can land the button exactly behind the fixed
+    // bottom nav (position: fixed, so it always overlaps the last ~60px of
+    // the viewport regardless of scroll position), which then intercepts
+    // the click. Scroll a bit further so the button clears that overlap.
+    await menuButton.scrollIntoViewIfNeeded();
+    await page.mouse.wheel(0, 150);
+    await menuButton.click();
     const deleteButton = page.getByRole("button", { name: "記録を削除" });
     await deleteButton.click();
     await expect(deleteButton).not.toBeVisible();
