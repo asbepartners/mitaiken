@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:e2e": "playwright test",
-    "test:e2e:reset": "node tests/e2e/reset-test-account.mjs"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@capacitor/camera": "^8.2.4",
