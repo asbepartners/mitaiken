@@ -66,6 +66,9 @@ test.describe("未ログインの利用", () => {
     // やったことある: フォームは自由に開いて入力できる -- ここでもログイン画面は出ない
     await page.locator("li", { hasText: ITEM_TITLE }).getByLabel(`${ITEM_TITLE}をやってみた`).click();
     await expect(page.getByText("メールアドレスでログイン")).not.toBeVisible();
+    // 予定日が未設定のアイテムなので、決定を押せる状態にするには日付の入力が必要
+    // (未入力・「覚えていない」未選択のままだと決定ボタンはdisabledのまま)
+    await page.locator('input[type="date"]').fill("2026-01-15");
     await page.getByPlaceholder("心に残ったことを一言残しましょう。").fill(MEMO);
 
     // 保存(決定)しようとした瞬間だけログインを求められる。かつ理由メッセージが表示される

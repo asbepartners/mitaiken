@@ -89,10 +89,11 @@ test.describe("単一アイテムの記録がはじめて帖に表示される",
     await expect(firstCard).toBeVisible();
     await expect(firstCard).toContainText(MEMO);
 
-    // リロード後も引き続き表示されること
+    // リロード後も引き続き表示されること。リロードは認証確認+データ取得の
+    // 実ネットワーク往復を挟むため、デフォルトの5秒より長めに待つ
     await page.reload();
     await goToTab(page, "はじめて帖");
-    await expect(page.locator("li", { hasText: ITEM_TITLE })).toBeVisible();
+    await expect(page.locator("li", { hasText: ITEM_TITLE })).toBeVisible({ timeout: 15000 });
 
     // 「すべての記録」ビューでも同じ記録が確認できること
     await page.getByRole("button", { name: "すべての記録" }).click();
