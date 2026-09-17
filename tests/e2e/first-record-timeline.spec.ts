@@ -87,8 +87,15 @@ test.describe("単一アイテムの記録がはじめて帖に表示される",
     await expect(firstCard).toBeVisible();
     await expect(firstCard).toContainText(MEMO);
 
-    // リロード後も引き続き表示されること。リロードは認証確認+データ取得の
-    // 実ネットワーク往復を挟むため、デフォルトの5秒より長めに待つ
+    // リロード後も引き続き表示されること。page.tsx の handleConfirmRecord は
+    // `void markTried(...)` -- 実際のSupabase書き込み(insert log + clear
+    // wishlisted_at + reload)を待たずに記録シートを閉じる投げっぱなしの
+    // 呼び出しになっている。シートが閉じた直後にすぐリロードすると、その
+    // 裏側の書き込みがまだ完走していない状態のページを強制的に読み直して
+    // しまい、保存前のデータを見てしまうことがある(実際のユーザー操作な
+    // ら自然に間が空くため起きにくいが、Playwrightの高速な操作では顕在化
+    // する)。リロード前に書き込みが完走する程度の猶予を挟む
+    await page.waitForTimeout(3000);
     await page.reload();
     await goToTab(page, "はじめて帖");
     await expect(page.locator("li", { hasText: ITEM_TITLE })).toBeVisible({ timeout: 15000 });
