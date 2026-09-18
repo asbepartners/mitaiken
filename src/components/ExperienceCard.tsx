@@ -34,6 +34,7 @@ export function ExperienceCard({
   const isWishlisted = entry?.status === "wishlist";
   const showWishlisted = isWishlisted || wishlistPending;
   const isTried = entry?.status === "cleared";
+  const isCollection = Boolean(experience.exampleTargets);
   const isFeatured = variant === "featured";
   const hasHero = isFeatured;
   const imagePath = imageSource(experience.image, ASSET_BASE);
@@ -140,10 +141,19 @@ export function ExperienceCard({
 
       {isFeatured && (
         <div className="relative z-10 -mt-8 flex items-start justify-around gap-1 px-3 pb-4">
-          <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-green-900">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-green-100 text-2xl shadow-md transition-transform group-active:scale-90">✓</span>
-            やったことある
-          </button>
+          {/*
+            親子構造(コレクション)アイテムはどの子項目を体験したか選ばせずに
+            記録できてしまう抜け穴になっていたため、みつける画面でもここは
+            WishlistView と同じ isCollection 分岐に揃え、「やってみたい」の
+            み表示する。記録は常にウィッシュリスト経由の子項目選択に一本化
+            する。See asbepartners/mitaiken#62.
+          */}
+          {!isCollection && (
+            <button type="button" onClick={() => onRequestMarkTried(experience.id)} className="group flex w-24 flex-col items-center gap-1.5 text-[11px] font-bold text-green-900">
+              <span className="flex h-14 w-14 items-center justify-center rounded-full border border-green-100 bg-green-100 text-2xl shadow-md transition-transform group-active:scale-90">✓</span>
+              やったことある
+            </button>
+          )}
           <button type="button" onClick={handleToggleWishlist} aria-pressed={showWishlisted} disabled={wishlistPending} className="group flex w-24 flex-col items-center gap-1.5 text-xs font-bold text-coral-500">
             <span key={showWishlisted ? "liked" : "idle"} className={`flex h-18 w-18 items-center justify-center rounded-full border border-coral-400 bg-coral-100 text-4xl shadow-md transition-colors group-active:scale-90 ${showWishlisted ? "heart-pop bg-coral-500 text-paper" : ""}`}>{showWishlisted ? "♥" : "♡"}</span>
             {wishlistPending ? "追加しました" : "やってみたい"}

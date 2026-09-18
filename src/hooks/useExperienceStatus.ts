@@ -681,9 +681,18 @@ export function useExperienceStatus() {
         const query = supabase.from("user_experiences").update({ wishlisted_at: null }).eq("user_id", userId);
         if (slug.startsWith("custom-")) await query.eq("client_key", slug);
         else await query.eq("source_template_slug", slug);
+        // Unlike its sibling mutations (updateWishlistDetails, markTried,
+        // deleteRecord, undoTried), this write was never followed by a
+        // reload() -- so the local optimistic delete above (and the
+        // just-landed server write) could get silently clobbered by a later
+        // reload() elsewhere (e.g. right after a full page reload) racing
+        // back in the pre-removal "wishlist" status if that reload started
+        // reading before this write had fully committed. Pull the now-current
+        // server state back in here too, same as the others.
+        await reload();
       }
     }
-  }, [userId]);
+  }, [userId, reload]);
 
   return {
     statusMap,
