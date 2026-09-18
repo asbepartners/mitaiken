@@ -54,6 +54,12 @@ test.describe("親子構造アイテムの記録がはじめて帖に表示さ�
     await page.getByRole("button", { name: "＋ 項目を追加" }).click();
     await page.getByLabel("行き先・項目").fill(TARGET_TITLE);
     await page.getByRole("button", { name: "保存" }).click();
+    // addTarget はローカルへの反映が同期的、Supabaseへの書き込みが非同期
+    // なので、リストへの反映(targetRowが見える)の方がモーダルが閉じる
+    // (Supabase書き込み完了後)より先に起きる。モーダルが実際に閉じてから
+    // でないと、その下にある新しい項目のボタンを押そうとしてもモーダルに
+    // クリックを奪われる
+    await expect(page.getByRole("button", { name: "保存" })).not.toBeVisible({ timeout: 15000 });
     const targetRow = page.locator("li", { hasText: TARGET_TITLE });
     await expect(targetRow).toBeVisible();
 

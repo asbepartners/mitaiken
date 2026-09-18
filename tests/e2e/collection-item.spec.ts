@@ -59,6 +59,11 @@ test.describe("親子構造アイテム(コレクション)の既存機能の回
     await page.getByLabel("行き先・項目").fill(TARGET_TITLE);
     await page.getByLabel("気になった理由・覚えておきたいこと", { exact: false }).fill(TARGET_MEMO);
     await page.getByRole("button", { name: "保存" }).click();
+    // addTarget/updateTarget はローカルへの反映が同期的、Supabaseへの書き込
+    // みが非同期なので、リストへの反映の方がモーダルが閉じる(Supabase書き
+    // 込み完了後)より先に起きる。モーダルが実際に閉じてからでないと、その
+    // 下にあるボタンを押そうとしてもモーダルにクリックを奪われる
+    await expect(page.getByRole("button", { name: "保存" })).not.toBeVisible({ timeout: 15000 });
 
     const targetRow = page.locator("li", { hasText: TARGET_TITLE });
     await expect(targetRow).toBeVisible();
@@ -67,6 +72,7 @@ test.describe("親子構造アイテム(コレクション)の既存機能の回
     await targetRow.getByRole("button", { name: "編集", exact: true }).click();
     await page.getByLabel("気になった理由・覚えておきたいこと", { exact: false }).fill(UPDATED_TARGET_MEMO);
     await page.getByRole("button", { name: "保存" }).click();
+    await expect(page.getByRole("button", { name: "保存" })).not.toBeVisible({ timeout: 15000 });
     await expect(page.locator("li", { hasText: TARGET_TITLE })).toContainText(UPDATED_TARGET_MEMO);
 
     // やってみた記録
