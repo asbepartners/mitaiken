@@ -138,11 +138,11 @@ export default function InstagramStudio() {
       <BrandHeader page={3} />
       <div className={styles.feelingCopy}>
         <p className={styles.eyebrow}>ちょっと気になる理由</p>
-        <div className={styles.feelingRow}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-          <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-thinking.webp" />
-          <p className={styles.feelingMessage}>{shioriFeeling}</p>
-        </div>
+        <p className={styles.feelingMessage}>{shioriFeeling}</p>
+      </div>
+      <div className={styles.feelingGirlWrap}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+        <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-thinking.webp" />
       </div>
       <CornerImage image={image} position={imagePosition} size={260} />
     </article>,
