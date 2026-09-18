@@ -40,7 +40,7 @@ export default function InstagramStudio() {
     availableExperiences[0] ? buildCaption(availableExperiences[0]) : "",
   );
   const [titleSize, setTitleSize] = useState(68);
-  const [imagePosition, setImagePosition] = useState(50);
+  const [bodySize, setBodySize] = useState(42);
   const [exporting, setExporting] = useState(false);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
 
@@ -53,7 +53,7 @@ export default function InstagramStudio() {
     setShioriFeeling("");
     setCaption(buildCaption(experience));
     setTitleSize(68);
-    setImagePosition(50);
+    setBodySize(42);
   }
 
   if (!selected) {
@@ -109,7 +109,7 @@ export default function InstagramStudio() {
       <div className={styles.coverFrame}>
         <div className={styles.coverImageInner}>
           {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-          <img alt="" className={styles.coverImage} crossOrigin="anonymous" src={image} style={{ objectPosition: `50% ${imagePosition}%` }} />
+          <img alt="" className={styles.coverImage} crossOrigin="anonymous" src={image} />
         </div>
       </div>
       <div className={styles.coverCopy}>
@@ -126,7 +126,7 @@ export default function InstagramStudio() {
       <div className={styles.noteCopy}>
         <p className={styles.eyebrow}>どんな体験？</p>
         <h2 style={{ fontSize: Math.max(48, titleSize - 10) }}>{title}</h2>
-        <p className={styles.description}>{description}</p>
+        <p className={styles.description} style={{ fontSize: bodySize }}>{description}</p>
       </div>
       <div className={styles.speechBubble}>{THINKING_BUBBLE_TEXT}</div>
       <div className={styles.thinkingGirlWrap}>
@@ -138,13 +138,13 @@ export default function InstagramStudio() {
       <BrandHeader page={3} />
       <div className={styles.feelingCopy}>
         <p className={styles.eyebrow}>ちょっと気になる理由</p>
-        <p className={styles.feelingMessage}>{shioriFeeling}</p>
+        <p className={styles.feelingMessage} style={{ fontSize: Math.max(24, bodySize - 12) }}>{shioriFeeling}</p>
       </div>
       <div className={styles.feelingGirlWrap}>
         {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
         <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-standing.webp" />
       </div>
-      <CornerImage image={image} position={imagePosition} size={320} />
+      <CornerImage image={image} size={320} />
     </article>,
     <article className={`${styles.card} ${styles.ctaCard}`} key="cta">
       <BrandHeader page={4} />
@@ -197,8 +197,8 @@ export default function InstagramStudio() {
           <input min="48" max="88" type="range" value={titleSize} onChange={(event) => setTitleSize(Number(event.target.value))} />
         </label>
         <label>
-          画像の上下位置：{imagePosition}%
-          <input min="0" max="100" type="range" value={imagePosition} onChange={(event) => setImagePosition(Number(event.target.value))} />
+          本文文字サイズ：{bodySize}px
+          <input min="28" max="56" type="range" value={bodySize} onChange={(event) => setBodySize(Number(event.target.value))} />
         </label>
         <label>
           キャプション
@@ -229,11 +229,11 @@ function BrandHeader({ page }: { page: number }) {
   return <header className={styles.brandHeader}><span>わたしのはじめて帖</span><span>{page} / 4</span></header>;
 }
 
-function CornerImage({ image, position, size = 390 }: { image: string; position: number; size?: number }) {
+function CornerImage({ image, size = 390 }: { image: string; size?: number }) {
   return (
     <div className={styles.cornerImageWrap} style={{ width: size, height: size }}>
       {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-      <img alt="" crossOrigin="anonymous" src={image} style={{ objectPosition: `50% ${position}%` }} />
+      <img alt="" crossOrigin="anonymous" src={image} />
     </div>
   );
 }
