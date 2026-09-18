@@ -230,11 +230,16 @@ export default function Home() {
     return result;
   }
 
-  function handleConfirmRecord(record: MemoryRecordDraft) {
-    if (!auth.user) {
-      requireAuthToSaveRecord(() => handleConfirmRecord(record));
-      return;
-    }
+  // The core save logic, deliberately not re-checking auth.user itself: the
+  // closure requireAuthToSaveRecord stores in pendingAuthAction.current is
+  // captured once, at the moment login is first requested, and Supabase's
+  // login flow can take a while (a real code from the user's inbox). If that
+  // stored closure were handleConfirmRecord itself, it would keep closing
+  // over that original render's now-stale auth.user (still null) forever,
+  // so resumeAfterAuthentication's call after a successful login would see
+  // "not authenticated" again and reopen the login sheet instead of saving.
+  // saveRecord never re-checks auth, so the resumed action just saves.
+  const saveRecord = (record: MemoryRecordDraft) => {
     if (!canSave()) return;
     if (editingId && editingRecordId) {
       // updateRecord already updates local state synchronously and awaits
@@ -249,6 +254,14 @@ export default function Home() {
     if (pendingId) void markTried(pendingId, record);
     setPendingId(null);
     setPendingTarget(null);
+  };
+
+  function handleConfirmRecord(record: MemoryRecordDraft) {
+    if (!auth.user) {
+      requireAuthToSaveRecord(() => saveRecord(record));
+      return;
+    }
+    saveRecord(record);
   }
 
   const initialLoading = !connectivity.ready || auth.loading || catalogLoading || searchMasters.loading ||
@@ -258,11 +271,15 @@ export default function Home() {
   // Once the app has rendered once, later reloads (e.g. per-user data
   // refetching right after a login) must not unmount the whole tree again —
   // that would silently reset any open sheet (like AuthSheet) to its
-  // initial step.
+  // initial step. Deliberately mutated/read during render (not an effect):
+  // the very next lines below need this render's own updated value, and an
+  // effect would only apply it starting from the following render.
+  // eslint-disable-next-line react-hooks/refs
   if (!initialLoading) hasBootedRef.current = true;
 
   if (!connectivity.ready) return <InitialAppScreen state="loading" />;
   if (connectivity.offlineAtStartup) return <InitialAppScreen state="offline" />;
+  // eslint-disable-next-line react-hooks/refs
   if (!hasBootedRef.current && initialLoading) return <InitialAppScreen state="loading" />;
   if (initialError) return <InitialAppScreen state="error" />;
 
