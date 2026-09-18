@@ -9,6 +9,7 @@ import styles from "./studio.module.css";
 
 const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1350;
+const THINKING_BUBBLE_TEXT = "これ、\nやってみたらどうだろう。";
 
 function safeFilename(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "-").replace(/-+/g, "-");
@@ -34,6 +35,7 @@ export default function InstagramStudio() {
     availableExperiences[0];
   const [title, setTitle] = useState(availableExperiences[0]?.title ?? "");
   const [description, setDescription] = useState(availableExperiences[0]?.description ?? "");
+  const [shioriFeeling, setShioriFeeling] = useState("");
   const [caption, setCaption] = useState(
     availableExperiences[0] ? buildCaption(availableExperiences[0]) : "",
   );
@@ -48,6 +50,7 @@ export default function InstagramStudio() {
     setSelectedId(experience.id);
     setTitle(experience.title);
     setDescription(experience.description);
+    setShioriFeeling("");
     setCaption(buildCaption(experience));
     setTitleSize(68);
     setImagePosition(50);
@@ -63,9 +66,6 @@ export default function InstagramStudio() {
 
   const image = imageSource(selected.image, "");
   const category = detailValue(selected.categoryLabel, selected.category);
-  const location = detailValue(selected.locationLabel, selected.place || "未設定");
-  const duration = detailValue(selected.durationLabel, selected.time || "未設定");
-  const budget = detailValue(selected.budgetLabel, selected.cost || "未設定");
 
   async function downloadCard(index: number) {
     const node = cardRefs.current[index];
@@ -124,24 +124,27 @@ export default function InstagramStudio() {
     <article className={`${styles.card} ${styles.noteCard}`} key="description">
       <BrandHeader page={2} />
       <div className={styles.noteCopy}>
-        <p className={styles.eyebrow}>こんな「はじめて」</p>
+        <p className={styles.eyebrow}>どんな体験？</p>
         <h2 style={{ fontSize: Math.max(48, titleSize - 10) }}>{title}</h2>
         <p className={styles.description}>{description}</p>
       </div>
-      <CornerImage image={image} position={imagePosition} />
-    </article>,
-    <article className={`${styles.card} ${styles.detailsCard}`} key="details">
-      <BrandHeader page={3} />
-      <div className={styles.detailsCopy}>
-        <p className={styles.eyebrow}>やってみやすさ</p>
-        <h2 style={{ fontSize: Math.max(48, titleSize - 10) }}>{title}</h2>
-        <dl className={styles.details}>
-          <div><dt>場所</dt><dd>{location}</dd></div>
-          <div><dt>時間</dt><dd>{duration}</dd></div>
-          <div><dt>予算</dt><dd>{budget}</dd></div>
-        </dl>
+      <div className={styles.speechBubble}>{THINKING_BUBBLE_TEXT}</div>
+      <div className={styles.thinkingGirlWrap}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+        <img alt="" className={styles.thinkingGirl} src="/instagram-studio/girl-thinking.webp" />
       </div>
-      <CornerImage image={image} position={imagePosition} />
+    </article>,
+    <article className={`${styles.card} ${styles.feelingCard}`} key="feeling">
+      <BrandHeader page={3} />
+      <div className={styles.feelingCopy}>
+        <p className={styles.eyebrow}>ちょっと気になる理由</p>
+        <div className={styles.feelingRow}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+          <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-thinking.webp" />
+          <p className={styles.feelingMessage}>{shioriFeeling}</p>
+        </div>
+      </div>
+      <CornerImage image={image} position={imagePosition} size={260} />
     </article>,
     <article className={`${styles.card} ${styles.ctaCard}`} key="cta">
       <BrandHeader page={4} />
@@ -181,6 +184,15 @@ export default function InstagramStudio() {
           <textarea rows={5} value={description} onChange={(event) => setDescription(event.target.value)} />
         </label>
         <label>
+          しおりちゃんの気持ち（3枚目・入力した改行を反映）
+          <textarea
+            placeholder={"この体験を、しおりちゃんはなぜやってみたいと思った？"}
+            rows={6}
+            value={shioriFeeling}
+            onChange={(event) => setShioriFeeling(event.target.value)}
+          />
+        </label>
+        <label>
           タイトル文字サイズ：{titleSize}px
           <input min="48" max="88" type="range" value={titleSize} onChange={(event) => setTitleSize(Number(event.target.value))} />
         </label>
@@ -217,9 +229,9 @@ function BrandHeader({ page }: { page: number }) {
   return <header className={styles.brandHeader}><span>わたしのはじめて帖</span><span>{page} / 4</span></header>;
 }
 
-function CornerImage({ image, position }: { image: string; position: number }) {
+function CornerImage({ image, position, size = 390 }: { image: string; position: number; size?: number }) {
   return (
-    <div className={styles.cornerImageWrap}>
+    <div className={styles.cornerImageWrap} style={{ width: size, height: size }}>
       {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
       <img alt="" crossOrigin="anonymous" src={image} style={{ objectPosition: `50% ${position}%` }} />
     </div>
