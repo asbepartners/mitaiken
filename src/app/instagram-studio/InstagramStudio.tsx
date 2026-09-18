@@ -111,10 +111,12 @@ export default function InstagramStudio() {
           {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
           <img alt="" className={styles.coverImage} crossOrigin="anonymous" src={image} />
         </div>
+        {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
+        <img alt="" className={styles.coverBubble} src="/instagram-studio/bubble-have-you-tried.webp" />
       </div>
       <div className={styles.coverCopy}>
         {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-        <img alt="" className={styles.coverGirl} src="/instagram-studio/girl.png" />
+        <img alt="" className={styles.coverGirl} src="/instagram-studio/girl-telescope.webp" />
         <div>
           <span className={styles.category}>{category}</span>
           <h2 style={{ fontSize: titleSize }}>{title}</h2>
@@ -226,7 +228,25 @@ export default function InstagramStudio() {
 }
 
 function BrandHeader({ page }: { page: number }) {
-  return <header className={styles.brandHeader}><span>わたしのはじめて帖</span><span>{page} / 4</span></header>;
+  return (
+    <header className={styles.brandHeader}>
+      <span className={styles.brandHeaderTitle}>
+        <LeafIcon />
+        わたしのはじめて帖
+      </span>
+      <span>{page} / 4</span>
+    </header>
+  );
+}
+
+function LeafIcon() {
+  return (
+    <svg className={styles.leafIcon} fill="none" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 27C16 27 7 23.5 7 14.5C7 9.5 11 6 16 5C21 6 25 9.5 25 14.5C25 23.5 16 27 16 27Z" fill="#9CB48A" />
+      <path d="M16 27V6" stroke="#6E8A5C" strokeLinecap="round" strokeWidth="1.4" />
+      <path d="M16 11L12 8.5M16 16L11 14M16 21L12 19" stroke="#6E8A5C" strokeLinecap="round" strokeWidth="1.2" />
+    </svg>
+  );
 }
 
 function CornerImage({ image, size = 390 }: { image: string; size?: number }) {
