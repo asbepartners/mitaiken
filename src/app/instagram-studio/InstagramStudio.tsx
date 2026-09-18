@@ -142,9 +142,9 @@ export default function InstagramStudio() {
       </div>
       <div className={styles.feelingGirlWrap}>
         {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-        <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-thinking.webp" />
+        <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-standing.webp" />
       </div>
-      <CornerImage image={image} position={imagePosition} size={260} />
+      <CornerImage image={image} position={imagePosition} size={320} />
     </article>,
     <article className={`${styles.card} ${styles.ctaCard}`} key="cta">
       <BrandHeader page={4} />
