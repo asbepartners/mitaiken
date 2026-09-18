@@ -1,5 +1,28 @@
 import { test, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { createAdminClient, E2E_TEST_EMAIL } from "./fixtures";
+
+// globalSetup issues a magiclink token for this same email (to seed every
+// other spec's authenticated storageState) and records when it did so.
+// Supabase's per-user OTP cooldown (~60s) applies to that issuance too, even
+// though it never sends mail, so a real send here too soon after globalSetup
+// gets 429'd -- not from anything this test itself repeats, but from racing
+// its own suite's setup. Wait out whatever's left of the cooldown first.
+const AUTH_DIR = path.join(__dirname, "..", "..", "playwright", ".auth");
+const OTP_COOLDOWN_MARKER_PATH = path.join(AUTH_DIR, "otp-issued-at.json");
+const OTP_COOLDOWN_MS = 65_000;
+
+async function waitOutGlobalSetupOtpCooldown() {
+  try {
+    const raw = await readFile(OTP_COOLDOWN_MARKER_PATH, "utf-8");
+    const { issuedAtMs } = JSON.parse(raw) as { issuedAtMs: number };
+    const remaining = OTP_COOLDOWN_MS - (Date.now() - issuedAtMs);
+    if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
+  } catch {
+    // marker missing (e.g. globalSetup didn't run) -- nothing to wait for
+  }
+}
 
 // Regression coverage for #58's largest identified gap for the anonymous
 // journey: anonymous-visitor.spec.ts confirms the login prompt appears when
@@ -59,6 +82,10 @@ test.describe("未ログイン→ログイン完了→保留記録の自動保�
   });
 
   test("未ログインでやったことあるを決定→ログイン完走→自動保存→はじめて帖に表示", async ({ page }) => {
+    // waitOutGlobalSetupOtpCooldown can add up to ~65s on top of this test's
+    // own real network round trips, so the default 90s budget is too tight
+    test.setTimeout(150_000);
+
     await deleteRecordIfPresent(page);
     await removeFromWishlistIfPresent(page);
 
@@ -81,6 +108,7 @@ test.describe("未ログイン→ログイン完了→保留記録の自動保�
     await expect(page.getByText("メールアドレスでログイン")).toBeVisible({ timeout: 5000 });
 
     await page.getByLabel("メールアドレス").fill(E2E_TEST_EMAIL);
+    await waitOutGlobalSetupOtpCooldown();
     await page.getByRole("button", { name: "確認コードを送る" }).click();
     await expect(page.getByText("確認コードを入力")).toBeVisible({ timeout: 10000 });
 
