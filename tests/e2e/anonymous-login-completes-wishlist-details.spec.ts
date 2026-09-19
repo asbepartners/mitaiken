@@ -1,25 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { createAdminClient, E2E_TEST_EMAIL } from "./fixtures";
+import { recordOtpIssuance, waitOutOtpCooldown } from "./otpCooldown";
 
-// See anonymous-login-completes-record.spec.ts for why this cooldown wait
-// exists: globalSetup issues a magiclink token for this same email, and
-// Supabase's per-user OTP cooldown (~60s) applies to that issuance too.
-const AUTH_DIR = path.join(__dirname, "..", "..", "playwright", ".auth");
-const OTP_COOLDOWN_MARKER_PATH = path.join(AUTH_DIR, "otp-issued-at.json");
-const OTP_COOLDOWN_MS = 65_000;
-
-async function waitOutGlobalSetupOtpCooldown() {
-  try {
-    const raw = await readFile(OTP_COOLDOWN_MARKER_PATH, "utf-8");
-    const { issuedAtMs } = JSON.parse(raw) as { issuedAtMs: number };
-    const remaining = OTP_COOLDOWN_MS - (Date.now() - issuedAtMs);
-    if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
-  } catch {
-    // marker missing (e.g. globalSetup didn't run) -- nothing to wait for
-  }
-}
+// See ./otpCooldown.ts for why this cooldown wait exists: globalSetup issues
+// a magiclink token for this same email, and anonymous-login-completes-
+// record.spec.ts (which may run right before this spec) issues two more of
+// its own. Supabase's per-user OTP cooldown (~60s) applies to any of these.
 
 // Regression coverage for asbepartners/mitaiken#70: やってみたい詳細
 // (WishlistItemDetailsSheet) now requires login to save, the same way a
@@ -67,8 +53,8 @@ test.describe("未ログイン→ログイン完了→保留していたやっ�
   });
 
   test("未ログインでやってみたい詳細を決定→ログイン完走→自動保存→シートが閉じてリロード後も残る", async ({ page }) => {
-    // waitOutGlobalSetupOtpCooldown can add up to ~65s on top of this test's
-    // own real network round trips, so the default 90s budget is too tight
+    // waitOutOtpCooldown can add up to ~65s on top of this test's own real
+    // network round trips, so the default 90s budget is too tight
     test.setTimeout(150_000);
 
     await removeFromWishlistIfPresent(page);
@@ -93,7 +79,7 @@ test.describe("未ログイン→ログイン完了→保留していたやっ�
     await expect(page.getByText("メールアドレスでログイン")).toBeVisible({ timeout: 5000 });
 
     await page.getByLabel("メールアドレス").fill(E2E_TEST_EMAIL);
-    await waitOutGlobalSetupOtpCooldown();
+    await waitOutOtpCooldown();
     await page.getByRole("button", { name: "確認コードを送る" }).click();
     await expect(page.getByText("確認コードを入力")).toBeVisible({ timeout: 10000 });
 
@@ -109,6 +95,8 @@ test.describe("未ログイン→ログイン完了→保留していたやっ�
     if (error || !data?.properties?.email_otp) {
       throw new Error(`Failed to obtain a verifiable OTP for ${E2E_TEST_EMAIL}: ${error?.message ?? "no email_otp in response"}`);
     }
+    // 直後に別のOTP往復specが動く場合に備えて、この発行時刻も記録しておく
+    await recordOtpIssuance();
 
     await page.getByLabel("6桁の確認コード").fill(data.properties.email_otp);
     await page.getByRole("button", { name: "確認する" }).click();

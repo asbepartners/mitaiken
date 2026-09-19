@@ -1,28 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { createAdminClient, E2E_TEST_EMAIL } from "./fixtures";
+import { recordOtpIssuance, waitOutOtpCooldown } from "./otpCooldown";
 
 // globalSetup issues a magiclink token for this same email (to seed every
-// other spec's authenticated storageState) and records when it did so.
-// Supabase's per-user OTP cooldown (~60s) applies to that issuance too, even
-// though it never sends mail, so a real send here too soon after globalSetup
-// gets 429'd -- not from anything this test itself repeats, but from racing
-// its own suite's setup. Wait out whatever's left of the cooldown first.
-const AUTH_DIR = path.join(__dirname, "..", "..", "playwright", ".auth");
-const OTP_COOLDOWN_MARKER_PATH = path.join(AUTH_DIR, "otp-issued-at.json");
-const OTP_COOLDOWN_MS = 65_000;
-
-async function waitOutGlobalSetupOtpCooldown() {
-  try {
-    const raw = await readFile(OTP_COOLDOWN_MARKER_PATH, "utf-8");
-    const { issuedAtMs } = JSON.parse(raw) as { issuedAtMs: number };
-    const remaining = OTP_COOLDOWN_MS - (Date.now() - issuedAtMs);
-    if (remaining > 0) await new Promise((resolve) => setTimeout(resolve, remaining));
-  } catch {
-    // marker missing (e.g. globalSetup didn't run) -- nothing to wait for
-  }
-}
+// other spec's authenticated storageState), and this spec's own OTP
+// round-trip below issues two more (its signInWithOtp click, then its own
+// generateLink() call). Supabase's per-user OTP cooldown (~60s) applies to
+// any of these, so a real send too soon after any of them gets 429'd -- not
+// just from racing globalSetup, but potentially from another OTP-round-trip
+// spec's own issuance too. waitOutOtpCooldown()/recordOtpIssuance() (see
+// ./otpCooldown.ts) track whichever issuance happened most recently, however
+// far back, and keep every OTP-sending spec's own issuance visible to
+// whichever spec runs next.
 
 // Regression coverage for #58's largest identified gap for the anonymous
 // journey: anonymous-visitor.spec.ts confirms the login prompt appears when
@@ -108,7 +97,7 @@ test.describe("未ログイン→ログイン完了→保留記録の自動保�
     await expect(page.getByText("メールアドレスでログイン")).toBeVisible({ timeout: 5000 });
 
     await page.getByLabel("メールアドレス").fill(E2E_TEST_EMAIL);
-    await waitOutGlobalSetupOtpCooldown();
+    await waitOutOtpCooldown();
     await page.getByRole("button", { name: "確認コードを送る" }).click();
     await expect(page.getByText("確認コードを入力")).toBeVisible({ timeout: 10000 });
 
@@ -124,6 +113,9 @@ test.describe("未ログイン→ログイン完了→保留記録の自動保�
     if (error || !data?.properties?.email_otp) {
       throw new Error(`Failed to obtain a verifiable OTP for ${E2E_TEST_EMAIL}: ${error?.message ?? "no email_otp in response"}`);
     }
+    // 直後に別のOTP往復specが動く場合、そのspecはこの発行を知らないと
+    // クールダウンを待たずに送信して429になる。この発行時刻も記録しておく
+    await recordOtpIssuance();
 
     await page.getByLabel("6桁の確認コード").fill(data.properties.email_otp);
     await page.getByRole("button", { name: "確認する" }).click();

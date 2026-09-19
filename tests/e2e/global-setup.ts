@@ -1,5 +1,4 @@
 import { chromium, type FullConfig } from "@playwright/test";
-import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   createAdminClient,
@@ -7,15 +6,10 @@ import {
   E2E_TEST_EMAIL,
   SUPABASE_AUTH_STORAGE_KEY,
 } from "./fixtures";
+import { recordOtpIssuance } from "./otpCooldown";
 
 const AUTH_DIR = path.join(__dirname, "..", "..", "playwright", ".auth");
 const STORAGE_STATE_PATH = path.join(AUTH_DIR, "user.json");
-// Read by anonymous-login-completes-record.spec.ts: Supabase's per-user OTP
-// cooldown (~60s) applies to any new-token issuance for an email, including
-// generateLink() below even though it never actually sends mail. That spec
-// runs just seconds after this file, so without knowing when this ran it
-// would collide with its own suite's setup and always get 429'd.
-const OTP_COOLDOWN_MARKER_PATH = path.join(AUTH_DIR, "otp-issued-at.json");
 
 export default async function globalSetup(config: FullConfig) {
   const admin = createAdminClient();
@@ -33,8 +27,7 @@ export default async function globalSetup(config: FullConfig) {
     );
   }
 
-  await mkdir(AUTH_DIR, { recursive: true });
-  await writeFile(OTP_COOLDOWN_MARKER_PATH, JSON.stringify({ issuedAtMs: Date.now() }));
+  await recordOtpIssuance();
 
   const anon = createAnonClient();
   const { data: verifyData, error: verifyError } = await anon.auth.verifyOtp({
