@@ -9,7 +9,6 @@ import styles from "./studio.module.css";
 
 const CANVAS_WIDTH = 1080;
 const CANVAS_HEIGHT = 1350;
-const THINKING_BUBBLE_TEXT = "これ、\nやってみたらどうだろう。";
 
 function safeFilename(value: string) {
   return value.replace(/[^a-zA-Z0-9_-]/g, "-").replace(/-+/g, "-");
@@ -130,10 +129,9 @@ export default function InstagramStudio() {
         <h2 style={{ fontSize: Math.max(48, titleSize - 10) }}>{title}</h2>
         <p className={styles.description} style={{ fontSize: bodySize }}>{description}</p>
       </div>
-      <div className={styles.speechBubble}>{THINKING_BUBBLE_TEXT}</div>
       <div className={styles.thinkingGirlWrap}>
         {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
-        <img alt="" className={styles.thinkingGirl} src="/instagram-studio/girl-thinking.webp" />
+        <img alt="" className={styles.thinkingGirl} src="/instagram-studio/girl-thinking-bubble.webp" />
       </div>
     </article>,
     <article className={`${styles.card} ${styles.feelingCard}`} key="feeling">
@@ -146,7 +144,7 @@ export default function InstagramStudio() {
         {/* eslint-disable-next-line @next/next/no-img-element -- export requires a plain img node */}
         <img alt="" className={styles.feelingGirl} src="/instagram-studio/girl-standing.webp" />
       </div>
-      <CornerImage image={image} size={320} />
+      <CornerImage image={image} size={380} />
     </article>,
     <article className={`${styles.card} ${styles.ctaCard}`} key="cta">
       <BrandHeader page={4} />
