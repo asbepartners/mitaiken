@@ -13,6 +13,7 @@ import { WishlistView } from "@/components/WishlistView";
 import { useExperienceCatalog } from "@/hooks/useExperienceCatalog";
 import { useAuth } from "@/hooks/useAuth";
 import { useExperienceStatus } from "@/hooks/useExperienceStatus";
+import type { WishlistItemDetails } from "@/hooks/useExperienceStatus";
 import { useHiddenExperiences } from "@/hooks/useHiddenExperiences";
 import { useExperienceTargets } from "@/hooks/useExperienceTargets";
 import { useCustomExperiences } from "@/hooks/useCustomExperiences";
@@ -184,12 +185,18 @@ export default function Home() {
     return true;
   }
 
-  // Only the moment a "やったことある" record (with its date/place/photo/memo)
-  // is actually saved requires an account -- casual wishlist taps stay free.
-  // Gating here (rather than when the record sheet opens) lets someone fill
-  // the whole thing out and see its value before being asked to log in.
-  // See asbepartners/mitaiken#54 for the full discussion of why the line was
-  // drawn here (and not, e.g., on every wishlist tap as before).
+  // The line for requiring an account is drawn at "does this save personal
+  // information the user typed in" -- not at "which tab is this". A bare
+  // "やってみたい♡" tap stays free, but both a saved "やったことある" record
+  // (date/place/photo/memo) and a saved やってみたい詳細 (予定日/場所/同行
+  // 者/メモ/参考URL) are personal information someone typed in, so both are
+  // gated the same way. Gating at the moment of save (rather than when the
+  // sheet opens) lets someone fill the whole thing out and see its value
+  // before being asked to log in.
+  // See asbepartners/mitaiken#54 for the original decision and #70 for why
+  // やってみたい詳細's save was folded into this same gate.
+  const AUTH_REASON_PERSONAL_RECORD = "あなたの大切な記録を守るために、ログインが必要です。";
+
   function requireAuthToSaveRecord(action: () => void) {
     if (!canSave()) return;
     if (auth.user) {
@@ -197,8 +204,25 @@ export default function Home() {
       return;
     }
     pendingAuthAction.current = action;
-    setAuthReason("あなたの大切な記録を守るために、ログインが必要です。");
+    setAuthReason(AUTH_REASON_PERSONAL_RECORD);
     setAuthOpen(true);
+  }
+
+  // Mirrors requireAuthToSaveRecord, but for onUpdateWishlistDetails, whose
+  // callers (WishlistView) await a Promise<boolean> and only close the sheet
+  // once it resolves true. So instead of firing a stored action and letting
+  // page-level state (pendingId/editingId) unmount the sheet, this resolves
+  // the very Promise the sheet is already awaiting once the deferred save
+  // actually completes after login -- the sheet just stays open (with
+  // whatever the user typed still in it) until then.
+  function requireAuthToSaveWishlistDetails(id: string, details: WishlistItemDetails): Promise<boolean> {
+    if (!canSave()) return Promise.resolve(false);
+    if (auth.user) return updateWishlistDetails(id, details);
+    return new Promise<boolean>((resolve) => {
+      pendingAuthAction.current = () => { void updateWishlistDetails(id, details).then(resolve); };
+      setAuthReason(AUTH_REASON_PERSONAL_RECORD);
+      setAuthOpen(true);
+    });
   }
 
   function closeAuth() {
@@ -325,7 +349,7 @@ export default function Home() {
             targetsMap={targetsMap}
             recordsMap={recordsMap}
             detailsMap={detailsMap}
-            onUpdateWishlistDetails={(id, details) => canSave() ? updateWishlistDetails(id, details) : Promise.resolve(false)}
+            onUpdateWishlistDetails={requireAuthToSaveWishlistDetails}
             onRequestTargetRecord={(parentId, target) => {
               setPendingTarget(target);
               setPendingId(parentId);
