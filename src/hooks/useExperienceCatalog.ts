@@ -14,6 +14,7 @@ interface CatalogRow {
   title: string;
   description: string;
   image_path: string | null;
+  instagram_posted_at: string | null;
   category: { id: string; slug: string; name: string } | { id: string; slug: string; name: string }[];
   location: { id: string; code: string; label: string } | { id: string; code: string; label: string }[] | null;
   duration: { id: string; code: string; label: string; min_minutes: number; max_minutes: number | null } | { id: string; code: string; label: string; min_minutes: number; max_minutes: number | null }[] | null;
@@ -56,6 +57,7 @@ function toExperience(row: CatalogRow): Experience {
     image: row.image_path ?? undefined,
     title: row.title,
     description: row.description,
+    instagramPostedAt: row.instagram_posted_at ?? undefined,
     category: category.slug as Category,
     categoryId: category.id,
     categoryCode: category.slug,
@@ -106,6 +108,7 @@ export function useExperienceCatalog() {
           title,
           description,
           image_path,
+          instagram_posted_at,
           category:categories!inner(id, slug, name),
           location:location_options(id, code, label),
           duration:duration_options(id, code, label, min_minutes, max_minutes),
