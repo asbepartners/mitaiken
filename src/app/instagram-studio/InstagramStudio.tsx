@@ -19,7 +19,7 @@ function detailValue(value: string | undefined, fallback: string) {
 }
 
 function buildCaption(experience: Experience) {
-  return `${experience.title}\n\n${experience.description}\n\n気になった「はじめて」は、わたしのはじめて帖に残しておけます。\n\n#わたしのはじめて帖 #小さなはじめて #やってみたいこと`;
+  return `${experience.title}\n\n${experience.description}\n\n気になった「はじめて」は、わたしのはじめて帖に残しておけます。\n\n#わたしのはじめて帖 #小さなはじめて #バケットリスト #やりたいことリスト #bucketlist`;
 }
 
 export default function InstagramStudio() {
@@ -41,7 +41,11 @@ export default function InstagramStudio() {
   const [titleSize, setTitleSize] = useState(68);
   const [bodySize, setBodySize] = useState(42);
   const [exporting, setExporting] = useState(false);
+  const [showUnpostedOnly, setShowUnpostedOnly] = useState(false);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const selectableExperiences = showUnpostedOnly
+    ? availableExperiences.filter((experience) => !experience.instagramPostedAt)
+    : availableExperiences;
 
   function selectExperience(id: string) {
     const experience = availableExperiences.find((item) => item.id === id);
@@ -169,12 +173,27 @@ export default function InstagramStudio() {
           <h1>Instagram投稿作成</h1>
           <p className={styles.source}>マスタ：{source === "supabase" ? "Supabase" : "ローカル"}</p>
         </div>
+        <label className={styles.checkboxLabel}>
+          <input
+            checked={showUnpostedOnly}
+            onChange={(event) => setShowUnpostedOnly(event.target.checked)}
+            type="checkbox"
+          />
+          未投稿のみ表示
+        </label>
         <label>
           体験マスタ
           <select value={selected.id} onChange={(event) => selectExperience(event.target.value)}>
-            {availableExperiences.map((experience) => <option key={experience.id} value={experience.id}>{experience.title}</option>)}
+            {selectableExperiences.map((experience) => (
+              <option key={experience.id} value={experience.id}>
+                {experience.instagramPostedAt ? `✅ ${experience.instagramPostedAt}` : "🆕 未投稿"} {experience.title}
+              </option>
+            ))}
           </select>
         </label>
+        <p className={styles.postedStatus}>
+          {selected.instagramPostedAt ? `投稿済み：${selected.instagramPostedAt}` : "この体験マスタは未投稿です"}
+        </p>
         <label>
           タイトル（入力した改行を反映）
           <textarea rows={3} value={title} onChange={(event) => setTitle(event.target.value)} />

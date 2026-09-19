@@ -32,6 +32,10 @@
   font-weight: 700;
 }
 
+.checkboxLabel { flex-direction: row; align-items: center; gap: 8px; }
+.checkboxLabel input { width: auto; }
+.postedStatus { margin-top: -10px; color: #6f786f; font-size: 12px; font-weight: 700; }
+
 .controls select,
 .controls textarea {
   width: 100%;

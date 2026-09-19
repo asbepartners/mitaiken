@@ -16,6 +16,7 @@ export interface Experience {
   image?: string;
   title: string;
   description: string;
+  instagramPostedAt?: string;
   category: Category;
   categoryId?: string;
   categoryCode?: string;
